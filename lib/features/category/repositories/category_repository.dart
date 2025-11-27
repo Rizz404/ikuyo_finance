@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
+import 'package:ikuyo_finance/features/category/models/get_categories_params.dart';
 
 abstract class CategoryRepository {
   TaskEither<Failure, Success<Category>> createCategory({
@@ -11,11 +12,9 @@ abstract class CategoryRepository {
     String? color,
     String? parentUlid,
   });
-  TaskEither<Failure, SuccessCursor<Category>> getCategories({
-    String? cursor,
-    int limit = 20,
-    CategoryType? type,
-  });
+  TaskEither<Failure, SuccessCursor<Category>> getCategories(
+    GetCategoriesParams params,
+  );
   TaskEither<Failure, Success<Category>> getCategoryById({
     required String ulid,
   });

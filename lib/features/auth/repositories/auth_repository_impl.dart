@@ -2,6 +2,8 @@ import 'package:fpdart/fpdart.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
+import 'package:ikuyo_finance/features/auth/models/sign_in_with_email_params.dart';
+import 'package:ikuyo_finance/features/auth/models/sign_up_with_email_params.dart';
 import 'package:ikuyo_finance/features/auth/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,16 +13,15 @@ class AuthRepositoryImpl implements AuthRepository {
   const AuthRepositoryImpl(this._supabase);
 
   @override
-  TaskEither<Failure, Success<AuthResponse>> signInWithEmail({
-    required String email,
-    required String password,
-  }) {
+  TaskEither<Failure, Success<AuthResponse>> signInWithEmail(
+    SignInWithEmailParams params,
+  ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Sign in with email', email);
+        logService('Sign in with email', params.email);
         final response = await _supabase.auth.signInWithPassword(
-          email: email,
-          password: password,
+          email: params.email,
+          password: params.password,
         );
         logInfo('Sign in successful');
         return Success(message: 'Sign in successful', data: response);
@@ -37,16 +38,15 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  TaskEither<Failure, Success<AuthResponse>> signUpWithEmail({
-    required String email,
-    required String password,
-  }) {
+  TaskEither<Failure, Success<AuthResponse>> signUpWithEmail(
+    SignUpWithEmailParams params,
+  ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Sign up with email', email);
+        logService('Sign up with email', params.email);
         final response = await _supabase.auth.signUp(
-          email: email,
-          password: password,
+          email: params.email,
+          password: params.password,
         );
         logInfo('Sign up successful');
         return Success(message: 'Sign up successful', data: response);

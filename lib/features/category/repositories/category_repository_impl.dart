@@ -4,6 +4,7 @@ import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
+import 'package:ikuyo_finance/features/category/models/get_categories_params.dart';
 import 'package:ikuyo_finance/features/category/repositories/category_repository.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
@@ -64,24 +65,27 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
-  TaskEither<Failure, SuccessCursor<Category>> getCategories({
-    String? cursor,
-    int limit = 20,
-    CategoryType? type,
-  }) {
+  TaskEither<Failure, SuccessCursor<Category>> getCategories(
+    GetCategoriesParams params,
+  ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Get categories', 'cursor: $cursor, limit: $limit');
+        logService(
+          'Get categories',
+          'cursor: ${params.cursor}, limit: ${params.limit}',
+        );
 
         var query = _box.query();
 
         // * Filter by type jika ada
-        if (type != null) {
-          query = _box.query(Category_.type.equals(type.index));
+        if (params.type != null) {
+          query = _box.query(Category_.type.equals(params.type!.index));
         }
 
         // * Pagination dengan cursor (offset-based)
-        final offset = cursor != null ? int.tryParse(cursor) ?? 0 : 0;
+        final offset = params.cursor != null
+            ? int.tryParse(params.cursor!) ?? 0
+            : 0;
         query = query..order(Category_.createdAt, flags: Order.descending);
 
         final builtQuery = query.build();
@@ -92,18 +96,18 @@ class CategoryRepositoryImpl implements CategoryRepository {
         final startIndex = offset < allResults.length
             ? offset
             : allResults.length;
-        final endIndex = (startIndex + limit + 1) < allResults.length
-            ? startIndex + limit + 1
+        final endIndex = (startIndex + params.limit + 1) < allResults.length
+            ? startIndex + params.limit + 1
             : allResults.length;
         final results = allResults.sublist(startIndex, endIndex);
 
-        final hasMore = results.length > limit;
-        final categories = hasMore ? results.sublist(0, limit) : results;
+        final hasMore = results.length > params.limit;
+        final categories = hasMore ? results.sublist(0, params.limit) : results;
 
         final cursorInfo = CursorInfo(
-          nextCursor: hasMore ? (offset + limit).toString() : '',
+          nextCursor: hasMore ? (offset + params.limit).toString() : '',
           hasNextPage: hasMore,
-          perPage: limit,
+          perPage: params.limit,
         );
 
         logInfo('Categories retrieved: ${categories.length}');
