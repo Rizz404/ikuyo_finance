@@ -1,7 +1,7 @@
-// TODO: Register blocs here
+import 'package:ikuyo_finance/di/service_locator.dart';
+import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
+import 'package:ikuyo_finance/features/auth/repositories/auth_repository.dart';
+
 void setupBlocs() {
-  // Example:
-  // getIt.registerFactory<AuthBloc>(
-  //   () => AuthBloc(getIt<AuthRepository>()),
-  // );
+  getIt.registerFactory<AuthBloc>(() => AuthBloc(getIt<AuthRepository>()));
 }

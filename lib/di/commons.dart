@@ -1,3 +1,4 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
@@ -5,6 +6,7 @@ import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:talker_bloc_logger/talker_bloc_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
 
 Future<void> setupCommons() async {
@@ -16,6 +18,17 @@ Future<void> setupCommons() async {
 void _setupLogger() {
   initLogger();
   getIt.registerSingleton<Talker>(talker);
+
+  // * Setup TalkerBlocObserver untuk auto-logging semua bloc events/states
+  Bloc.observer = TalkerBlocObserver(
+    talker: talker,
+    settings: const TalkerBlocLoggerSettings(
+      printEvents: true,
+      printTransitions: true,
+      printClosings: false,
+      printCreations: false,
+    ),
+  );
 }
 
 Future<void> _setupStorage() async {
