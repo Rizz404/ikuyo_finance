@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
-import 'package:ikuyo_finance/di/commons.dart';
+import 'package:ikuyo_finance/di/injection.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: '.env');
-  await setupCommons();
+  await setupDependencies();
 
   talker.info('🚀 Ikuyo Finance started');
 
