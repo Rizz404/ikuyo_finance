@@ -3,13 +3,21 @@ import 'package:get_it/get_it.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
+import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:talker_flutter/talker_flutter.dart';
 
 final getIt = GetIt.instance;
 
 Future<void> setupCommons() async {
+  _setupLogger();
   await _setupStorage();
   await _setupSupabase();
+}
+
+void _setupLogger() {
+  initLogger();
+  getIt.registerSingleton<Talker>(talker);
 }
 
 Future<void> _setupStorage() async {

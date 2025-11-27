@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/commons.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables dari file .env
   await dotenv.load(fileName: '.env');
-
-  // Setup semua dependency injection
   await setupCommons();
 
-  // Tunggu sampai semua async singleton ready
-  // await getIt.allReady(); // Uncomment jika ada async singleton yang perlu ditunggu
+  talker.info('🚀 Ikuyo Finance started');
 
   runApp(const MyApp());
 }
