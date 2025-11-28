@@ -1,157 +1,147 @@
 import 'package:flutter/material.dart';
 
-/// Modern Color Palette using 60-30-10 Rule
-/// 60% - Primary/Background colors
-/// 30% - Secondary/Supporting colors
-/// 10% - Accent/Action colors
+/// Kita Ikuyo Inspired Color Palette using 60-30-10 Rule
+/// 60% - Primary/Background colors (Warm pinkish neutrals)
+/// 30% - Secondary/Supporting colors (Red-ish tones)
+/// 10% - Accent/Action colors (Yellow pops)
 class AppColors {
   // Private constructor to prevent instantiation
   AppColors._();
 
   // ============================================
-  // LIGHT THEME COLORS
+  // LIGHT THEME COLORS (Kita's Daytime Energy)
   // ============================================
 
   static const LightColors light = LightColors._();
 
   // ============================================
-  // DARK THEME COLORS
+  // DARK THEME COLORS (Kita's Night Stage Vibes)
   // ============================================
 
   static const DarkColors dark = DarkColors._();
 
   // ============================================
-  // SEMANTIC COLORS (Same for both themes)
+  // SEMANTIC COLORS (Same for both themes, with a fun twist if needed)
   // ============================================
 
   static const SemanticColors semantic = SemanticColors._();
 }
 
-/// Light Theme Color Palette
+/// Light Theme Color Palette - Inspired by Kita's bright personality
 class LightColors {
   const LightColors._();
 
   // 60% - Primary Colors (Backgrounds & Main surfaces)
-  // Modern off-white and light grays
-  final Color background = const Color.fromRGBO(
-    250,
-    251,
-    253,
-    1,
-  ); // Slight blue tint
-  final Color surface = const Color.fromRGBO(255, 255, 255, 1);
-  final Color surfaceVariant = const Color.fromRGBO(245, 247, 250, 1);
+  // Soft pinkish with warm tints
+  final Color background = const Color(0xFFFFE4E1); // Misty rose with pink tint
+  final Color surface = const Color(0xFFFFFFFF); // Pure white
+  final Color surfaceVariant = const Color(0xFFFFF0F0); // Very light pink
 
   // 30% - Secondary Colors (Supporting elements)
-  // Modern blue-gray palette
-  final Color primary = const Color.fromRGBO(37, 99, 235, 1); // Modern blue
-  final Color primaryContainer = const Color.fromRGBO(219, 234, 254, 1);
-  final Color secondary = const Color.fromRGBO(100, 116, 139, 1); // Slate
-  final Color secondaryContainer = const Color.fromRGBO(226, 232, 240, 1);
+  // Red-inspired palette
+  final Color primary = const Color(0xFFFF3232); // Bright red like her hair
+  final Color primaryContainer = const Color(0xFFFFDADA); // Light red-pink
+  final Color secondary = const Color(0xFFE8A7A1); // Soft pinkish
+  final Color secondaryContainer = const Color(0xFFFFF5F5); // Pale pink
 
   // 10% - Accent Colors (CTAs, Important actions)
-  // Vibrant modern accent
-  final Color accent = const Color.fromRGBO(168, 85, 247, 1); // Purple accent
-  final Color accentHover = const Color.fromRGBO(147, 51, 234, 1);
-  final Color accentPressed = const Color.fromRGBO(126, 34, 206, 1);
+  // Vibrant yellow accent
+  final Color accent = const Color(0xFFFFFF3D); // Bright yellow like her eyes
+  final Color accentHover = const Color(0xFFFFEA00); // Lighter yellow hover
+  final Color accentPressed = const Color(0xFFFFD700); // Goldish pressed
 
   // Text Colors
-  final Color textPrimary = const Color.fromRGBO(15, 23, 42, 1); // Dark slate
-  final Color textSecondary = const Color.fromRGBO(71, 85, 105, 1);
-  final Color textTertiary = const Color.fromRGBO(148, 163, 184, 1);
-  final Color textDisabled = const Color.fromRGBO(203, 213, 225, 1);
-  final Color textOnPrimary = const Color.fromRGBO(255, 255, 255, 1);
-  final Color textOnAccent = const Color.fromRGBO(255, 255, 255, 1);
+  final Color textPrimary = const Color(0xFF2F0000); // Dark red-brown
+  final Color textSecondary = const Color(0xFF5C2A2A); // Muted red
+  final Color textTertiary = const Color(0xFFA05252); // Light red
+  final Color textDisabled = const Color(0xFFD9B3B3); // Pale pink disabled
+  final Color textOnPrimary = const Color(0xFFFFFFFF); // White on primary
+  final Color textOnAccent = const Color(0xFF000000); // Black on yellow accent
 
   // Border & Divider Colors
-  final Color border = const Color.fromRGBO(226, 232, 240, 1);
-  final Color borderHover = const Color.fromRGBO(203, 213, 225, 1);
-  final Color divider = const Color.fromRGBO(241, 245, 249, 1);
+  final Color border = const Color(0xFFFFDADA); // Light red border
+  final Color borderHover = const Color(0xFFFFB3B3); // Hover pink
+  final Color divider = const Color(0xFFFFF0F0); // Pale divider
 
   // Interactive States
-  final Color hover = const Color.fromRGBO(248, 250, 252, 1);
-  final Color pressed = const Color.fromRGBO(241, 245, 249, 1);
-  final Color focus = const Color.fromRGBO(37, 99, 235, 0.12);
-  final Color disabled = const Color.fromRGBO(241, 245, 249, 1);
+  final Color hover = const Color(0xFFFFFAFA); // Near white hover
+  final Color pressed = const Color(0xFFFFF0F0); // Pressed pink
+  final Color focus = const Color(0xffff323230); // Red with opacity 0.12
+  final Color disabled = const Color(0xFFFFF5F5); // Disabled pale
 
   // Special Surfaces
-  final Color card = const Color.fromRGBO(255, 255, 255, 1);
-  final Color modal = const Color.fromRGBO(255, 255, 255, 1);
-  final Color tooltip = const Color.fromRGBO(30, 41, 59, 1);
+  final Color card = const Color(0xFFFFFFFF); // White card
+  final Color modal = const Color(0xFFFFFFFF); // White modal
+  final Color tooltip = const Color(0xFF2F0000); // Dark tooltip
 
   // Navigation
-  final Color navBar = const Color.fromRGBO(255, 255, 255, 1);
-  final Color navSelected = const Color.fromRGBO(37, 99, 235, 1);
-  final Color navUnselected = const Color.fromRGBO(100, 116, 139, 1);
+  final Color navBar = const Color(0xFFFFFFFF); // White nav
+  final Color navSelected = const Color(0xFFFF3232); // Red selected
+  final Color navUnselected = const Color(0xFFE8A7A1); // Pink unselected
 
   // Overlay
-  final Color overlay = const Color.fromRGBO(0, 0, 0, 0.5);
-  final Color scrim = const Color.fromRGBO(0, 0, 0, 0.32);
+  final Color overlay = const Color(0x80000000); // Black 0.5
+  final Color scrim = const Color(0x52000000); // Black 0.32
 }
 
-/// Dark Theme Color Palette
+/// Dark Theme Color Palette - Kita's mysterious yet energetic side
 class DarkColors {
   const DarkColors._();
 
   // 60% - Primary Colors (Backgrounds & Main surfaces)
-  // Modern dark with slight blue undertone
-  final Color background = const Color.fromRGBO(15, 23, 42, 1); // Dark slate
-  final Color surface = const Color.fromRGBO(30, 41, 59, 1);
-  final Color surfaceVariant = const Color.fromRGBO(51, 65, 85, 1);
+  // Dark with red undertones
+  final Color background = const Color(0xFF2F0000); // Dark red-brown
+  final Color surface = const Color(0xFF5C2A2A); // Muted dark red
+  final Color surfaceVariant = const Color(0xFF8B0000); // Darker red
 
   // 30% - Secondary Colors (Supporting elements)
-  // Lighter variations for contrast
-  final Color primary = const Color.fromRGBO(96, 165, 250, 1); // Light blue
-  final Color primaryContainer = const Color.fromRGBO(30, 58, 138, 1);
-  final Color secondary = const Color.fromRGBO(148, 163, 184, 1); // Light slate
-  final Color secondaryContainer = const Color.fromRGBO(51, 65, 85, 1);
+  // Lighter red variations
+  final Color primary = const Color(0xFFFF6961); // Light red
+  final Color primaryContainer = const Color(0xFF8B0000); // Dark red container
+  final Color secondary = const Color(0xFFA05252); // Medium pink-red
+  final Color secondaryContainer = const Color(0xFF5C2A2A); // Dark secondary
 
   // 10% - Accent Colors (CTAs, Important actions)
-  // Vibrant for dark backgrounds
-  final Color accent = const Color.fromRGBO(196, 181, 253, 1); // Light purple
-  final Color accentHover = const Color.fromRGBO(221, 214, 254, 1);
-  final Color accentPressed = const Color.fromRGBO(167, 139, 250, 1);
+  // Bright yellow for contrast
+  final Color accent = const Color(0xFFFFFF3D); // Bright yellow
+  final Color accentHover = const Color(0xFFFFEA00); // Hover yellow
+  final Color accentPressed = const Color(0xFFFFD700); // Pressed gold
 
   // Text Colors
-  final Color textPrimary = const Color.fromRGBO(
-    248,
-    250,
-    252,
-    1,
-  ); // Light slate
-  final Color textSecondary = const Color.fromRGBO(203, 213, 225, 1);
-  final Color textTertiary = const Color.fromRGBO(148, 163, 184, 1);
-  final Color textDisabled = const Color.fromRGBO(71, 85, 105, 1);
-  final Color textOnPrimary = const Color.fromRGBO(15, 23, 42, 1);
-  final Color textOnAccent = const Color.fromRGBO(15, 23, 42, 1);
+  final Color textPrimary = const Color(0xFFFFFAFA); // Light pinkish white
+  final Color textSecondary = const Color(0xFFFFDADA); // Light red
+  final Color textTertiary = const Color(0xFFA05252); // Medium red
+  final Color textDisabled = const Color(0xFF5C2A2A); // Dark disabled
+  final Color textOnPrimary = const Color(0xFF2F0000); // Dark on primary
+  final Color textOnAccent = const Color(0xFF000000); // Black on accent
 
   // Border & Divider Colors
-  final Color border = const Color.fromRGBO(51, 65, 85, 1);
-  final Color borderHover = const Color.fromRGBO(71, 85, 105, 1);
-  final Color divider = const Color.fromRGBO(30, 41, 59, 1);
+  final Color border = const Color(0xFF8B0000); // Dark red border
+  final Color borderHover = const Color(0xFFA05252); // Hover red
+  final Color divider = const Color(0xFF5C2A2A); // Dark divider
 
   // Interactive States
-  final Color hover = const Color.fromRGBO(51, 65, 85, 0.5);
-  final Color pressed = const Color.fromRGBO(71, 85, 105, 0.5);
-  final Color focus = const Color.fromRGBO(96, 165, 250, 0.12);
-  final Color disabled = const Color.fromRGBO(30, 41, 59, 1);
+  final Color hover = const Color(0x808B0000); // Red hover 0.5
+  final Color pressed = const Color(0x80A05252); // Pressed 0.5
+  final Color focus = const Color(0x1ffff6961); // Light red focus 0.12
+  final Color disabled = const Color(0xFF5C2A2A); // Disabled dark
 
   // Special Surfaces
-  final Color card = const Color.fromRGBO(30, 41, 59, 1);
-  final Color modal = const Color.fromRGBO(30, 41, 59, 1);
-  final Color tooltip = const Color.fromRGBO(241, 245, 249, 1);
+  final Color card = const Color(0xFF5C2A2A); // Dark card
+  final Color modal = const Color(0xFF5C2A2A); // Dark modal
+  final Color tooltip = const Color(0xFFFFFAFA); // Light tooltip
 
   // Navigation
-  final Color navBar = const Color.fromRGBO(30, 41, 59, 1);
-  final Color navSelected = const Color.fromRGBO(96, 165, 250, 1);
-  final Color navUnselected = const Color.fromRGBO(148, 163, 184, 1);
+  final Color navBar = const Color(0xFF5C2A2A); // Dark nav
+  final Color navSelected = const Color(0xFFFF6961); // Light red selected
+  final Color navUnselected = const Color(0xFFA05252); // Medium unselected
 
   // Overlay
-  final Color overlay = const Color.fromRGBO(0, 0, 0, 0.7);
-  final Color scrim = const Color.fromRGBO(0, 0, 0, 0.5);
+  final Color overlay = const Color(0xB3000000); // Black 0.7
+  final Color scrim = const Color(0x80000000); // Black 0.5
 }
 
-/// Semantic Colors for Status & Feedback
+/// Semantic Colors for Status & Feedback (Kept similar but can be tweaked)
 class SemanticColors {
   const SemanticColors._();
 
@@ -166,7 +156,12 @@ class SemanticColors {
   final Color warningDark = const Color.fromRGBO(245, 158, 11, 1);
 
   // Error
-  final Color error = const Color.fromRGBO(239, 68, 68, 1); // Red
+  final Color error = const Color.fromRGBO(
+    239,
+    68,
+    68,
+    1,
+  ); // Red (matches Kita's hair vibe!)
   final Color errorLight = const Color.fromRGBO(254, 226, 226, 1);
   final Color errorDark = const Color.fromRGBO(220, 38, 38, 1);
 
