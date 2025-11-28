@@ -4,7 +4,9 @@ import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
+import 'package:ikuyo_finance/features/category/models/create_category_params.dart';
 import 'package:ikuyo_finance/features/category/models/get_categories_params.dart';
+import 'package:ikuyo_finance/features/category/models/update_category_params.dart';
 import 'package:ikuyo_finance/features/category/repositories/category_repository.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
@@ -16,28 +18,24 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Box<Category> get _box => _storage.box<Category>();
 
   @override
-  TaskEither<Failure, Success<Category>> createCategory({
-    required String name,
-    required CategoryType type,
-    String? icon,
-    String? color,
-    String? parentUlid,
-  }) {
+  TaskEither<Failure, Success<Category>> createCategory(
+    CreateCategoryParams params,
+  ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Create category', name);
+        logService('Create category', params.name);
 
         final category = Category(
-          name: name,
-          type: type.index,
-          icon: icon,
-          color: color,
+          name: params.name,
+          type: params.type.index,
+          icon: params.icon,
+          color: params.color,
         );
 
         // * Set parent jika ada
-        if (parentUlid != null) {
+        if (params.parentUlid != null) {
           final parent = _box
-              .query(Category_.ulid.equals(parentUlid))
+              .query(Category_.ulid.equals(params.parentUlid!))
               .build()
               .findFirst();
 
@@ -159,20 +157,15 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
-  TaskEither<Failure, Success<Category>> updateCategory({
-    required String ulid,
-    String? name,
-    CategoryType? type,
-    String? icon,
-    String? color,
-    String? parentUlid,
-  }) {
+  TaskEither<Failure, Success<Category>> updateCategory(
+    UpdateCategoryParams params,
+  ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Update category', ulid);
+        logService('Update category', params.ulid);
 
         final category = _box
-            .query(Category_.ulid.equals(ulid))
+            .query(Category_.ulid.equals(params.ulid))
             .build()
             .findFirst();
 
@@ -181,19 +174,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
         }
 
         // * Update fields jika ada
-        if (name != null) category.name = name;
-        if (type != null) category.type = type.index;
-        if (icon != null) category.icon = icon;
-        if (color != null) category.color = color;
+        if (params.name != null) category.name = params.name!;
+        if (params.type != null) category.type = params.type!.index;
+        if (params.icon != null) category.icon = params.icon;
+        if (params.color != null) category.color = params.color;
 
         // * Update parent jika ada
-        if (parentUlid != null) {
-          if (parentUlid == ulid) {
+        if (params.parentUlid != null) {
+          if (params.parentUlid == params.ulid) {
             throw Exception('Category cannot be its own parent');
           }
 
           final parent = _box
-              .query(Category_.ulid.equals(parentUlid))
+              .query(Category_.ulid.equals(params.parentUlid!))
               .build()
               .findFirst();
 

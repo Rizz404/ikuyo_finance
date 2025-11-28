@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/features/auth/models/sign_in_with_email_params.dart';
 import 'package:ikuyo_finance/features/auth/models/sign_up_with_email_params.dart';
@@ -11,8 +12,8 @@ import 'package:supabase_flutter/supabase_flutter.dart'
 part 'auth_event.dart';
 part 'auth_state.dart';
 
-class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
-  AuthBloc(this._authRepository) : super(const AuthBlocState()) {
+class AuthBloc extends Bloc<AuthEvent, AuthState> {
+  AuthBloc(this._authRepository) : super(const AuthState()) {
     on<AuthSignInRequested>(_onSignInRequested);
     on<AuthSignUpRequested>(_onSignUpRequested);
     on<AuthSignOutRequested>(_onSignOutRequested);
@@ -30,7 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
   Future<void> _onSignInRequested(
     AuthSignInRequested event,
-    Emitter<AuthBlocState> emit,
+    Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
 
@@ -42,13 +43,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
     result.fold(
       (failure) => emit(
-        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+        state.copyWith(
+          status: AuthStatus.failure,
+          errorMessage: () => failure.message,
+        ),
       ),
       (success) => emit(
         state.copyWith(
           status: AuthStatus.authenticated,
-          user: success.data?.user,
-          errorMessage: null,
+          user: () => success.data?.user,
+          errorMessage: () => null,
         ),
       ),
     );
@@ -56,7 +60,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
   Future<void> _onSignUpRequested(
     AuthSignUpRequested event,
-    Emitter<AuthBlocState> emit,
+    Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
 
@@ -68,13 +72,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
     result.fold(
       (failure) => emit(
-        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+        state.copyWith(
+          status: AuthStatus.failure,
+          errorMessage: () => failure.message,
+        ),
       ),
       (success) => emit(
         state.copyWith(
           status: AuthStatus.authenticated,
-          user: success.data?.user,
-          errorMessage: null,
+          user: () => success.data?.user,
+          errorMessage: () => null,
         ),
       ),
     );
@@ -82,7 +89,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
   Future<void> _onSignOutRequested(
     AuthSignOutRequested event,
-    Emitter<AuthBlocState> emit,
+    Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
 
@@ -90,13 +97,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
     result.fold(
       (failure) => emit(
-        state.copyWith(status: AuthStatus.error, errorMessage: failure.message),
+        state.copyWith(
+          status: AuthStatus.failure,
+          errorMessage: () => failure.message,
+        ),
       ),
       (_) => emit(
         state.copyWith(
           status: AuthStatus.unauthenticated,
-          user: null,
-          errorMessage: null,
+          user: () => null,
+          errorMessage: () => null,
         ),
       ),
     );
@@ -104,7 +114,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
 
   Future<void> _onCheckRequested(
     AuthCheckRequested event,
-    Emitter<AuthBlocState> emit,
+    Emitter<AuthState> emit,
   ) async {
     emit(state.copyWith(status: AuthStatus.loading));
 
@@ -114,24 +124,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
       (failure) => emit(
         state.copyWith(
           status: AuthStatus.unauthenticated,
-          user: null,
-          errorMessage: null,
+          user: () => null,
+          errorMessage: () => null,
         ),
       ),
       (success) => emit(
         state.copyWith(
           status: AuthStatus.authenticated,
-          user: success.data,
-          errorMessage: null,
+          user: () => success.data,
+          errorMessage: () => null,
         ),
       ),
     );
   }
 
-  void _onAuthStateChanged(
-    AuthStateChanged event,
-    Emitter<AuthBlocState> emit,
-  ) {
+  void _onAuthStateChanged(AuthStateChanged event, Emitter<AuthState> emit) {
     switch (event.supabaseAuthState.event) {
       case supabase.AuthChangeEvent.initialSession:
       case supabase.AuthChangeEvent.signedIn:
@@ -142,8 +149,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
           emit(
             state.copyWith(
               status: AuthStatus.authenticated,
-              user: user,
-              errorMessage: null,
+              user: () => user,
+              errorMessage: () => null,
             ),
           );
         }
@@ -153,8 +160,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthBlocState> {
         emit(
           state.copyWith(
             status: AuthStatus.unauthenticated,
-            user: null,
-            errorMessage: null,
+            user: () => null,
+            errorMessage: () => null,
           ),
         );
         break;
