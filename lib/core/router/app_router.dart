@@ -19,11 +19,6 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
           state.matchedLocation == '/sign-in' ||
           state.matchedLocation == '/sign-up';
 
-      // * Redirect ke sign-in jika belum autentikasi
-      if (!isAuthenticated && !isGoingToAuth) {
-        return '/sign-in';
-      }
-
       // * Redirect ke home jika sudah autentikasi tapi ke auth screen
       if (isAuthenticated && isGoingToAuth) {
         return '/';

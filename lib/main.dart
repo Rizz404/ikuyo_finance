@@ -6,6 +6,10 @@ import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/injection.dart';
 import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
+import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
+import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
+import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
+import 'package:ikuyo_finance/features/wallet/bloc/wallet_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +34,19 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(
           create: (_) => getIt<AuthBloc>()..add(const AuthCheckRequested()),
+        ),
+        BlocProvider(
+          create: (_) => getIt<CategoryBloc>()..add(const CategoryFetched()),
+        ),
+        BlocProvider(
+          create: (_) => getIt<WalletBloc>()..add(const WalletFetched()),
+        ),
+        BlocProvider(
+          create: (_) => getIt<BudgetBloc>()..add(const BudgetFetched()),
+        ),
+        BlocProvider(
+          create: (_) =>
+              getIt<TransactionBloc>()..add(const TransactionFetched()),
         ),
         BlocProvider(create: (_) => getIt<ThemeCubit>()),
       ],
