@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 // * Reusable file picker widget dengan FormBuilder support
@@ -68,7 +69,11 @@ class AppFilePickerState extends State<AppFilePicker> {
       if (result != null) {
         // * Validate max files
         if (widget.maxFiles != null && result.files.length > widget.maxFiles!) {
-          AppToast.warning('Maximum ${widget.maxFiles} files allowed');
+          if (!mounted) return;
+          ToastHelper.instance.showWarning(
+            context: context,
+            title: 'Maximum ${widget.maxFiles} files allowed',
+          );
           return;
         }
 
@@ -76,8 +81,12 @@ class AppFilePickerState extends State<AppFilePicker> {
         if (widget.maxSizeInMB != null) {
           for (final file in result.files) {
             if (file.size > (widget.maxSizeInMB! * 1024 * 1024)) {
-              AppToast.warning(
-                'File ${file.name} exceeds ${widget.maxSizeInMB}MB limit',
+              if (!mounted) return;
+              ToastHelper.instance.showWarning(
+                context: context,
+                title: 'File exceeds size limit',
+                description:
+                    '${file.name} exceeds ${widget.maxSizeInMB}MB limit',
               );
               return;
             }
@@ -101,7 +110,12 @@ class AppFilePickerState extends State<AppFilePicker> {
       }
     } catch (e, s) {
       logError('Error picking files', e, s);
-      AppToast.error('Failed to pick files');
+      if (!mounted) return;
+      ToastHelper.instance.showError(
+        context: context,
+        title: 'Failed to pick files',
+        description: e.toString(),
+      );
     }
   }
 

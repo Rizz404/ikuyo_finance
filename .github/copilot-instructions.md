@@ -1,32 +1,26 @@
 // Copilot Guidelines - Sigma Track
 
-// 1) Extensions (mandatory)
-import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
-import 'package:ikuyo_finance/core/extensions/localization_extension.dart';
-// Access: context.theme|textTheme|colorScheme|colors|semantic|isDarkMode
-// Access: context.l10n|locale|isEnglish|isIndonesian|isJapanese
-
-// 2) Theming (never hardcode colors!)
+// 1) Theming (never hardcode colors!)
 // ✅ DO: context.colorScheme.primary, context.colors.surface, context.textTheme.bodyMedium
 // ❌ DON'T: Color(0xFF...), Colors.red, hardcoded colors
 
-// 3) Logging (replace all print!)
+// 2) Logging (replace all print!)
 // Use: this.logInfo|logError|logData|logDomain|logPresentation|logService
 // Example: this.logService('Process started'); this.logError('Failed', e, s);
 
-// 4) Comments (Better Comments format)
+// 3) Comments (Better Comments format)
 // TODO: | FIXME: | ! warning | ? question | * important note
 
-// 5) const everywhere possible
+// 4) const everywhere possible
 // const SizedBox(height: 16), const Duration(milliseconds: 300)
 
-// 6) Response: brief & to the point
+// 5) Response: brief & to the point
 // Only mention what changed/added/removed, no lengthy explanations
 
-// 7) Docs: NO .md files unless explicitly requested
+// 6) Docs: NO .md files unless explicitly requested
 // Keep inline comments 1-2 lines max, code should be self-explanatory
 
-// 8) Shared Widgets (use existing components first!)
+// 7) Shared Widgets (use existing components first!)
 // Import from: 'package:ikuyo_finance/shared/widgets/...'
 // Available:
 // - AppButton (primary/secondary/text buttons)
@@ -39,7 +33,7 @@ import 'package:ikuyo_finance/core/extensions/localization_extension.dart';
 // ✅ DO: Use these widgets instead of raw Material/Cupertino widgets
 // ❌ DON'T: Create new TextField, Dropdown, Button when app widgets exist
 
-// 9) Terminal: use modern CLI tools
+// 8) Terminal: use modern CLI tools
 // Files: eza, fd, rg, bat, sd | Git: lazygit, gh, delta
 // Nav: z (zoxide), fzf, yazi | Dev: glow, jq, tldr, micro
 // Monitor: btm, procs, dust, duf
