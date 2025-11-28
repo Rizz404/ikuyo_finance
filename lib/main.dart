@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/injection.dart';
 import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
@@ -25,15 +26,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthBloc>()..add(const AuthCheckRequested()),
-      child: MaterialApp.router(
-        title: 'Ikuyo Finance',
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
-          useMaterial3: true,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => getIt<AuthBloc>()..add(const AuthCheckRequested()),
         ),
-        routerConfig: getIt<GoRouter>(),
+        BlocProvider(create: (_) => getIt<ThemeCubit>()),
+      ],
+      child: BlocBuilder<ThemeCubit, ThemeState>(
+        builder: (context, themeState) {
+          return MaterialApp.router(
+            title: 'Ikuyo Finance',
+            theme: themeState.lightTheme,
+            darkTheme: themeState.darkTheme,
+            themeMode: themeState.themeMode,
+            routerConfig: getIt<GoRouter>(),
+          );
+        },
       ),
     );
   }

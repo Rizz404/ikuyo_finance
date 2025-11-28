@@ -3,8 +3,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
+import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
@@ -13,6 +15,7 @@ Future<void> setupCommons() async {
   _setupLogger();
   await _setupStorage();
   await _setupSupabase();
+  await _setupTheme();
 }
 
 void _setupLogger() {
@@ -60,4 +63,10 @@ Future<void> _setupSupabase() async {
   );
 
   getIt.registerSingleton<SupabaseClient>(Supabase.instance.client);
+}
+
+Future<void> _setupTheme() async {
+  final prefs = await SharedPreferences.getInstance();
+  getIt.registerSingleton<SharedPreferences>(prefs);
+  getIt.registerLazySingleton<ThemeCubit>(() => ThemeCubit(prefs));
 }
