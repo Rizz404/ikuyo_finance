@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
-class SignInScreen extends StatelessWidget {
-  const SignInScreen({super.key});
+class SettingScreen extends StatelessWidget {
+  const SettingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: ScreenWrapper(child: Text('SignInScreen')));
+    return Scaffold(body: ScreenWrapper(child: Text('SettingScreen')));
   }
 }
