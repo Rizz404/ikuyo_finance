@@ -3,28 +3,28 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:ikuyo_finance/features/wallet/models/wallet.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
 
-class CreateWalletParams extends Equatable {
+class CreateAssetParams extends Equatable {
   final String name;
-  final WalletType type;
+  final AssetType type;
   final double balance;
   final String? icon;
 
-  const CreateWalletParams({
+  const CreateAssetParams({
     required this.name,
     required this.type,
     this.balance = 0,
     this.icon,
   });
 
-  CreateWalletParams copyWith({
+  CreateAssetParams copyWith({
     String? name,
-    WalletType? type,
+    AssetType? type,
     double? balance,
     ValueGetter<String?>? icon,
   }) {
-    return CreateWalletParams(
+    return CreateAssetParams(
       name: name ?? this.name,
       type: type ?? this.type,
       balance: balance ?? this.balance,
@@ -36,12 +36,12 @@ class CreateWalletParams extends Equatable {
     return {'name': name, 'type': type.name, 'balance': balance, 'icon': icon};
   }
 
-  factory CreateWalletParams.fromMap(Map<String, dynamic> map) {
-    return CreateWalletParams(
+  factory CreateAssetParams.fromMap(Map<String, dynamic> map) {
+    return CreateAssetParams(
       name: map['name'] ?? '',
       type: map['type'] != null
-          ? WalletType.values.byName(map['type'])
-          : WalletType.cash,
+          ? AssetType.values.byName(map['type'])
+          : AssetType.cash,
       balance: (map['balance'] ?? 0).toDouble(),
       icon: map['icon'],
     );
@@ -49,12 +49,12 @@ class CreateWalletParams extends Equatable {
 
   String toJson() => json.encode(toMap());
 
-  factory CreateWalletParams.fromJson(String source) =>
-      CreateWalletParams.fromMap(json.decode(source));
+  factory CreateAssetParams.fromJson(String source) =>
+      CreateAssetParams.fromMap(json.decode(source));
 
   @override
   String toString() {
-    return 'CreateWalletParams(name: $name, type: $type, balance: $balance, icon: $icon)';
+    return 'CreateAssetParams(name: $name, type: $type, balance: $balance, icon: $icon)';
   }
 
   @override

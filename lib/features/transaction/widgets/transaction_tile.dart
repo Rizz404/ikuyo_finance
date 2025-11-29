@@ -14,7 +14,7 @@ class TransactionTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final category = transaction.category.target;
-    final wallet = transaction.wallet.target;
+    final asset = transaction.asset.target;
     final isExpense = category?.categoryType == CategoryType.expense;
 
     return GestureDetector(
@@ -72,7 +72,7 @@ class TransactionTile extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: AppText(
-                          wallet?.name ?? 'Unknown Wallet',
+                          asset?.name ?? 'Unknown Asset',
                           style: AppTextStyle.labelSmall,
                           color: context.colorScheme.outline,
                           maxLines: 1,

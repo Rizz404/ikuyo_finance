@@ -7,13 +7,13 @@ sealed class TransactionEvent {
 // * Read Events
 final class TransactionFetched extends TransactionEvent {
   const TransactionFetched({
-    this.walletUlid,
+    this.assetUlid,
     this.categoryUlid,
     this.startDate,
     this.endDate,
   });
 
-  final String? walletUlid;
+  final String? assetUlid;
   final String? categoryUlid;
   final DateTime? startDate;
   final DateTime? endDate;

@@ -34,7 +34,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     emit(
       state.copyWith(
         status: TransactionStatus.loading,
-        currentWalletFilter: () => event.walletUlid,
+        currentAssetFilter: () => event.assetUlid,
         currentCategoryFilter: () => event.categoryUlid,
         currentStartDateFilter: () => event.startDate,
         currentEndDateFilter: () => event.endDate,
@@ -44,7 +44,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     final result = await _transactionRepository
         .getTransactions(
           GetTransactionsParams(
-            walletUlid: event.walletUlid,
+            assetUlid: event.assetUlid,
             categoryUlid: event.categoryUlid,
             startDate: event.startDate,
             endDate: event.endDate,
@@ -84,7 +84,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         .getTransactions(
           GetTransactionsParams(
             cursor: state.nextCursor,
-            walletUlid: state.currentWalletFilter,
+            assetUlid: state.currentAssetFilter,
             categoryUlid: state.currentCategoryFilter,
             startDate: state.currentStartDateFilter,
             endDate: state.currentEndDateFilter,
@@ -127,7 +127,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     final result = await _transactionRepository
         .getTransactions(
           GetTransactionsParams(
-            walletUlid: state.currentWalletFilter,
+            assetUlid: state.currentAssetFilter,
             categoryUlid: state.currentCategoryFilter,
             startDate: state.currentStartDateFilter,
             endDate: state.currentEndDateFilter,

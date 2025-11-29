@@ -15,7 +15,7 @@ class ObjectBoxStorage {
     final docsDir = await getApplicationDocumentsDirectory();
     final storePath = path.join(docsDir.path, 'ikuyo_finance_db');
 
-    _store = openStore(directory: storePath);
+    _store = await openStore(directory: storePath);
   }
 
   /// Close store ketika tidak digunakan

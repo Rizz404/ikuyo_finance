@@ -3,16 +3,16 @@ import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:ikuyo_finance/features/wallet/models/wallet.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
 
-class UpdateWalletParams extends Equatable {
+class UpdateAssetParams extends Equatable {
   final String ulid;
   final String? name;
-  final WalletType? type;
+  final AssetType? type;
   final double? balance;
   final String? icon;
 
-  const UpdateWalletParams({
+  const UpdateAssetParams({
     required this.ulid,
     this.name,
     this.type,
@@ -20,14 +20,14 @@ class UpdateWalletParams extends Equatable {
     this.icon,
   });
 
-  UpdateWalletParams copyWith({
+  UpdateAssetParams copyWith({
     String? ulid,
     ValueGetter<String?>? name,
-    ValueGetter<WalletType?>? type,
+    ValueGetter<AssetType?>? type,
     ValueGetter<double?>? balance,
     ValueGetter<String?>? icon,
   }) {
-    return UpdateWalletParams(
+    return UpdateAssetParams(
       ulid: ulid ?? this.ulid,
       name: name != null ? name() : this.name,
       type: type != null ? type() : this.type,
@@ -46,11 +46,11 @@ class UpdateWalletParams extends Equatable {
     };
   }
 
-  factory UpdateWalletParams.fromMap(Map<String, dynamic> map) {
-    return UpdateWalletParams(
+  factory UpdateAssetParams.fromMap(Map<String, dynamic> map) {
+    return UpdateAssetParams(
       ulid: map['ulid'] ?? '',
       name: map['name'],
-      type: map['type'] != null ? WalletType.values.byName(map['type']) : null,
+      type: map['type'] != null ? AssetType.values.byName(map['type']) : null,
       balance: map['balance']?.toDouble(),
       icon: map['icon'],
     );
@@ -58,12 +58,12 @@ class UpdateWalletParams extends Equatable {
 
   String toJson() => json.encode(toMap());
 
-  factory UpdateWalletParams.fromJson(String source) =>
-      UpdateWalletParams.fromMap(json.decode(source));
+  factory UpdateAssetParams.fromJson(String source) =>
+      UpdateAssetParams.fromMap(json.decode(source));
 
   @override
   String toString() {
-    return 'UpdateWalletParams(ulid: $ulid, name: $name, type: $type, balance: $balance, icon: $icon)';
+    return 'UpdateAssetParams(ulid: $ulid, name: $name, type: $type, balance: $balance, icon: $icon)';
   }
 
   @override

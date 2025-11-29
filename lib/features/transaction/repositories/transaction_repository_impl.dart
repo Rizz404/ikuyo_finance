@@ -8,7 +8,7 @@ import 'package:ikuyo_finance/features/transaction/models/create_transaction_par
 import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
-import 'package:ikuyo_finance/features/wallet/models/wallet.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
@@ -18,7 +18,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   const TransactionRepositoryImpl(this._storage);
 
   Box<Transaction> get _box => _storage.box<Transaction>();
-  Box<Wallet> get _walletBox => _storage.box<Wallet>();
+  Box<Asset> get _assetBox => _storage.box<Asset>();
   Box<Category> get _categoryBox => _storage.box<Category>();
 
   @override
@@ -27,16 +27,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Create transaction', 'wallet: ${params.walletUlid}');
+        logService('Create transaction', 'asset: ${params.assetUlid}');
 
-        // * Get wallet (required)
-        final wallet = _walletBox
-            .query(Wallet_.ulid.equals(params.walletUlid))
+        // * Get asset (required)
+        final asset = _assetBox
+            .query(Asset_.ulid.equals(params.assetUlid))
             .build()
             .findFirst();
 
-        if (wallet == null) {
-          throw Exception('Wallet not found');
+        if (asset == null) {
+          throw Exception('Asset not found');
         }
 
         final transaction = Transaction(
@@ -46,7 +46,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
           imagePath: params.imagePath,
         );
 
-        transaction.wallet.target = wallet;
+        transaction.asset.target = asset;
 
         // * Set category jika ada
         if (params.categoryUlid != null) {
@@ -119,11 +119,11 @@ class TransactionRepositoryImpl implements TransactionRepository {
         final allResults = builtQuery.find();
         builtQuery.close();
 
-        // * Filter by wallet jika ada
+        // * Filter by asset jika ada
         var filteredResults = allResults;
-        if (params.walletUlid != null) {
+        if (params.assetUlid != null) {
           filteredResults = filteredResults
-              .where((t) => t.wallet.target?.ulid == params.walletUlid)
+              .where((t) => t.asset.target?.ulid == params.assetUlid)
               .toList();
         }
 
@@ -230,18 +230,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
         }
         if (params.imagePath != null) transaction.imagePath = params.imagePath;
 
-        // * Update wallet jika ada
-        if (params.walletUlid != null) {
-          final wallet = _walletBox
-              .query(Wallet_.ulid.equals(params.walletUlid!))
+        // * Update asset jika ada
+        if (params.assetUlid != null) {
+          final asset = _assetBox
+              .query(Asset_.ulid.equals(params.assetUlid!))
               .build()
               .findFirst();
 
-          if (wallet == null) {
-            throw Exception('Wallet not found');
+          if (asset == null) {
+            throw Exception('Asset not found');
           }
 
-          transaction.wallet.target = wallet;
+          transaction.asset.target = asset;
         }
 
         // * Update category jika ada

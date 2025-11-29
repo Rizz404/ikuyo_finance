@@ -1,6 +1,6 @@
 import 'package:objectbox/objectbox.dart';
 import 'package:ulid/ulid.dart';
-import 'package:ikuyo_finance/features/wallet/models/wallet.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 
 @Entity()
@@ -11,8 +11,8 @@ class Transaction {
   @Unique()
   String ulid;
 
-  // * Relasi ke Wallet (required)
-  final wallet = ToOne<Wallet>();
+  // * Relasi ke Asset (required)
+  final asset = ToOne<Asset>();
 
   // * Relasi ke Category (optional)
   final category = ToOne<Category>();

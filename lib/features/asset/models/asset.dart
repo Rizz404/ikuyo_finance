@@ -1,10 +1,10 @@
 import 'package:objectbox/objectbox.dart';
 import 'package:ulid/ulid.dart';
 
-enum WalletType { cash, bank, ewallet, investment }
+enum AssetType { cash, bank, easset, investment }
 
 @Entity()
-class Wallet {
+class Asset {
   @Id()
   int id;
 
@@ -12,7 +12,7 @@ class Wallet {
   String ulid;
 
   String name;
-  int type; // * Stored as int, mapped to WalletType enum
+  int type; // * Stored as int, mapped to AssetType enum
   double balance;
   String? icon;
 
@@ -22,7 +22,7 @@ class Wallet {
   @Property(type: PropertyType.date)
   DateTime updatedAt;
 
-  Wallet({
+  Asset({
     this.id = 0,
     String? ulid,
     required this.name,
@@ -36,6 +36,6 @@ class Wallet {
        updatedAt = updatedAt ?? DateTime.now();
 
   // * Helper getters/setters untuk type enum
-  WalletType get walletType => WalletType.values[type];
-  set walletType(WalletType value) => type = value.index;
+  AssetType get assetType => AssetType.values[type];
+  set assetType(AssetType value) => type = value.index;
 }

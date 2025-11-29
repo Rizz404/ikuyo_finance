@@ -12,11 +12,12 @@ import 'package:flat_buffers/flat_buffers.dart' as fb;
 import 'package:objectbox/internal.dart'
     as obx_int; // generated code can access "internal" functionality
 import 'package:objectbox/objectbox.dart' as obx;
+import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'features/asset/models/asset.dart';
 import 'features/budget/models/budget.dart';
 import 'features/category/models/category.dart';
 import 'features/transaction/models/transaction.dart';
-import 'features/wallet/models/wallet.dart';
 
 export 'package:objectbox/objectbox.dart'; // so that callers only have to import this file
 
@@ -178,12 +179,12 @@ final _entities = <obx_int.ModelEntity>[
       ),
       obx_int.ModelProperty(
         id: const obx_int.IdUid(3, 9145831909847877399),
-        name: 'walletId',
+        name: 'assetId',
         type: 11,
         flags: 520,
         indexId: const obx_int.IdUid(7, 5831501824799669652),
-        relationField: 'wallet',
-        relationTarget: 'Wallet',
+        relationField: 'asset',
+        relationTarget: 'Asset',
       ),
       obx_int.ModelProperty(
         id: const obx_int.IdUid(4, 2510246321249138533),
@@ -236,7 +237,7 @@ final _entities = <obx_int.ModelEntity>[
   ),
   obx_int.ModelEntity(
     id: const obx_int.IdUid(5, 2126497104281392313),
-    name: 'Wallet',
+    name: 'Asset',
     lastPropertyId: const obx_int.IdUid(8, 7954948898168386314),
     flags: 0,
     properties: <obx_int.ModelProperty>[
@@ -306,7 +307,7 @@ final _entities = <obx_int.ModelEntity>[
 /// For Flutter apps, also calls `loadObjectBoxLibraryAndroidCompat()` from
 /// the ObjectBox Flutter library to fix loading the native ObjectBox library
 /// on Android 6 and older.
-obx.Store openStore({
+Future<obx.Store> openStore({
   String? directory,
   int? maxDBSizeInKB,
   int? maxDataSizeInKB,
@@ -314,10 +315,11 @@ obx.Store openStore({
   int? maxReaders,
   bool queriesCaseSensitiveDefault = true,
   String? macosApplicationGroup,
-}) {
+}) async {
+  await loadObjectBoxLibraryAndroidCompat();
   return obx.Store(
     getObjectBoxModel(),
-    directory: directory,
+    directory: directory ?? (await defaultStoreDirectory()).path,
     maxDBSizeInKB: maxDBSizeInKB,
     maxDataSizeInKB: maxDataSizeInKB,
     fileMode: fileMode,
@@ -532,7 +534,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
     ),
     Transaction: obx_int.EntityDefinition<Transaction>(
       model: _entities[2],
-      toOneRelations: (Transaction object) => [object.wallet, object.category],
+      toOneRelations: (Transaction object) => [object.asset, object.category],
       toManyRelations: (Transaction object) => {},
       getId: (Transaction object) => object.id,
       setId: (Transaction object, int id) {
@@ -549,7 +551,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.startTable(11);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, ulidOffset);
-        fbb.addInt64(2, object.wallet.targetId);
+        fbb.addInt64(2, object.asset.targetId);
         fbb.addInt64(3, object.category.targetId);
         fbb.addFloat64(4, object.amount);
         fbb.addInt64(5, object.transactionDate?.millisecondsSinceEpoch);
@@ -608,13 +610,13 @@ obx_int.ModelDefinition getObjectBoxModel() {
           createdAt: createdAtParam,
           updatedAt: updatedAtParam,
         );
-        object.wallet.targetId = const fb.Int64Reader().vTableGet(
+        object.asset.targetId = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
           8,
           0,
         );
-        object.wallet.attach(store);
+        object.asset.attach(store);
         object.category.targetId = const fb.Int64Reader().vTableGet(
           buffer,
           rootOffset,
@@ -625,15 +627,15 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
-    Wallet: obx_int.EntityDefinition<Wallet>(
+    Asset: obx_int.EntityDefinition<Asset>(
       model: _entities[3],
-      toOneRelations: (Wallet object) => [],
-      toManyRelations: (Wallet object) => {},
-      getId: (Wallet object) => object.id,
-      setId: (Wallet object, int id) {
+      toOneRelations: (Asset object) => [],
+      toManyRelations: (Asset object) => {},
+      getId: (Asset object) => object.id,
+      setId: (Asset object, int id) {
         object.id = id;
       },
-      objectToFB: (Wallet object, fb.Builder fbb) {
+      objectToFB: (Asset object, fb.Builder fbb) {
         final ulidOffset = fbb.writeString(object.ulid);
         final nameOffset = fbb.writeString(object.name);
         final iconOffset = object.icon == null
@@ -687,7 +689,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
         );
-        final object = Wallet(
+        final object = Asset(
           id: idParam,
           ulid: ulidParam,
           name: nameParam,
@@ -814,8 +816,8 @@ class Transaction_ {
     _entities[2].properties[1],
   );
 
-  /// See [Transaction.wallet].
-  static final wallet = obx.QueryRelationToOne<Transaction, Wallet>(
+  /// See [Transaction.asset].
+  static final asset = obx.QueryRelationToOne<Transaction, Asset>(
     _entities[2].properties[2],
   );
 
@@ -855,45 +857,43 @@ class Transaction_ {
   );
 }
 
-/// [Wallet] entity fields to define ObjectBox queries.
-class Wallet_ {
-  /// See [Wallet.id].
-  static final id = obx.QueryIntegerProperty<Wallet>(
-    _entities[3].properties[0],
-  );
+/// [Asset] entity fields to define ObjectBox queries.
+class Asset_ {
+  /// See [Asset.id].
+  static final id = obx.QueryIntegerProperty<Asset>(_entities[3].properties[0]);
 
-  /// See [Wallet.ulid].
-  static final ulid = obx.QueryStringProperty<Wallet>(
+  /// See [Asset.ulid].
+  static final ulid = obx.QueryStringProperty<Asset>(
     _entities[3].properties[1],
   );
 
-  /// See [Wallet.name].
-  static final name = obx.QueryStringProperty<Wallet>(
+  /// See [Asset.name].
+  static final name = obx.QueryStringProperty<Asset>(
     _entities[3].properties[2],
   );
 
-  /// See [Wallet.type].
-  static final type = obx.QueryIntegerProperty<Wallet>(
+  /// See [Asset.type].
+  static final type = obx.QueryIntegerProperty<Asset>(
     _entities[3].properties[3],
   );
 
-  /// See [Wallet.balance].
-  static final balance = obx.QueryDoubleProperty<Wallet>(
+  /// See [Asset.balance].
+  static final balance = obx.QueryDoubleProperty<Asset>(
     _entities[3].properties[4],
   );
 
-  /// See [Wallet.icon].
-  static final icon = obx.QueryStringProperty<Wallet>(
+  /// See [Asset.icon].
+  static final icon = obx.QueryStringProperty<Asset>(
     _entities[3].properties[5],
   );
 
-  /// See [Wallet.createdAt].
-  static final createdAt = obx.QueryDateProperty<Wallet>(
+  /// See [Asset.createdAt].
+  static final createdAt = obx.QueryDateProperty<Asset>(
     _entities[3].properties[6],
   );
 
-  /// See [Wallet.updatedAt].
-  static final updatedAt = obx.QueryDateProperty<Wallet>(
+  /// See [Asset.updatedAt].
+  static final updatedAt = obx.QueryDateProperty<Asset>(
     _entities[3].properties[7],
   );
 }

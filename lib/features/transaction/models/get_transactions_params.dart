@@ -6,14 +6,14 @@ import 'package:flutter/widgets.dart';
 class GetTransactionsParams extends Equatable {
   final String? cursor;
   final int limit = 20;
-  final String? walletUlid;
+  final String? assetUlid;
   final String? categoryUlid;
   final DateTime? startDate;
   final DateTime? endDate;
 
   const GetTransactionsParams({
     this.cursor,
-    this.walletUlid,
+    this.assetUlid,
     this.categoryUlid,
     this.startDate,
     this.endDate,
@@ -21,14 +21,14 @@ class GetTransactionsParams extends Equatable {
 
   GetTransactionsParams copyWith({
     ValueGetter<String?>? cursor,
-    ValueGetter<String?>? walletUlid,
+    ValueGetter<String?>? assetUlid,
     ValueGetter<String?>? categoryUlid,
     ValueGetter<DateTime?>? startDate,
     ValueGetter<DateTime?>? endDate,
   }) {
     return GetTransactionsParams(
       cursor: cursor != null ? cursor() : this.cursor,
-      walletUlid: walletUlid != null ? walletUlid() : this.walletUlid,
+      assetUlid: assetUlid != null ? assetUlid() : this.assetUlid,
       categoryUlid: categoryUlid != null ? categoryUlid() : this.categoryUlid,
       startDate: startDate != null ? startDate() : this.startDate,
       endDate: endDate != null ? endDate() : this.endDate,
@@ -38,7 +38,7 @@ class GetTransactionsParams extends Equatable {
   Map<String, dynamic> toMap() {
     return {
       'cursor': cursor,
-      'walletUlid': walletUlid,
+      'assetUlid': assetUlid,
       'categoryUlid': categoryUlid,
       'startDate': startDate?.toIso8601String(),
       'endDate': endDate?.toIso8601String(),
@@ -48,7 +48,7 @@ class GetTransactionsParams extends Equatable {
   factory GetTransactionsParams.fromMap(Map<String, dynamic> map) {
     return GetTransactionsParams(
       cursor: map['cursor'],
-      walletUlid: map['walletUlid'],
+      assetUlid: map['assetUlid'],
       categoryUlid: map['categoryUlid'],
       startDate: map['startDate'] != null
           ? DateTime.parse(map['startDate'])
@@ -64,12 +64,12 @@ class GetTransactionsParams extends Equatable {
 
   @override
   String toString() =>
-      'GetTransactionsParams(cursor: $cursor, walletUlid: $walletUlid, categoryUlid: $categoryUlid, startDate: $startDate, endDate: $endDate)';
+      'GetTransactionsParams(cursor: $cursor, assetUlid: $assetUlid, categoryUlid: $categoryUlid, startDate: $startDate, endDate: $endDate)';
 
   @override
   List<Object?> get props => [
     cursor,
-    walletUlid,
+    assetUlid,
     categoryUlid,
     startDate,
     endDate,

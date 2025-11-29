@@ -1,7 +1,7 @@
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
-import 'package:ikuyo_finance/features/wallet/models/wallet.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
 
 /// Seeder untuk data awal aplikasi
 /// Hanya dijalankan sekali saat pertama kali install
@@ -13,7 +13,7 @@ class DatabaseSeeder {
   /// Seed semua data default
   Future<void> seedAll() async {
     await _seedCategories();
-    await _seedWallets();
+    await _seedAssets();
   }
 
   /// Seed kategori default
@@ -146,35 +146,30 @@ class DatabaseSeeder {
     this.logInfo('Seeded ${categories.length} categories');
   }
 
-  /// Seed wallet default
-  Future<void> _seedWallets() async {
-    final box = _storage.box<Wallet>();
+  /// Seed asset default
+  Future<void> _seedAssets() async {
+    final box = _storage.box<Asset>();
 
     // * Skip jika sudah ada data
     if (box.count() > 0) {
-      this.logInfo('Wallets already seeded, skipping...');
+      this.logInfo('Assets already seeded, skipping...');
       return;
     }
 
-    this.logInfo('Seeding default wallets...');
+    this.logInfo('Seeding default assets...');
 
-    final wallets = [
-      Wallet(
-        name: 'Dompet',
-        type: WalletType.cash.index,
-        balance: 0,
-        icon: '💵',
-      ),
-      Wallet(name: 'Bank', type: WalletType.bank.index, balance: 0, icon: '🏦'),
-      Wallet(
-        name: 'E-Wallet',
-        type: WalletType.ewallet.index,
+    final assets = [
+      Asset(name: 'Dompet', type: AssetType.cash.index, balance: 0, icon: '💵'),
+      Asset(name: 'Bank', type: AssetType.bank.index, balance: 0, icon: '🏦'),
+      Asset(
+        name: 'E-Asset',
+        type: AssetType.easset.index,
         balance: 0,
         icon: '📱',
       ),
     ];
 
-    box.putMany(wallets);
-    this.logInfo('Seeded ${wallets.length} wallets');
+    box.putMany(assets);
+    this.logInfo('Seeded ${assets.length} assets');
   }
 }

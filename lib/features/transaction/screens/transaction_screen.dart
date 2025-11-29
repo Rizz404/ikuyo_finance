@@ -7,6 +7,7 @@ import 'package:ikuyo_finance/features/transaction/widgets/calendar_transaction_
 import 'package:ikuyo_finance/features/transaction/widgets/daily_transaction_view.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/monthly_transaction_view.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
+import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
 class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
@@ -51,7 +52,7 @@ class _TransactionScreenState extends State<TransactionScreen>
               ],
             ),
           ),
-          body: _buildBody(context, state),
+          body: ScreenWrapper(child: _buildBody(context, state)),
           floatingActionButton: FloatingActionButton(
             onPressed: () => context.go('/transaction/add'),
             child: const Icon(Icons.add),

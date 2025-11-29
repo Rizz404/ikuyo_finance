@@ -9,7 +9,7 @@ import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
-import 'package:ikuyo_finance/features/wallet/bloc/wallet_bloc.dart';
+import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
           create: (_) => getIt<CategoryBloc>()..add(const CategoryFetched()),
         ),
         BlocProvider(
-          create: (_) => getIt<WalletBloc>()..add(const WalletFetched()),
+          create: (_) => getIt<AssetBloc>()..add(const AssetFetched()),
         ),
         BlocProvider(
           create: (_) => getIt<BudgetBloc>()..add(const BudgetFetched()),

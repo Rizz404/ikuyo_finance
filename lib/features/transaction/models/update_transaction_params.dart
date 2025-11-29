@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 
 class UpdateTransactionParams extends Equatable {
   final String ulid;
-  final String? walletUlid;
+  final String? assetUlid;
   final String? categoryUlid;
   final double? amount;
   final DateTime? transactionDate;
@@ -14,7 +14,7 @@ class UpdateTransactionParams extends Equatable {
 
   const UpdateTransactionParams({
     required this.ulid,
-    this.walletUlid,
+    this.assetUlid,
     this.categoryUlid,
     this.amount,
     this.transactionDate,
@@ -24,7 +24,7 @@ class UpdateTransactionParams extends Equatable {
 
   UpdateTransactionParams copyWith({
     String? ulid,
-    ValueGetter<String?>? walletUlid,
+    ValueGetter<String?>? assetUlid,
     ValueGetter<String?>? categoryUlid,
     ValueGetter<double?>? amount,
     ValueGetter<DateTime?>? transactionDate,
@@ -33,7 +33,7 @@ class UpdateTransactionParams extends Equatable {
   }) {
     return UpdateTransactionParams(
       ulid: ulid ?? this.ulid,
-      walletUlid: walletUlid != null ? walletUlid() : this.walletUlid,
+      assetUlid: assetUlid != null ? assetUlid() : this.assetUlid,
       categoryUlid: categoryUlid != null ? categoryUlid() : this.categoryUlid,
       amount: amount != null ? amount() : this.amount,
       transactionDate: transactionDate != null
@@ -47,7 +47,7 @@ class UpdateTransactionParams extends Equatable {
   Map<String, dynamic> toMap() {
     return {
       'ulid': ulid,
-      'walletUlid': walletUlid,
+      'assetUlid': assetUlid,
       'categoryUlid': categoryUlid,
       'amount': amount,
       'transactionDate': transactionDate?.toIso8601String(),
@@ -59,7 +59,7 @@ class UpdateTransactionParams extends Equatable {
   factory UpdateTransactionParams.fromMap(Map<String, dynamic> map) {
     return UpdateTransactionParams(
       ulid: map['ulid'] ?? '',
-      walletUlid: map['walletUlid'],
+      assetUlid: map['assetUlid'],
       categoryUlid: map['categoryUlid'],
       amount: map['amount']?.toDouble(),
       transactionDate: map['transactionDate'] != null
@@ -77,13 +77,13 @@ class UpdateTransactionParams extends Equatable {
 
   @override
   String toString() {
-    return 'UpdateTransactionParams(ulid: $ulid, walletUlid: $walletUlid, categoryUlid: $categoryUlid, amount: $amount, transactionDate: $transactionDate, description: $description, imagePath: $imagePath)';
+    return 'UpdateTransactionParams(ulid: $ulid, assetUlid: $assetUlid, categoryUlid: $categoryUlid, amount: $amount, transactionDate: $transactionDate, description: $description, imagePath: $imagePath)';
   }
 
   @override
   List<Object?> get props => [
     ulid,
-    walletUlid,
+    assetUlid,
     categoryUlid,
     amount,
     transactionDate,

@@ -13,7 +13,7 @@ final class TransactionState extends Equatable {
   final String? errorMessage;
   final bool hasReachedMax;
   final String? nextCursor;
-  final String? currentWalletFilter;
+  final String? currentAssetFilter;
   final String? currentCategoryFilter;
   final DateTime? currentStartDateFilter;
   final DateTime? currentEndDateFilter;
@@ -30,7 +30,7 @@ final class TransactionState extends Equatable {
     this.errorMessage,
     this.hasReachedMax = false,
     this.nextCursor,
-    this.currentWalletFilter,
+    this.currentAssetFilter,
     this.currentCategoryFilter,
     this.currentStartDateFilter,
     this.currentEndDateFilter,
@@ -53,7 +53,7 @@ final class TransactionState extends Equatable {
     String? Function()? errorMessage,
     bool? hasReachedMax,
     String? Function()? nextCursor,
-    String? Function()? currentWalletFilter,
+    String? Function()? currentAssetFilter,
     String? Function()? currentCategoryFilter,
     DateTime? Function()? currentStartDateFilter,
     DateTime? Function()? currentEndDateFilter,
@@ -68,9 +68,9 @@ final class TransactionState extends Equatable {
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       nextCursor: nextCursor != null ? nextCursor() : this.nextCursor,
-      currentWalletFilter: currentWalletFilter != null
-          ? currentWalletFilter()
-          : this.currentWalletFilter,
+      currentAssetFilter: currentAssetFilter != null
+          ? currentAssetFilter()
+          : this.currentAssetFilter,
       currentCategoryFilter: currentCategoryFilter != null
           ? currentCategoryFilter()
           : this.currentCategoryFilter,
@@ -100,7 +100,7 @@ final class TransactionState extends Equatable {
     errorMessage,
     hasReachedMax,
     nextCursor,
-    currentWalletFilter,
+    currentAssetFilter,
     currentCategoryFilter,
     currentStartDateFilter,
     currentEndDateFilter,

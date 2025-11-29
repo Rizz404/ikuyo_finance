@@ -141,11 +141,11 @@
         },
         {
           "id": "3:9145831909847877399",
-          "name": "walletId",
+          "name": "assetId",
           "indexId": "7:5831501824799669652",
           "type": 11,
           "flags": 520,
-          "relationTarget": "Wallet"
+          "relationTarget": "Asset"
         },
         {
           "id": "4:2510246321249138533",
@@ -191,7 +191,7 @@
     {
       "id": "5:2126497104281392313",
       "lastPropertyId": "8:7954948898168386314",
-      "name": "Wallet",
+      "name": "Asset",
       "properties": [
         {
           "id": "1:2961344030167725897",

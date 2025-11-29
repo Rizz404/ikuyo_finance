@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 
 class CreateTransactionParams extends Equatable {
-  final String walletUlid;
+  final String assetUlid;
   final String? categoryUlid;
   final double amount;
   final DateTime? transactionDate;
@@ -12,7 +12,7 @@ class CreateTransactionParams extends Equatable {
   final String? imagePath;
 
   const CreateTransactionParams({
-    required this.walletUlid,
+    required this.assetUlid,
     this.categoryUlid,
     required this.amount,
     this.transactionDate,
@@ -21,7 +21,7 @@ class CreateTransactionParams extends Equatable {
   });
 
   CreateTransactionParams copyWith({
-    String? walletUlid,
+    String? assetUlid,
     ValueGetter<String?>? categoryUlid,
     double? amount,
     ValueGetter<DateTime?>? transactionDate,
@@ -29,7 +29,7 @@ class CreateTransactionParams extends Equatable {
     ValueGetter<String?>? imagePath,
   }) {
     return CreateTransactionParams(
-      walletUlid: walletUlid ?? this.walletUlid,
+      assetUlid: assetUlid ?? this.assetUlid,
       categoryUlid: categoryUlid != null ? categoryUlid() : this.categoryUlid,
       amount: amount ?? this.amount,
       transactionDate: transactionDate != null
@@ -42,7 +42,7 @@ class CreateTransactionParams extends Equatable {
 
   Map<String, dynamic> toMap() {
     return {
-      'walletUlid': walletUlid,
+      'assetUlid': assetUlid,
       'categoryUlid': categoryUlid,
       'amount': amount,
       'transactionDate': transactionDate?.toIso8601String(),
@@ -53,7 +53,7 @@ class CreateTransactionParams extends Equatable {
 
   factory CreateTransactionParams.fromMap(Map<String, dynamic> map) {
     return CreateTransactionParams(
-      walletUlid: map['walletUlid'] ?? '',
+      assetUlid: map['assetUlid'] ?? '',
       categoryUlid: map['categoryUlid'],
       amount: (map['amount'] ?? 0).toDouble(),
       transactionDate: map['transactionDate'] != null
@@ -71,12 +71,12 @@ class CreateTransactionParams extends Equatable {
 
   @override
   String toString() {
-    return 'CreateTransactionParams(walletUlid: $walletUlid, categoryUlid: $categoryUlid, amount: $amount, transactionDate: $transactionDate, description: $description, imagePath: $imagePath)';
+    return 'CreateTransactionParams(assetUlid: $assetUlid, categoryUlid: $categoryUlid, amount: $amount, transactionDate: $transactionDate, description: $description, imagePath: $imagePath)';
   }
 
   @override
   List<Object?> get props => [
-    walletUlid,
+    assetUlid,
     categoryUlid,
     amount,
     transactionDate,

@@ -1,61 +1,61 @@
-part of 'wallet_bloc.dart';
+part of 'asset_bloc.dart';
 
 // * Status untuk read operations (fetch, load more)
-enum WalletStatus { initial, loading, loadingMore, success, failure }
+enum AssetStatus { initial, loading, loadingMore, success, failure }
 
 // * Status untuk write operations (create, update, delete)
-enum WalletWriteStatus { initial, loading, success, failure }
+enum AssetWriteStatus { initial, loading, success, failure }
 
-final class WalletState extends Equatable {
+final class AssetState extends Equatable {
   // * Read state
-  final WalletStatus status;
-  final List<Wallet> wallets;
+  final AssetStatus status;
+  final List<Asset> assets;
   final String? errorMessage;
   final bool hasReachedMax;
   final String? nextCursor;
-  final WalletType? currentFilter;
+  final AssetType? currentFilter;
 
   // * Write state (terpisah dari read)
-  final WalletWriteStatus writeStatus;
+  final AssetWriteStatus writeStatus;
   final String? writeSuccessMessage;
   final String? writeErrorMessage;
-  final Wallet? lastCreatedWallet;
+  final Asset? lastCreatedAsset;
 
-  const WalletState({
-    this.status = WalletStatus.initial,
-    this.wallets = const [],
+  const AssetState({
+    this.status = AssetStatus.initial,
+    this.assets = const [],
     this.errorMessage,
     this.hasReachedMax = false,
     this.nextCursor,
     this.currentFilter,
-    this.writeStatus = WalletWriteStatus.initial,
+    this.writeStatus = AssetWriteStatus.initial,
     this.writeSuccessMessage,
     this.writeErrorMessage,
-    this.lastCreatedWallet,
+    this.lastCreatedAsset,
   });
 
   // * Factory constructors for cleaner state creation
-  const WalletState.initial() : this();
+  const AssetState.initial() : this();
 
-  bool get isLoading => status == WalletStatus.loading;
-  bool get isLoadingMore => status == WalletStatus.loadingMore;
-  bool get isWriting => writeStatus == WalletWriteStatus.loading;
+  bool get isLoading => status == AssetStatus.loading;
+  bool get isLoadingMore => status == AssetStatus.loadingMore;
+  bool get isWriting => writeStatus == AssetWriteStatus.loading;
 
-  WalletState copyWith({
-    WalletStatus? status,
-    List<Wallet>? wallets,
+  AssetState copyWith({
+    AssetStatus? status,
+    List<Asset>? assets,
     String? Function()? errorMessage,
     bool? hasReachedMax,
     String? Function()? nextCursor,
-    WalletType? Function()? currentFilter,
-    WalletWriteStatus? writeStatus,
+    AssetType? Function()? currentFilter,
+    AssetWriteStatus? writeStatus,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
-    Wallet? Function()? lastCreatedWallet,
+    Asset? Function()? lastCreatedAsset,
   }) {
-    return WalletState(
+    return AssetState(
       status: status ?? this.status,
-      wallets: wallets ?? this.wallets,
+      assets: assets ?? this.assets,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       nextCursor: nextCursor != null ? nextCursor() : this.nextCursor,
@@ -69,16 +69,16 @@ final class WalletState extends Equatable {
       writeErrorMessage: writeErrorMessage != null
           ? writeErrorMessage()
           : this.writeErrorMessage,
-      lastCreatedWallet: lastCreatedWallet != null
-          ? lastCreatedWallet()
-          : this.lastCreatedWallet,
+      lastCreatedAsset: lastCreatedAsset != null
+          ? lastCreatedAsset()
+          : this.lastCreatedAsset,
     );
   }
 
   @override
   List<Object?> get props => [
     status,
-    wallets,
+    assets,
     errorMessage,
     hasReachedMax,
     nextCursor,
@@ -86,6 +86,6 @@ final class WalletState extends Equatable {
     writeStatus,
     writeSuccessMessage,
     writeErrorMessage,
-    lastCreatedWallet,
+    lastCreatedAsset,
   ];
 }

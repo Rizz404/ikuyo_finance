@@ -10,8 +10,8 @@ import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
-import 'package:ikuyo_finance/features/wallet/bloc/wallet_bloc.dart';
-import 'package:ikuyo_finance/features/wallet/models/wallet.dart';
+import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_date_time_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';
@@ -104,21 +104,21 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                   ),
                   const SizedBox(height: 16),
 
-                  // * Wallet Dropdown
-                  BlocBuilder<WalletBloc, WalletState>(
+                  // * Asset Dropdown
+                  BlocBuilder<AssetBloc, AssetState>(
                     builder: (context, state) {
                       return AppDropdown<String>(
-                        name: 'walletUlid',
-                        label: 'Wallet',
-                        hintText: 'Pilih wallet',
-                        initialValue: widget.transaction?.wallet.target?.ulid,
-                        items: state.wallets
+                        name: 'assetUlid',
+                        label: 'Asset',
+                        hintText: 'Pilih asset',
+                        initialValue: widget.transaction?.asset.target?.ulid,
+                        items: state.assets
                             .map(
                               (w) => AppDropdownItem(
                                 value: w.ulid,
                                 label: w.name,
                                 icon: Icon(
-                                  _getWalletIcon(w.walletType),
+                                  _getAssetIcon(w.assetType),
                                   size: 20,
                                   color: context.colorScheme.primary,
                                 ),
@@ -126,7 +126,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                             )
                             .toList(),
                         validator: (value) {
-                          if (value == null) return 'Wallet wajib dipilih';
+                          if (value == null) return 'Asset wajib dipilih';
                           return null;
                         },
                         prefixIcon: const Icon(
@@ -267,7 +267,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
           TransactionUpdated(
             params: UpdateTransactionParams(
               ulid: widget.transaction!.ulid,
-              walletUlid: values['walletUlid'] as String?,
+              assetUlid: values['assetUlid'] as String?,
               categoryUlid: values['categoryUlid'] as String?,
               amount: amount,
               transactionDate: values['transactionDate'] as DateTime?,
@@ -279,7 +279,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
         context.read<TransactionBloc>().add(
           TransactionCreated(
             params: CreateTransactionParams(
-              walletUlid: values['walletUlid'] as String,
+              assetUlid: values['assetUlid'] as String,
               categoryUlid: values['categoryUlid'] as String?,
               amount: amount,
               transactionDate: values['transactionDate'] as DateTime?,
@@ -327,15 +327,15 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
     );
   }
 
-  IconData _getWalletIcon(WalletType type) {
+  IconData _getAssetIcon(AssetType type) {
     switch (type) {
-      case WalletType.cash:
+      case AssetType.cash:
         return Icons.money;
-      case WalletType.bank:
+      case AssetType.bank:
         return Icons.account_balance;
-      case WalletType.ewallet:
+      case AssetType.easset:
         return Icons.phone_android;
-      case WalletType.investment:
+      case AssetType.investment:
         return Icons.trending_up;
     }
   }
