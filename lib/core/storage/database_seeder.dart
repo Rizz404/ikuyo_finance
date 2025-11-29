@@ -160,10 +160,41 @@ class DatabaseSeeder {
 
     final assets = [
       Asset(name: 'Dompet', type: AssetType.cash.index, balance: 0, icon: '💵'),
-      Asset(name: 'Bank', type: AssetType.bank.index, balance: 0, icon: '🏦'),
       Asset(
-        name: 'E-Asset',
-        type: AssetType.easset.index,
+        name: 'SeaBank',
+        type: AssetType.bank.index,
+        balance: 0,
+        icon: '🏦',
+      ),
+      Asset(
+        name: 'NeoBank',
+        type: AssetType.bank.index,
+        balance: 0,
+        icon: '🏦',
+      ),
+      Asset(name: 'BNI', type: AssetType.bank.index, balance: 0, icon: '🏦'),
+      Asset(
+        name: 'Mandiri',
+        type: AssetType.bank.index,
+        balance: 0,
+        icon: '🏦',
+      ),
+      Asset(name: 'Jago', type: AssetType.bank.index, balance: 0, icon: '🏦'),
+      Asset(
+        name: 'Dana',
+        type: AssetType.eWallet.index,
+        balance: 0,
+        icon: '📱',
+      ),
+      Asset(
+        name: 'Shopeepay',
+        type: AssetType.eWallet.index,
+        balance: 0,
+        icon: '📱',
+      ),
+      Asset(
+        name: 'GoPay',
+        type: AssetType.eWallet.index,
         balance: 0,
         icon: '📱',
       ),

@@ -1,7 +1,7 @@
 import 'package:objectbox/objectbox.dart';
 import 'package:ulid/ulid.dart';
 
-enum AssetType { cash, bank, easset, investment }
+enum AssetType { cash, bank, eWallet, stock, crypto }
 
 @Entity()
 class Asset {

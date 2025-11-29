@@ -9,14 +9,14 @@ import 'package:ikuyo_finance/core/theme/app_theme.dart';
 /// * Widget untuk menampilkan transaksi yang dikelompokkan berdasarkan hari
 /// * Menerima data transactions melalui constructor (tidak langsung akses Bloc)
 class DailyTransactionView extends StatelessWidget {
+  final List<Transaction> transactions;
+  final VoidCallback onRefresh;
+
   const DailyTransactionView({
     super.key,
     required this.transactions,
     required this.onRefresh,
   });
-
-  final List<Transaction> transactions;
-  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {

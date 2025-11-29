@@ -12,6 +12,8 @@ import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
+import 'package:ikuyo_finance/features/transaction/validators/create_transaction_validator.dart';
+import 'package:ikuyo_finance/features/transaction/validators/update_transaction_validator.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_date_time_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';
@@ -91,16 +93,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                     type: AppTextFieldType.number,
                     initialValue: widget.transaction?.amount.toStringAsFixed(0),
                     prefixText: 'Rp ',
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Jumlah wajib diisi';
-                      }
-                      final amount = double.tryParse(value.replaceAll('.', ''));
-                      if (amount == null || amount <= 0) {
-                        return 'Jumlah harus lebih dari 0';
-                      }
-                      return null;
-                    },
+                    validator: widget.isEdit
+                        ? UpdateTransactionValidator.amount
+                        : CreateTransactionValidator.amount,
                   ),
                   const SizedBox(height: 16),
 
@@ -125,10 +120,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                               ),
                             )
                             .toList(),
-                        validator: (value) {
-                          if (value == null) return 'Asset wajib dipilih';
-                          return null;
-                        },
+                        validator: widget.isEdit
+                            ? UpdateTransactionValidator.assetUlid
+                            : CreateTransactionValidator.assetUlid,
                         prefixIcon: const Icon(
                           Icons.account_balance_wallet_outlined,
                         ),
@@ -333,10 +327,12 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
         return Icons.money;
       case AssetType.bank:
         return Icons.account_balance;
-      case AssetType.easset:
+      case AssetType.eWallet:
         return Icons.phone_android;
-      case AssetType.investment:
+      case AssetType.stock:
         return Icons.trending_up;
+      case AssetType.crypto:
+        return Icons.connecting_airports_outlined;
     }
   }
 
