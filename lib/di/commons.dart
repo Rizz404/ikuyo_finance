@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
+import 'package:ikuyo_finance/core/storage/database_seeder.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
@@ -43,6 +44,11 @@ Future<void> _setupStorage() async {
   getIt.registerSingletonAsync<ObjectBoxStorage>(() async {
     final objectBoxStorage = ObjectBoxStorage();
     await objectBoxStorage.init();
+
+    // * Seed default data saat pertama kali install
+    final seeder = DatabaseSeeder(objectBoxStorage);
+    await seeder.seedAll();
+
     return objectBoxStorage;
   });
 }

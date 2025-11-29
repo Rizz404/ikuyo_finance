@@ -5,7 +5,9 @@ import 'package:ikuyo_finance/features/auth/screens/sign_in_screen.dart';
 import 'package:ikuyo_finance/features/auth/screens/sign_up_screen.dart';
 import 'package:ikuyo_finance/features/setting/screens/setting_screen.dart';
 import 'package:ikuyo_finance/features/statistic/screens/statistic_screen.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_screen.dart';
+import 'package:ikuyo_finance/features/transaction/screens/transaction_upsert_screen.dart';
 import 'package:ikuyo_finance/shared/widgets/user_shell.dart';
 
 // * Router instance
@@ -46,6 +48,20 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
               GoRoute(
                 path: '/',
                 builder: (context, state) => const TransactionScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'transaction/add',
+                    builder: (context, state) =>
+                        const TransactionUpsertScreen(),
+                  ),
+                  GoRoute(
+                    path: 'transaction/edit',
+                    builder: (context, state) {
+                      final transaction = state.extra as Transaction?;
+                      return TransactionUpsertScreen(transaction: transaction);
+                    },
+                  ),
+                ],
               ),
             ],
           ),

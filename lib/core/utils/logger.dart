@@ -7,9 +7,7 @@ late final Talker talker;
 void initLogger() {
   talker = TalkerFlutter.init(
     settings: TalkerSettings(useConsoleLogs: true, enabled: true),
-    logger: TalkerLogger(
-      settings: TalkerLoggerSettings(enableColors: true, lineSymbol: '│'),
-    ),
+    logger: TalkerLogger(settings: TalkerLoggerSettings(enableColors: true)),
   );
 }
 

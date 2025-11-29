@@ -14,13 +14,10 @@ import 'package:ikuyo_finance/features/wallet/bloc/wallet_bloc.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // * Initialize logger first
-  initLogger();
-
   await dotenv.load(fileName: '.env');
   await setupDependencies();
 
-  talker.info('Ikuyo Finance started');
+  talker.logInfo('Ikuyo Finance started');
 
   runApp(const MyApp());
 }

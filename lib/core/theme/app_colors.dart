@@ -1,177 +1,172 @@
 import 'package:flutter/material.dart';
 
-/// Kita Ikuyo Inspired Color Palette using 60-30-10 Rule
-/// 60% - Primary/Background colors (Warm pinkish neutrals)
-/// 30% - Secondary/Supporting colors (Red-ish tones)
-/// 10% - Accent/Action colors (Yellow pops)
+/// Kita Ikuyo Inspired Color Palette - Refined & Balanced Version
+/// Structure preserved, colors optimized for UI/UX readability.
 class AppColors {
   // Private constructor to prevent instantiation
   AppColors._();
 
   // ============================================
-  // LIGHT THEME COLORS (Kita's Daytime Energy)
+  // LIGHT THEME COLORS (Energetic but Clean)
   // ============================================
 
   static const LightColors light = LightColors._();
 
   // ============================================
-  // DARK THEME COLORS (Kita's Night Stage Vibes)
+  // DARK THEME COLORS (Cool, Stage-Ready, Contrast Optimized)
   // ============================================
 
   static const DarkColors dark = DarkColors._();
 
   // ============================================
-  // SEMANTIC COLORS (Same for both themes, with a fun twist if needed)
+  // SEMANTIC COLORS
   // ============================================
 
   static const SemanticColors semantic = SemanticColors._();
 }
 
-/// Light Theme Color Palette - Inspired by Kita's bright personality
+/// Light Theme - Balanced with Warm Neutrals & Kita's Red
 class LightColors {
   const LightColors._();
 
   // 60% - Primary Colors (Backgrounds & Main surfaces)
-  // Soft pinkish with warm tints
-  final Color background = const Color(0xFFFFE4E1); // Misty rose with pink tint
+  // Warm White base - clean but welcoming
+  final Color background = const Color(0xFFFFFBFA); // Very light warm white
   final Color surface = const Color(0xFFFFFFFF); // Pure white
-  final Color surfaceVariant = const Color(0xFFFFF0F0); // Very light pink
+  final Color surfaceVariant = const Color(0xFFF5F5F5); // Light greyish
 
-  // 30% - Secondary Colors (Supporting elements)
-  // Red-inspired palette
-  final Color primary = const Color(0xFFFF3232); // Bright red like her hair
-  final Color primaryContainer = const Color(0xFFFFDADA); // Light red-pink
-  final Color secondary = const Color(0xFFE8A7A1); // Soft pinkish
-  final Color secondaryContainer = const Color(0xFFFFF5F5); // Pale pink
+  // 30% - Secondary Colors (Brand Identity)
+  // Kita's Signature Red
+  final Color primary = const Color(0xFFE53935); // Vibrant Kita Red
+  final Color primaryContainer = const Color(0xFFFFEBEE); // Soft red container
+  final Color secondary = const Color(0xFFEF5350); // Softer red
+  final Color secondaryContainer = const Color(0xFFFFCDD2); // Pale red
 
-  // 10% - Accent Colors (CTAs, Important actions)
-  // Vibrant yellow accent
-  final Color accent = const Color(0xFFFFFF3D); // Bright yellow like her eyes
-  final Color accentHover = const Color(0xFFFFEA00); // Lighter yellow hover
-  final Color accentPressed = const Color(0xFFFFD700); // Goldish pressed
+  // 10% - Accent Colors (Action pops)
+  // Electric Yellow
+  final Color accent = const Color(0xFFFFD600); // Energetic Yellow
+  final Color accentHover = const Color(0xFFFFEA00); // Lighter yellow
+  final Color accentPressed = const Color(0xFFFFC400); // Deep yellow
 
   // Text Colors
-  final Color textPrimary = const Color(0xFF2F0000); // Dark red-brown
-  final Color textSecondary = const Color(0xFF5C2A2A); // Muted red
-  final Color textTertiary = const Color(0xFFA05252); // Light red
-  final Color textDisabled = const Color(0xFFD9B3B3); // Pale pink disabled
-  final Color textOnPrimary = const Color(0xFFFFFFFF); // White on primary
-  final Color textOnAccent = const Color(0xFF000000); // Black on yellow accent
+  final Color textPrimary = const Color(0xFF212121); // High emphasis black
+  final Color textSecondary = const Color(0xFF757575); // Medium emphasis grey
+  final Color textTertiary = const Color(0xFFBDBDBD); // Low emphasis
+  final Color textDisabled = const Color(0xFFE0E0E0); // Disabled grey
+  final Color textOnPrimary = const Color(0xFFFFFFFF); // White on Red
+  final Color textOnAccent = const Color(0xFF000000); // Black on Yellow
 
   // Border & Divider Colors
-  final Color border = const Color(0xFFFFDADA); // Light red border
-  final Color borderHover = const Color(0xFFFFB3B3); // Hover pink
-  final Color divider = const Color(0xFFFFF0F0); // Pale divider
+  final Color border = const Color(0xFFE0E0E0); // Subtle grey border
+  final Color borderHover = const Color(0xFFE53935); // Red when active/hover
+  final Color divider = const Color(0xFFEEEEEE); // Very light divider
 
   // Interactive States
-  final Color hover = const Color(0xFFFFFAFA); // Near white hover
-  final Color pressed = const Color(0xFFFFF0F0); // Pressed pink
-  final Color focus = const Color(0xffff323230); // Red with opacity 0.12
-  final Color disabled = const Color(0xFFFFF5F5); // Disabled pale
+  final Color hover = const Color(0x0DE53935); // Red tint 5%
+  final Color pressed = const Color(0x1AE53935); // Red tint 10%
+  final Color focus = const Color(0x1FE53935); // Red tint 12%
+  final Color disabled = const Color(0xFFF5F5F5); // Grey disabled bg
 
   // Special Surfaces
   final Color card = const Color(0xFFFFFFFF); // White card
   final Color modal = const Color(0xFFFFFFFF); // White modal
-  final Color tooltip = const Color(0xFF2F0000); // Dark tooltip
+  final Color tooltip = const Color(0xFF323232); // Dark grey tooltip
 
   // Navigation
   final Color navBar = const Color(0xFFFFFFFF); // White nav
-  final Color navSelected = const Color(0xFFFF3232); // Red selected
-  final Color navUnselected = const Color(0xFFE8A7A1); // Pink unselected
+  final Color navSelected = const Color(0xFFE53935); // Kita Red selected
+  final Color navUnselected = const Color(0xFF9E9E9E); // Grey unselected
 
   // Overlay
-  final Color overlay = const Color(0x80000000); // Black 0.5
-  final Color scrim = const Color(0x52000000); // Black 0.32
+  final Color overlay = const Color(0x80000000); // Black 50%
+  final Color scrim = const Color(0x52000000); // Black 32%
 }
 
-/// Dark Theme Color Palette - Kita's mysterious yet energetic side
+/// Dark Theme - Sleek Dark Grey with Kita's Red Glow
 class DarkColors {
   const DarkColors._();
 
   // 60% - Primary Colors (Backgrounds & Main surfaces)
-  // Dark with red undertones
-  final Color background = const Color(0xFF2F0000); // Dark red-brown
-  final Color surface = const Color(0xFF5C2A2A); // Muted dark red
-  final Color surfaceVariant = const Color(0xFF8B0000); // Darker red
+  // Dark Grey (Not Black, Not Red) for eye comfort
+  final Color background = const Color(0xFF121212); // Standard Dark UI base
+  final Color surface = const Color(0xFF1E1E1E); // Slightly lighter grey
+  final Color surfaceVariant = const Color(0xFF2C2C2C); // Elevation level
 
-  // 30% - Secondary Colors (Supporting elements)
-  // Lighter red variations
-  final Color primary = const Color(0xFFFF6961); // Light red
-  final Color primaryContainer = const Color(0xFF8B0000); // Dark red container
-  final Color secondary = const Color(0xFFA05252); // Medium pink-red
-  final Color secondaryContainer = const Color(0xFF5C2A2A); // Dark secondary
+  // 30% - Secondary Colors (Brand Identity)
+  // Desaturated Red for Dark Mode
+  final Color primary = const Color(0xFFEF5350); // Soft Red
+  final Color primaryContainer = const Color(0xFF3E1515); // Muted red container
+  final Color secondary = const Color(0xFFE57373); // Muted secondary red
+  final Color secondaryContainer = const Color(0xFF2C2C2C); // Dark container
 
-  // 10% - Accent Colors (CTAs, Important actions)
-  // Bright yellow for contrast
-  final Color accent = const Color(0xFFFFFF3D); // Bright yellow
-  final Color accentHover = const Color(0xFFFFEA00); // Hover yellow
-  final Color accentPressed = const Color(0xFFFFD700); // Pressed gold
+  // 10% - Accent Colors
+  // Bright Yellow maintains contrast
+  final Color accent = const Color(0xFFFFD600); // Yellow
+  final Color accentHover = const Color(0xFFFFEA00); // Lighter yellow
+  final Color accentPressed = const Color(0xFFFFC400); // Deep yellow
 
   // Text Colors
-  final Color textPrimary = const Color(0xFFFFFAFA); // Light pinkish white
-  final Color textSecondary = const Color(0xFFFFDADA); // Light red
-  final Color textTertiary = const Color(0xFFA05252); // Medium red
-  final Color textDisabled = const Color(0xFF5C2A2A); // Dark disabled
-  final Color textOnPrimary = const Color(0xFF2F0000); // Dark on primary
-  final Color textOnAccent = const Color(0xFF000000); // Black on accent
+  final Color textPrimary = const Color(0xFFEEEEEE); // Off-white
+  final Color textSecondary = const Color(0xFFB0B0B0); // Light grey
+  final Color textTertiary = const Color(0xFF616161); // Darker grey
+  final Color textDisabled = const Color(0xFF424242); // Very dark grey
+  final Color textOnPrimary = const Color(
+    0xFF000000,
+  ); // Black on Red (High contrast)
+  final Color textOnAccent = const Color(0xFF000000); // Black on Yellow
 
   // Border & Divider Colors
-  final Color border = const Color(0xFF8B0000); // Dark red border
-  final Color borderHover = const Color(0xFFA05252); // Hover red
-  final Color divider = const Color(0xFF5C2A2A); // Dark divider
+  final Color border = const Color(0xFF424242); // Dark grey border
+  final Color borderHover = const Color(0xFFEF5350); // Red hover
+  final Color divider = const Color(0xFF2C2C2C); // Divider
 
   // Interactive States
-  final Color hover = const Color(0x808B0000); // Red hover 0.5
-  final Color pressed = const Color(0x80A05252); // Pressed 0.5
-  final Color focus = const Color(0x1ffff6961); // Light red focus 0.12
-  final Color disabled = const Color(0xFF5C2A2A); // Disabled dark
+  final Color hover = const Color(0x14FFFFFF); // White tint hover
+  final Color pressed = const Color(0x1FFFFFFF); // White tint pressed
+  final Color focus = const Color(0x1FEF5350); // Red focus
+  final Color disabled = const Color(0xFF2C2C2C); // Disabled bg
 
   // Special Surfaces
-  final Color card = const Color(0xFF5C2A2A); // Dark card
-  final Color modal = const Color(0xFF5C2A2A); // Dark modal
-  final Color tooltip = const Color(0xFFFFFAFA); // Light tooltip
+  final Color card = const Color(0xFF1E1E1E); // Dark card
+  final Color modal = const Color(0xFF2C2C2C); // Modal surface
+  final Color tooltip = const Color(0xFFE0E0E0); // Light tooltip
 
   // Navigation
-  final Color navBar = const Color(0xFF5C2A2A); // Dark nav
-  final Color navSelected = const Color(0xFFFF6961); // Light red selected
-  final Color navUnselected = const Color(0xFFA05252); // Medium unselected
+  final Color navBar = const Color(0xFF1E1E1E); // Dark nav
+  final Color navSelected = const Color(0xFFEF5350); // Soft Red selected
+  final Color navUnselected = const Color(0xFF757575); // Grey unselected
 
   // Overlay
-  final Color overlay = const Color(0xB3000000); // Black 0.7
-  final Color scrim = const Color(0x80000000); // Black 0.5
+  final Color overlay = const Color(0xB3000000); // Black 70%
+  final Color scrim = const Color(0x80000000); // Black 50%
 }
 
-/// Semantic Colors for Status & Feedback (Kept similar but can be tweaked)
+/// Semantic Colors (Matches Kita's Vibe + Standard UI Safety)
 class SemanticColors {
   const SemanticColors._();
 
   // Success
-  final Color success = const Color.fromRGBO(34, 197, 94, 1); // Green
-  final Color successLight = const Color.fromRGBO(220, 252, 231, 1);
-  final Color successDark = const Color.fromRGBO(22, 163, 74, 1);
+  final Color success = const Color(0xFF43A047); // Green
+  final Color successLight = const Color(0xFFE8F5E9);
+  final Color successDark = const Color(0xFF1B5E20);
 
   // Warning
-  final Color warning = const Color.fromRGBO(251, 191, 36, 1); // Amber
-  final Color warningLight = const Color.fromRGBO(254, 249, 195, 1);
-  final Color warningDark = const Color.fromRGBO(245, 158, 11, 1);
+  final Color warning = const Color(0xFFFFA000); // Amber
+  final Color warningLight = const Color(0xFFFFF8E1);
+  final Color warningDark = const Color(0xFFFF6F00);
 
-  // Error
-  final Color error = const Color.fromRGBO(
-    239,
-    68,
-    68,
-    1,
-  ); // Red (matches Kita's hair vibe!)
-  final Color errorLight = const Color.fromRGBO(254, 226, 226, 1);
-  final Color errorDark = const Color.fromRGBO(220, 38, 38, 1);
+  // Error - Using a distinct red, slightly different from Brand Primary to avoid confusion
+  final Color error = const Color(0xFFD32F2F); // Standard UI Error Red
+  final Color errorLight = const Color(0xFFFFEBEE);
+  final Color errorDark = const Color(0xFFB71C1C);
 
   // Info
-  final Color info = const Color.fromRGBO(59, 130, 246, 1); // Blue
-  final Color infoLight = const Color.fromRGBO(219, 234, 254, 1);
-  final Color infoDark = const Color.fromRGBO(37, 99, 235, 1);
+  final Color info = const Color(0xFF1976D2); // Blue
+  final Color infoLight = const Color(0xFFE3F2FD);
+  final Color infoDark = const Color(0xFF0D47A1);
 }
 
-/// Theme-aware color wrapper
+/// Theme-aware color wrapper (Struktur Tetap Sama)
 class AppColorsTheme {
   final Color background;
   final Color surface;
