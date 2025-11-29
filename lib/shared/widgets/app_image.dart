@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -146,5 +147,43 @@ class AppImage extends StatelessWidget {
     }
 
     return container;
+  }
+
+  /// * Factory untuk icon dari asset (SVG/PNG)
+  /// * Cocok untuk small icons di dropdown, list tile, dll
+  static Widget icon({
+    required String path,
+    double size = 24,
+    Color? color,
+    BoxFit fit = BoxFit.contain,
+  }) {
+    if (path.isEmpty) {
+      return SizedBox(width: size, height: size);
+    }
+
+    // * SVG support
+    if (path.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        path,
+        width: size,
+        height: size,
+        fit: fit,
+        colorFilter: color != null
+            ? ColorFilter.mode(color, BlendMode.srcIn)
+            : null,
+      );
+    }
+
+    // * PNG/JPG/other raster images
+    return Image.asset(
+      path,
+      width: size,
+      height: size,
+      fit: fit,
+      color: color,
+      errorBuilder: (context, error, stackTrace) {
+        return Icon(Icons.broken_image_outlined, size: size, color: color);
+      },
+    );
   }
 }

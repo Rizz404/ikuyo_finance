@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:intl/intl.dart';
 
@@ -42,11 +43,7 @@ class TransactionTile extends StatelessWidget {
                 ).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(
-                _getCategoryIcon(category),
-                color: _getCategoryColor(category, context),
-                size: 24,
-              ),
+              child: Center(child: _buildCategoryIcon(category, context)),
             ),
             const SizedBox(width: 12),
             // * Transaction Details
@@ -134,12 +131,18 @@ class TransactionTile extends StatelessWidget {
         : context.semantic.success;
   }
 
-  IconData _getCategoryIcon(Category? category) {
-    if (category?.icon != null) {
-      // TODO: Map icon string to IconData
-      return Icons.category_outlined;
+  /// * Build icon widget dari path image atau fallback ke icon
+  Widget _buildCategoryIcon(Category? category, BuildContext context) {
+    final iconPath = category?.icon;
+    final color = _getCategoryColor(category, context);
+
+    // * Jika ada path icon dan berupa asset path
+    if (iconPath != null && iconPath.startsWith('assets/')) {
+      return AppImage.icon(path: iconPath, size: 24, color: color);
     }
-    return Icons.category_outlined;
+
+    // * Fallback ke icon default
+    return Icon(Icons.category_outlined, color: color, size: 24);
   }
 
   String _formatCurrency(double amount) {

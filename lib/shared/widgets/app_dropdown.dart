@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 class AppDropdownItem<T> {
   final T value;
   final String label;
   final Widget? icon;
+  final String? imagePath; // * Path ke asset image (SVG/PNG)
 
-  const AppDropdownItem({required this.value, required this.label, this.icon});
+  const AppDropdownItem({
+    required this.value,
+    required this.label,
+    this.icon,
+    this.imagePath,
+  });
 }
 
 class AppDropdown<T> extends StatelessWidget {
@@ -25,6 +32,8 @@ class AppDropdown<T> extends StatelessWidget {
   final bool isExpanded;
   final double? width;
   final String? Function(T?)? validator;
+  final double imageSize;
+  final Color? imageColor;
 
   const AppDropdown({
     super.key,
@@ -41,6 +50,8 @@ class AppDropdown<T> extends StatelessWidget {
     this.isExpanded = true,
     this.width,
     this.validator,
+    this.imageSize = 20,
+    this.imageColor,
   });
 
   @override
@@ -57,7 +68,8 @@ class AppDropdown<T> extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (item.icon != null) ...[item.icon!, const SizedBox(width: 8)],
+              _buildItemIcon(item, context),
+              const SizedBox(width: 8),
               Flexible(
                 child: AppText(
                   item.label,
@@ -113,6 +125,21 @@ class AppDropdown<T> extends StatelessWidget {
     }
 
     return dropdown;
+  }
+
+  Widget _buildItemIcon(AppDropdownItem<T> item, BuildContext context) {
+    // * Prioritas: imagePath > icon > empty
+    if (item.imagePath != null && item.imagePath!.isNotEmpty) {
+      return AppImage.icon(
+        path: item.imagePath!,
+        size: imageSize,
+        color: imageColor,
+      );
+    }
+    if (item.icon != null) {
+      return item.icon!;
+    }
+    return SizedBox(width: imageSize, height: imageSize);
   }
 }
 

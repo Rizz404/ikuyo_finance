@@ -109,11 +109,12 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                         initialValue: widget.transaction?.asset.target?.ulid,
                         items: state.assets
                             .map(
-                              (w) => AppDropdownItem(
-                                value: w.ulid,
-                                label: w.name,
+                              (asset) => AppDropdownItem(
+                                value: asset.ulid,
+                                label: asset.name,
+                                imagePath: asset.icon,
                                 icon: Icon(
-                                  _getAssetIcon(w.assetType),
+                                  _getAssetIcon(asset.assetType),
                                   size: 20,
                                   color: context.colorScheme.primary,
                                 ),
@@ -126,6 +127,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                         prefixIcon: const Icon(
                           Icons.account_balance_wallet_outlined,
                         ),
+                        imageColor: context.colorScheme.primary,
                       );
                     },
                   ),
@@ -148,6 +150,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                               (c) => AppDropdownItem(
                                 value: c.ulid,
                                 label: c.name,
+                                imagePath: c.icon,
                                 icon: Icon(
                                   Icons.category_outlined,
                                   size: 20,
@@ -157,6 +160,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                             )
                             .toList(),
                         prefixIcon: const Icon(Icons.category_outlined),
+                        imageColor: _selectedType == CategoryType.expense
+                            ? context.semantic.error
+                            : context.semantic.success,
                       );
                     },
                   ),
