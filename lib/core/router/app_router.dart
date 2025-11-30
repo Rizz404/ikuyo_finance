@@ -17,6 +17,7 @@ import 'package:ikuyo_finance/features/setting/screens/setting_screen.dart';
 import 'package:ikuyo_finance/features/statistic/screens/statistic_screen.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_screen.dart';
+import 'package:ikuyo_finance/features/transaction/screens/transaction_search_screen.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_upsert_screen.dart';
 import 'package:ikuyo_finance/shared/widgets/user_shell.dart';
 
@@ -96,6 +97,16 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                         ),
                       );
                     },
+                  ),
+                  // * Search transaction - slide from right
+                  GoRoute(
+                    name: AppRoutes.transactionSearchName,
+                    path: AppRoutes.transactionSearchPath,
+                    pageBuilder: (context, state) =>
+                        AppPageTransitions.slideRight(
+                          key: state.pageKey,
+                          child: const TransactionSearchScreen(),
+                        ),
                   ),
                 ],
               ),

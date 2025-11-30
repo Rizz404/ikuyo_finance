@@ -10,10 +10,9 @@ import 'package:ikuyo_finance/features/transaction/widgets/daily_transaction_vie
 import 'package:ikuyo_finance/features/transaction/widgets/monthly_transaction_view.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/transaction_active_filters.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/transaction_filter_sheet.dart';
-import 'package:ikuyo_finance/features/transaction/widgets/transaction_search_bar.dart';
-import 'package:ikuyo_finance/features/transaction/widgets/transaction_sort_chip.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
+import 'package:intl/intl.dart';
 
 class TransactionScreen extends StatefulWidget {
   const TransactionScreen({super.key});
@@ -25,7 +24,8 @@ class TransactionScreen extends StatefulWidget {
 class _TransactionScreenState extends State<TransactionScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  bool _isSearchVisible = false;
+  int _currentTabIndex = 0;
+  bool _isFilterExpanded = false;
 
   @override
   void initState() {
@@ -42,62 +42,33 @@ class _TransactionScreenState extends State<TransactionScreen>
   }
 
   void _onTabChanged() {
-    // * Hide search when switching away from Daily tab
-    if (_tabController.index != 0 && _isSearchVisible) {
-      setState(() => _isSearchVisible = false);
-    }
+    // * Update tab index reactively
+    if (_tabController.indexIsChanging) return;
+    setState(() {
+      _currentTabIndex = _tabController.index;
+    });
   }
+
+  bool get _isDailyTab => _currentTabIndex == 0;
+  bool get _isDailyOrCalendarTab =>
+      _currentTabIndex == 0 || _currentTabIndex == 2;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<TransactionBloc, TransactionState>(
       builder: (context, state) {
-        final isDailyTab = _tabController.index == 0;
-
         return Scaffold(
           appBar: AppBar(
-            title: _isSearchVisible
-                ? TransactionSearchBar(
-                    currentQuery: state.currentSearchQuery,
-                    onChanged: (value) => context.read<TransactionBloc>().add(
-                      TransactionSearched(query: value ?? ''),
-                    ),
-                    onClear: () => context.read<TransactionBloc>().add(
-                      const TransactionSearched(query: ''),
-                    ),
-                  )
-                : const AppText(
-                    'Transaksi',
-                    style: AppTextStyle.titleLarge,
-                    fontWeight: FontWeight.bold,
-                  ),
+            title: _buildMonthNavigator(context, state),
             actions: [
-              // * Only show actions on Daily tab
-              if (isDailyTab) ...[
-                // * Search toggle
+              // * Only show actions on Daily/Calendar tab
+              if (_isDailyOrCalendarTab) ...[
+                // * Search button - navigates to search screen
                 IconButton(
-                  icon: Icon(_isSearchVisible ? Icons.close : Icons.search),
-                  onPressed: () {
-                    setState(() => _isSearchVisible = !_isSearchVisible);
-                    if (!_isSearchVisible && state.currentSearchQuery != null) {
-                      // * Clear search when closing
-                      context.read<TransactionBloc>().add(
-                        const TransactionSearched(query: ''),
-                      );
-                    }
-                  },
+                  icon: const Icon(Icons.search),
+                  onPressed: () => context.pushToSearchTransaction(),
                 ),
-                // * Sort chip
-                TransactionSortChip(
-                  currentSortBy: state.currentSortBy,
-                  currentSortOrder: state.currentSortOrder,
-                  onSortChanged: (sortBy, sortOrder) {
-                    context.read<TransactionBloc>().add(
-                      TransactionSorted(sortBy: sortBy, sortOrder: sortOrder),
-                    );
-                  },
-                ),
-                // * Filter button
+                // * Filter button (includes sort options)
                 IconButton(
                   icon: Badge(
                     isLabelVisible: state.hasActiveFilters,
@@ -107,25 +78,70 @@ class _TransactionScreenState extends State<TransactionScreen>
                 ),
               ],
             ],
-            bottom: TabBar(
-              controller: _tabController,
-              tabs: const [
-                Tab(text: 'Harian'),
-                Tab(text: 'Bulanan'),
-                Tab(text: 'Kalender'),
-              ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(48),
+              child: TabBar(
+                controller: _tabController,
+                tabs: const [
+                  Tab(text: 'Harian'),
+                  Tab(text: 'Bulanan'),
+                  Tab(text: 'Kalender'),
+                ],
+              ),
             ),
           ),
           body: ScreenWrapper(
             child: Column(
               children: [
                 // * Active filters indicator (only on Daily tab)
-                if (isDailyTab)
-                  TransactionActiveFilters(
-                    hasActiveFilters: state.hasActiveFilters,
-                    onClearFilters: () => context.read<TransactionBloc>().add(
-                      const TransactionFilterCleared(),
-                    ),
+                if (_isDailyTab)
+                  Builder(
+                    builder: (context) {
+                      final assetState = context.read<AssetBloc>().state;
+                      final categoryState = context.read<CategoryBloc>().state;
+
+                      // * Find asset & category names
+                      final assetName = state.currentAssetFilter != null
+                          ? assetState.assets
+                                .where(
+                                  (a) => a.ulid == state.currentAssetFilter,
+                                )
+                                .map((a) => a.name)
+                                .firstOrNull
+                          : null;
+                      final categoryName = state.currentCategoryFilter != null
+                          ? categoryState.categories
+                                .where(
+                                  (c) => c.ulid == state.currentCategoryFilter,
+                                )
+                                .map((c) => c.name)
+                                .firstOrNull
+                          : null;
+
+                      // * Build sort label
+                      final sortLabel = TransactionFilterData(
+                        sortBy: state.currentSortBy,
+                        sortOrder: state.currentSortOrder,
+                      ).sortLabel;
+
+                      return TransactionActiveFilters(
+                        hasActiveFilters: state.hasActiveFilters,
+                        onClearFilters: () => context
+                            .read<TransactionBloc>()
+                            .add(const TransactionFilterCleared()),
+                        isExpanded: _isFilterExpanded,
+                        onToggleExpand: () => setState(() {
+                          _isFilterExpanded = !_isFilterExpanded;
+                        }),
+                        assetName: assetName,
+                        categoryName: categoryName,
+                        startDate: state.currentStartDateFilter,
+                        endDate: state.currentEndDateFilter,
+                        minAmount: state.currentMinAmount,
+                        maxAmount: state.currentMaxAmount,
+                        sortLabel: sortLabel,
+                      );
+                    },
                   ),
                 Expanded(child: _buildBody(context, state)),
               ],
@@ -155,8 +171,11 @@ class _TransactionScreenState extends State<TransactionScreen>
         endDate: state.currentEndDateFilter,
         minAmount: state.currentMinAmount,
         maxAmount: state.currentMaxAmount,
+        sortBy: state.currentSortBy,
+        sortOrder: state.currentSortOrder,
       ),
       onApplyFilter: (filterData) {
+        // * Apply filters
         context.read<TransactionBloc>().add(
           TransactionFiltered(
             assetUlid: filterData.assetUlid,
@@ -165,6 +184,13 @@ class _TransactionScreenState extends State<TransactionScreen>
             endDate: filterData.endDate,
             minAmount: filterData.minAmount,
             maxAmount: filterData.maxAmount,
+          ),
+        );
+        // * Apply sort
+        context.read<TransactionBloc>().add(
+          TransactionSorted(
+            sortBy: filterData.sortBy,
+            sortOrder: filterData.sortOrder,
           ),
         );
       },
@@ -217,5 +243,61 @@ class _TransactionScreenState extends State<TransactionScreen>
         const CalendarTransactionView(),
       ],
     );
+  }
+
+  // * Month navigator widget with prev/next arrows
+  Widget _buildMonthNavigator(BuildContext context, TransactionState state) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: () => _changeMonth(context, state.currentMonth, -1),
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: () => _showMonthPicker(context, state.currentMonth),
+          child: AppText(
+            DateFormat('MMMM yyyy', 'id_ID').format(state.currentMonth),
+            style: AppTextStyle.titleMedium,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: Icon(Icons.chevron_right),
+          onPressed: () => _changeMonth(context, state.currentMonth, 1),
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+      ],
+    );
+  }
+
+  void _changeMonth(BuildContext context, DateTime current, int offset) {
+    final newMonth = DateTime(current.year, current.month + offset, 1);
+    context.read<TransactionBloc>().add(
+      TransactionMonthChanged(month: newMonth),
+    );
+  }
+
+  Future<void> _showMonthPicker(BuildContext context, DateTime current) async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: current,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+      initialDatePickerMode: DatePickerMode.year,
+    );
+
+    if (selected != null && context.mounted) {
+      context.read<TransactionBloc>().add(
+        TransactionMonthChanged(month: selected),
+      );
+    }
   }
 }

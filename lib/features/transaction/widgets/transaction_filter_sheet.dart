@@ -3,6 +3,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
+import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_date_time_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';
@@ -17,6 +18,8 @@ class TransactionFilterData {
   final DateTime? endDate;
   final double? minAmount;
   final double? maxAmount;
+  final TransactionSortBy sortBy;
+  final SortOrder sortOrder;
 
   const TransactionFilterData({
     this.assetUlid,
@@ -25,7 +28,22 @@ class TransactionFilterData {
     this.endDate,
     this.minAmount,
     this.maxAmount,
+    this.sortBy = TransactionSortBy.transactionDate,
+    this.sortOrder = SortOrder.descending,
   });
+
+  /// * Get human-readable sort label
+  String get sortLabel {
+    final sortByLabel = switch (sortBy) {
+      TransactionSortBy.transactionDate => 'Tanggal',
+      TransactionSortBy.amount => 'Jumlah',
+      TransactionSortBy.createdAt => 'Dibuat',
+    };
+    final orderLabel = sortOrder == SortOrder.descending
+        ? (sortBy == TransactionSortBy.amount ? 'Terbesar' : 'Terbaru')
+        : (sortBy == TransactionSortBy.amount ? 'Terkecil' : 'Terlama');
+    return '$sortByLabel ($orderLabel)';
+  }
 }
 
 /// * Bottom sheet untuk filter transaksi (pure UI, no bloc logic)
@@ -76,6 +94,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
   DateTime? _endDate;
   double? _minAmount;
   double? _maxAmount;
+  late TransactionSortBy _sortBy;
+  late SortOrder _sortOrder;
 
   @override
   void initState() {
@@ -86,6 +106,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
     _endDate = widget.initialFilter.endDate;
     _minAmount = widget.initialFilter.minAmount;
     _maxAmount = widget.initialFilter.maxAmount;
+    _sortBy = widget.initialFilter.sortBy;
+    _sortOrder = widget.initialFilter.sortOrder;
   }
 
   @override
@@ -236,6 +258,67 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                           setState(() => _selectedCategoryUlid = value);
                         },
                       ),
+                      const SizedBox(height: 24),
+                      // * Sort options
+                      const AppText(
+                        'Urutkan',
+                        style: AppTextStyle.labelLarge,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: AppDropdown<TransactionSortBy>(
+                              name: 'sort_by',
+                              label: 'Berdasarkan',
+                              initialValue: _sortBy,
+                              items: const [
+                                AppDropdownItem(
+                                  value: TransactionSortBy.transactionDate,
+                                  label: 'Tanggal',
+                                ),
+                                AppDropdownItem(
+                                  value: TransactionSortBy.amount,
+                                  label: 'Jumlah',
+                                ),
+                                AppDropdownItem(
+                                  value: TransactionSortBy.createdAt,
+                                  label: 'Dibuat',
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => _sortBy = value);
+                                }
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppDropdown<SortOrder>(
+                              name: 'sort_order',
+                              label: 'Urutan',
+                              initialValue: _sortOrder,
+                              items: const [
+                                AppDropdownItem(
+                                  value: SortOrder.descending,
+                                  label: 'Terbaru/Terbesar',
+                                ),
+                                AppDropdownItem(
+                                  value: SortOrder.ascending,
+                                  label: 'Terlama/Terkecil',
+                                ),
+                              ],
+                              onChanged: (value) {
+                                if (value != null) {
+                                  setState(() => _sortOrder = value);
+                                }
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -263,6 +346,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
       _endDate = null;
       _minAmount = null;
       _maxAmount = null;
+      _sortBy = TransactionSortBy.transactionDate;
+      _sortOrder = SortOrder.descending;
     });
     _formKey.currentState?.reset();
   }
@@ -278,6 +363,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
         endDate: formValues['end_date'] as DateTime?,
         minAmount: double.tryParse(formValues['min_amount'] ?? ''),
         maxAmount: double.tryParse(formValues['max_amount'] ?? ''),
+        sortBy: _sortBy,
+        sortOrder: _sortOrder,
       ),
     );
     Navigator.pop(context);

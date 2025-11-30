@@ -16,8 +16,7 @@ EventTransformer<E> debounce<E>(Duration duration) {
 }
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
-  TransactionBloc(this._transactionRepository)
-    : super(const TransactionState()) {
+  TransactionBloc(this._transactionRepository) : super(TransactionState()) {
     // * Read events
     on<TransactionFetched>(_onTransactionFetched);
     on<TransactionFetchedMore>(_onTransactionFetchedMore);
@@ -31,6 +30,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<TransactionFiltered>(_onTransactionFiltered);
     on<TransactionSorted>(_onTransactionSorted);
     on<TransactionFilterCleared>(_onTransactionFilterCleared);
+    on<TransactionMonthChanged>(_onTransactionMonthChanged);
 
     // * Write events
     on<TransactionCreated>(_onTransactionCreated);
@@ -42,17 +42,24 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   final TransactionRepository _transactionRepository;
 
   // * Fetch initial transactions with all filter options
+  // * Auto-filters by current month if no date filter provided
   Future<void> _onTransactionFetched(
     TransactionFetched event,
     Emitter<TransactionState> emit,
   ) async {
+    // * Use month filter by default if no explicit date range given
+    final month = state.currentMonth;
+    final startDate = event.startDate ?? DateTime(month.year, month.month, 1);
+    final endDate =
+        event.endDate ?? DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+
     emit(
       state.copyWith(
         status: TransactionStatus.loading,
         currentAssetFilter: () => event.assetUlid,
         currentCategoryFilter: () => event.categoryUlid,
-        currentStartDateFilter: () => event.startDate,
-        currentEndDateFilter: () => event.endDate,
+        currentStartDateFilter: () => startDate,
+        currentEndDateFilter: () => endDate,
         currentSearchQuery: () => event.searchQuery,
         currentSortBy: event.sortBy ?? state.currentSortBy,
         currentSortOrder: event.sortOrder ?? state.currentSortOrder,
@@ -66,8 +73,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           GetTransactionsParams(
             assetUlid: event.assetUlid,
             categoryUlid: event.categoryUlid,
-            startDate: event.startDate,
-            endDate: event.endDate,
+            startDate: startDate,
+            endDate: endDate,
             searchQuery: event.searchQuery,
             sortBy: event.sortBy ?? state.currentSortBy,
             sortOrder: event.sortOrder ?? state.currentSortOrder,
@@ -349,13 +356,28 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     TransactionFilterCleared event,
     Emitter<TransactionState> emit,
   ) async {
+    // * Reset filters but keep month navigation
+    final startDate = DateTime(
+      state.currentMonth.year,
+      state.currentMonth.month,
+      1,
+    );
+    final endDate = DateTime(
+      state.currentMonth.year,
+      state.currentMonth.month + 1,
+      0,
+      23,
+      59,
+      59,
+    );
+
     emit(
       state.copyWith(
         status: TransactionStatus.loading,
         currentAssetFilter: () => null,
         currentCategoryFilter: () => null,
-        currentStartDateFilter: () => null,
-        currentEndDateFilter: () => null,
+        currentStartDateFilter: () => startDate,
+        currentEndDateFilter: () => endDate,
         currentSearchQuery: () => null,
         currentMinAmount: () => null,
         currentMaxAmount: () => null,
@@ -367,7 +389,70 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     );
 
     final result = await _transactionRepository
-        .getTransactions(const GetTransactionsParams())
+        .getTransactions(
+          GetTransactionsParams(startDate: startDate, endDate: endDate),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Change month and fetch transactions for that month
+  Future<void> _onTransactionMonthChanged(
+    TransactionMonthChanged event,
+    Emitter<TransactionState> emit,
+  ) async {
+    final startDate = DateTime(event.month.year, event.month.month, 1);
+    final endDate = DateTime(
+      event.month.year,
+      event.month.month + 1,
+      0,
+      23,
+      59,
+      59,
+    );
+
+    emit(
+      state.copyWith(
+        status: TransactionStatus.loading,
+        currentMonth: event.month,
+        currentStartDateFilter: () => startDate,
+        currentEndDateFilter: () => endDate,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _transactionRepository
+        .getTransactions(
+          GetTransactionsParams(
+            assetUlid: state.currentAssetFilter,
+            categoryUlid: state.currentCategoryFilter,
+            startDate: startDate,
+            endDate: endDate,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmount: state.currentMinAmount,
+            maxAmount: state.currentMaxAmount,
+          ),
+        )
         .run();
 
     result.fold(

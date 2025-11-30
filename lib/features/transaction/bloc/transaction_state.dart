@@ -14,6 +14,9 @@ final class TransactionState extends Equatable {
   final bool hasReachedMax;
   final String? nextCursor;
 
+  // * Month navigation state
+  final DateTime currentMonth;
+
   // * Filter state
   final String? currentAssetFilter;
   final String? currentCategoryFilter;
@@ -31,12 +34,13 @@ final class TransactionState extends Equatable {
   final String? writeErrorMessage;
   final Transaction? lastCreatedTransaction;
 
-  const TransactionState({
+  TransactionState({
     this.status = TransactionStatus.initial,
     this.transactions = const [],
     this.errorMessage,
     this.hasReachedMax = false,
     this.nextCursor,
+    DateTime? currentMonth,
     this.currentAssetFilter,
     this.currentCategoryFilter,
     this.currentStartDateFilter,
@@ -50,10 +54,10 @@ final class TransactionState extends Equatable {
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedTransaction,
-  });
+  }) : currentMonth = currentMonth ?? DateTime.now();
 
   // * Factory constructors for cleaner state creation
-  const TransactionState.initial() : this();
+  factory TransactionState.initial() => TransactionState();
 
   // * Computed properties
   bool get isLoading => status == TransactionStatus.loading;
@@ -90,6 +94,7 @@ final class TransactionState extends Equatable {
     String? Function()? errorMessage,
     bool? hasReachedMax,
     String? Function()? nextCursor,
+    DateTime? currentMonth,
     String? Function()? currentAssetFilter,
     String? Function()? currentCategoryFilter,
     DateTime? Function()? currentStartDateFilter,
@@ -110,6 +115,7 @@ final class TransactionState extends Equatable {
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       nextCursor: nextCursor != null ? nextCursor() : this.nextCursor,
+      currentMonth: currentMonth ?? this.currentMonth,
       currentAssetFilter: currentAssetFilter != null
           ? currentAssetFilter()
           : this.currentAssetFilter,
@@ -153,6 +159,7 @@ final class TransactionState extends Equatable {
     errorMessage,
     hasReachedMax,
     nextCursor,
+    currentMonth,
     currentAssetFilter,
     currentCategoryFilter,
     currentStartDateFilter,

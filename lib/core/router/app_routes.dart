@@ -28,6 +28,9 @@ final class AppRoutes {
   static const String transactionEditName = 'transaction-edit';
   static const String transactionEditPath = 'transaction/edit';
 
+  static const String transactionSearchName = 'transaction-search';
+  static const String transactionSearchPath = 'transaction/search';
+
   // * Statistic Routes
   static const String statisticName = 'statistic';
   static const String statisticPath = '/statistic';

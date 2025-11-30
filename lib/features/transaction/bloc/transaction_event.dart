@@ -79,6 +79,13 @@ final class TransactionFilterCleared extends TransactionEvent {
   const TransactionFilterCleared();
 }
 
+// * Month navigation - changes the current displayed month
+final class TransactionMonthChanged extends TransactionEvent {
+  const TransactionMonthChanged({required this.month});
+
+  final DateTime month;
+}
+
 // * Write Events
 final class TransactionCreated extends TransactionEvent {
   final CreateTransactionParams params;

@@ -221,7 +221,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                   BlocBuilder<AssetBloc, AssetState>(
                     builder: (context, state) {
                       return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Expanded(
                             child: AppDropdown<String>(
@@ -256,16 +257,13 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 24),
-                            child: IconButton.filled(
-                              onPressed: () => context.pushToAddAsset(),
-                              icon: const Icon(Icons.add),
-                              tooltip: 'Tambah Asset',
-                              style: IconButton.styleFrom(
-                                backgroundColor: context.colorScheme.primary,
-                                foregroundColor: context.colorScheme.onPrimary,
-                              ),
+                          IconButton.filled(
+                            onPressed: () => context.pushToAddAsset(),
+                            icon: const Icon(Icons.add),
+                            tooltip: 'Tambah Asset',
+                            style: IconButton.styleFrom(
+                              backgroundColor: context.colorScheme.primary,
+                              foregroundColor: context.colorScheme.onPrimary,
                             ),
                           ),
                         ],
@@ -282,7 +280,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                           .toList();
 
                       return Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Expanded(
                             child: AppDropdown<String>(
@@ -314,19 +313,16 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                             ),
                           ),
                           const SizedBox(width: 8),
-                          Padding(
-                            padding: const EdgeInsets.only(top: 24),
-                            child: IconButton.filled(
-                              onPressed: () => context.pushToAddCategory(),
-                              icon: const Icon(Icons.add),
-                              tooltip: 'Tambah Kategori',
-                              style: IconButton.styleFrom(
-                                backgroundColor:
-                                    _selectedType == CategoryType.expense
-                                    ? context.semantic.error
-                                    : context.semantic.success,
-                                foregroundColor: context.colorScheme.onPrimary,
-                              ),
+                          IconButton.filled(
+                            onPressed: () => context.pushToAddCategory(),
+                            icon: const Icon(Icons.add),
+                            tooltip: 'Tambah Kategori',
+                            style: IconButton.styleFrom(
+                              backgroundColor:
+                                  _selectedType == CategoryType.expense
+                                  ? context.semantic.error
+                                  : context.semantic.success,
+                              foregroundColor: context.colorScheme.onPrimary,
                             ),
                           ),
                         ],
