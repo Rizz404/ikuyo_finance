@@ -1,6 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
+import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/database_seeder.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
@@ -36,6 +37,9 @@ void _setupLogger() {
 }
 
 Future<void> _setupStorage() async {
+  // * Register AppFileStorage for file operations
+  getIt.registerSingleton<AppFileStorage>(const AppFileStorageImpl());
+
   const flutterSecureStorage = FlutterSecureStorage(
     aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );

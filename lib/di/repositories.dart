@@ -1,3 +1,4 @@
+import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
 import 'package:ikuyo_finance/features/auth/repositories/auth_repository.dart';
@@ -18,10 +19,16 @@ void setupRepositories() {
       () => AuthRepositoryImpl(getIt<SupabaseClient>()),
     )
     ..registerLazySingleton<CategoryRepository>(
-      () => CategoryRepositoryImpl(getIt<ObjectBoxStorage>()),
+      () => CategoryRepositoryImpl(
+        getIt<ObjectBoxStorage>(),
+        getIt<AppFileStorage>(),
+      ),
     )
     ..registerLazySingleton<AssetRepository>(
-      () => AssetRepositoryImpl(getIt<ObjectBoxStorage>()),
+      () => AssetRepositoryImpl(
+        getIt<ObjectBoxStorage>(),
+        getIt<AppFileStorage>(),
+      ),
     )
     ..registerLazySingleton<BudgetRepository>(
       () => BudgetRepositoryImpl(getIt<ObjectBoxStorage>()),

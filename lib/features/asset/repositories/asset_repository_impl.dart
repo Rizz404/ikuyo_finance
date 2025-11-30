@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart' hide Order;
+import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
@@ -10,10 +11,14 @@ import 'package:ikuyo_finance/features/asset/models/update_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
+// * Subfolder for asset icons in app storage
+const _kAssetIconsFolder = 'asset_icons';
+
 class AssetRepositoryImpl implements AssetRepository {
   final ObjectBoxStorage _storage;
+  final AppFileStorage _fileStorage;
 
-  const AssetRepositoryImpl(this._storage);
+  const AssetRepositoryImpl(this._storage, this._fileStorage);
 
   Box<Asset> get _box => _storage.box<Asset>();
 
@@ -23,11 +28,17 @@ class AssetRepositoryImpl implements AssetRepository {
       () async {
         logService('Create asset', params.name);
 
+        // * Save icon to app storage
+        final savedIconPath = await _fileStorage.saveFile(
+          params.icon,
+          subFolder: _kAssetIconsFolder,
+        );
+
         final asset = Asset(
           name: params.name,
           type: params.type.index,
           balance: params.balance,
-          icon: params.icon,
+          icon: savedIconPath,
         );
 
         _box.put(asset);
@@ -146,7 +157,16 @@ class AssetRepositoryImpl implements AssetRepository {
         if (params.name != null) asset.name = params.name!;
         if (params.type != null) asset.type = params.type!.index;
         if (params.balance != null) asset.balance = params.balance!;
-        if (params.icon != null) asset.icon = params.icon;
+
+        // * Handle icon update - save new and delete old
+        if (params.icon != null && params.icon != asset.icon) {
+          final savedIconPath = await _fileStorage.updateFile(
+            newPath: params.icon,
+            oldPath: asset.icon,
+            subFolder: _kAssetIconsFolder,
+          );
+          asset.icon = savedIconPath;
+        }
 
         asset.updatedAt = DateTime.now();
         _box.put(asset);
@@ -176,6 +196,9 @@ class AssetRepositoryImpl implements AssetRepository {
         if (asset == null) {
           throw Exception('Asset not found');
         }
+
+        // * Delete icon file from app storage
+        await _fileStorage.deleteFile(asset.icon);
 
         _box.remove(asset.id);
         logInfo('Asset deleted successfully');
