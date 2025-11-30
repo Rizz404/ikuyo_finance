@@ -5,9 +5,15 @@ import 'package:ikuyo_finance/features/budget/models/create_budget_params.dart';
 import 'package:ikuyo_finance/features/budget/models/get_budgets_params.dart';
 import 'package:ikuyo_finance/features/budget/models/update_budget_params.dart';
 import 'package:ikuyo_finance/features/budget/repositories/budget_repository.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 part 'budget_event.dart';
 part 'budget_state.dart';
+
+// * Debounce transformer for search
+EventTransformer<E> debounce<E>(Duration duration) {
+  return (events, mapper) => events.debounce(duration).switchMap(mapper);
+}
 
 class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
   BudgetBloc(this._budgetRepository) : super(const BudgetState()) {
@@ -15,6 +21,15 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     on<BudgetFetched>(_onBudgetFetched);
     on<BudgetFetchedMore>(_onBudgetFetchedMore);
     on<BudgetRefreshed>(_onBudgetRefreshed);
+
+    // * Search & filter events
+    on<BudgetSearched>(
+      _onBudgetSearched,
+      transformer: debounce(const Duration(milliseconds: 300)),
+    );
+    on<BudgetFiltered>(_onBudgetFiltered);
+    on<BudgetSorted>(_onBudgetSorted);
+    on<BudgetFilterCleared>(_onBudgetFilterCleared);
 
     // * Write events
     on<BudgetCreated>(_onBudgetCreated);
@@ -25,7 +40,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
 
   final BudgetRepository _budgetRepository;
 
-  // * Fetch initial budgets
+  // * Fetch initial budgets with all filter options
   Future<void> _onBudgetFetched(
     BudgetFetched event,
     Emitter<BudgetState> emit,
@@ -35,6 +50,15 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         status: BudgetStatus.loading,
         currentPeriodFilter: () => event.period,
         currentCategoryFilter: () => event.categoryUlid,
+        currentSearchQuery: () => event.searchQuery,
+        currentSortBy: event.sortBy ?? state.currentSortBy,
+        currentSortOrder: event.sortOrder ?? state.currentSortOrder,
+        currentMinAmountLimit: () => event.minAmountLimit,
+        currentMaxAmountLimit: () => event.maxAmountLimit,
+        currentStartDateFrom: () => event.startDateFrom,
+        currentStartDateTo: () => event.startDateTo,
+        currentEndDateFrom: () => event.endDateFrom,
+        currentEndDateTo: () => event.endDateTo,
       ),
     );
 
@@ -43,6 +67,15 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
           GetBudgetsParams(
             period: event.period,
             categoryUlid: event.categoryUlid,
+            searchQuery: event.searchQuery,
+            sortBy: event.sortBy ?? state.currentSortBy,
+            sortOrder: event.sortOrder ?? state.currentSortOrder,
+            minAmountLimit: event.minAmountLimit,
+            maxAmountLimit: event.maxAmountLimit,
+            startDateFrom: event.startDateFrom,
+            startDateTo: event.startDateTo,
+            endDateFrom: event.endDateFrom,
+            endDateTo: event.endDateTo,
           ),
         )
         .run();
@@ -66,7 +99,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     );
   }
 
-  // * Load more budgets (pagination)
+  // * Load more budgets (cursor-based pagination)
   Future<void> _onBudgetFetchedMore(
     BudgetFetchedMore event,
     Emitter<BudgetState> emit,
@@ -81,6 +114,15 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
             cursor: state.nextCursor,
             period: state.currentPeriodFilter,
             categoryUlid: state.currentCategoryFilter,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmountLimit: state.currentMinAmountLimit,
+            maxAmountLimit: state.currentMaxAmountLimit,
+            startDateFrom: state.currentStartDateFrom,
+            startDateTo: state.currentStartDateTo,
+            endDateFrom: state.currentEndDateFrom,
+            endDateTo: state.currentEndDateTo,
           ),
         )
         .run();
@@ -104,7 +146,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     );
   }
 
-  // * Refresh budgets (reset & fetch)
+  // * Refresh budgets (reset & fetch with current filters)
   Future<void> _onBudgetRefreshed(
     BudgetRefreshed event,
     Emitter<BudgetState> emit,
@@ -122,8 +164,227 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
           GetBudgetsParams(
             period: state.currentPeriodFilter,
             categoryUlid: state.currentCategoryFilter,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmountLimit: state.currentMinAmountLimit,
+            maxAmountLimit: state.currentMaxAmountLimit,
+            startDateFrom: state.currentStartDateFrom,
+            startDateTo: state.currentStartDateTo,
+            endDateFrom: state.currentEndDateFrom,
+            endDateTo: state.currentEndDateTo,
           ),
         )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: BudgetStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: BudgetStatus.success,
+          budgets: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Search budgets by category name (debounced)
+  Future<void> _onBudgetSearched(
+    BudgetSearched event,
+    Emitter<BudgetState> emit,
+  ) async {
+    final query = event.query.trim();
+
+    emit(
+      state.copyWith(
+        status: BudgetStatus.loading,
+        currentSearchQuery: () => query.isEmpty ? null : query,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _budgetRepository
+        .getBudgets(
+          GetBudgetsParams(
+            period: state.currentPeriodFilter,
+            categoryUlid: state.currentCategoryFilter,
+            searchQuery: query.isEmpty ? null : query,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmountLimit: state.currentMinAmountLimit,
+            maxAmountLimit: state.currentMaxAmountLimit,
+            startDateFrom: state.currentStartDateFrom,
+            startDateTo: state.currentStartDateTo,
+            endDateFrom: state.currentEndDateFrom,
+            endDateTo: state.currentEndDateTo,
+          ),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: BudgetStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: BudgetStatus.success,
+          budgets: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Apply multiple filters at once
+  Future<void> _onBudgetFiltered(
+    BudgetFiltered event,
+    Emitter<BudgetState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: BudgetStatus.loading,
+        currentPeriodFilter: () => event.period,
+        currentCategoryFilter: () => event.categoryUlid,
+        currentMinAmountLimit: () => event.minAmountLimit,
+        currentMaxAmountLimit: () => event.maxAmountLimit,
+        currentStartDateFrom: () => event.startDateFrom,
+        currentStartDateTo: () => event.startDateTo,
+        currentEndDateFrom: () => event.endDateFrom,
+        currentEndDateTo: () => event.endDateTo,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _budgetRepository
+        .getBudgets(
+          GetBudgetsParams(
+            period: event.period,
+            categoryUlid: event.categoryUlid,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmountLimit: event.minAmountLimit,
+            maxAmountLimit: event.maxAmountLimit,
+            startDateFrom: event.startDateFrom,
+            startDateTo: event.startDateTo,
+            endDateFrom: event.endDateFrom,
+            endDateTo: event.endDateTo,
+          ),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: BudgetStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: BudgetStatus.success,
+          budgets: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Change sorting options
+  Future<void> _onBudgetSorted(
+    BudgetSorted event,
+    Emitter<BudgetState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: BudgetStatus.loading,
+        currentSortBy: event.sortBy,
+        currentSortOrder: event.sortOrder,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _budgetRepository
+        .getBudgets(
+          GetBudgetsParams(
+            period: state.currentPeriodFilter,
+            categoryUlid: state.currentCategoryFilter,
+            searchQuery: state.currentSearchQuery,
+            sortBy: event.sortBy,
+            sortOrder: event.sortOrder,
+            minAmountLimit: state.currentMinAmountLimit,
+            maxAmountLimit: state.currentMaxAmountLimit,
+            startDateFrom: state.currentStartDateFrom,
+            startDateTo: state.currentStartDateTo,
+            endDateFrom: state.currentEndDateFrom,
+            endDateTo: state.currentEndDateTo,
+          ),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: BudgetStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: BudgetStatus.success,
+          budgets: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Clear all filters and reset to default
+  Future<void> _onBudgetFilterCleared(
+    BudgetFilterCleared event,
+    Emitter<BudgetState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: BudgetStatus.loading,
+        currentPeriodFilter: () => null,
+        currentCategoryFilter: () => null,
+        currentSearchQuery: () => null,
+        currentSortBy: BudgetSortBy.createdAt,
+        currentSortOrder: BudgetSortOrder.descending,
+        currentMinAmountLimit: () => null,
+        currentMaxAmountLimit: () => null,
+        currentStartDateFrom: () => null,
+        currentStartDateTo: () => null,
+        currentEndDateFrom: () => null,
+        currentEndDateTo: () => null,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _budgetRepository
+        .getBudgets(const GetBudgetsParams())
         .run();
 
     result.fold(

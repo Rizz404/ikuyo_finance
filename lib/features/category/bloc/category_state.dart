@@ -13,7 +13,14 @@ final class CategoryState extends Equatable {
   final String? errorMessage;
   final bool hasReachedMax;
   final String? nextCursor;
-  final CategoryType? currentFilter;
+
+  // * Filter state
+  final CategoryType? currentTypeFilter;
+  final String? currentSearchQuery;
+  final CategorySortBy currentSortBy;
+  final CategorySortOrder currentSortOrder;
+  final String? currentParentUlidFilter;
+  final bool? currentIsRootOnlyFilter;
 
   // * Write state (terpisah dari read)
   final CategoryWriteStatus writeStatus;
@@ -27,7 +34,12 @@ final class CategoryState extends Equatable {
     this.errorMessage,
     this.hasReachedMax = false,
     this.nextCursor,
-    this.currentFilter,
+    this.currentTypeFilter,
+    this.currentSearchQuery,
+    this.currentSortBy = CategorySortBy.createdAt,
+    this.currentSortOrder = CategorySortOrder.descending,
+    this.currentParentUlidFilter,
+    this.currentIsRootOnlyFilter,
     this.writeStatus = CategoryWriteStatus.initial,
     this.writeSuccessMessage,
     this.writeErrorMessage,
@@ -37,9 +49,28 @@ final class CategoryState extends Equatable {
   // * Factory constructors for cleaner state creation
   const CategoryState.initial() : this();
 
+  // * Computed properties
   bool get isLoading => status == CategoryStatus.loading;
   bool get isLoadingMore => status == CategoryStatus.loadingMore;
   bool get isWriting => writeStatus == CategoryWriteStatus.loading;
+
+  // * Check if any filter is active
+  bool get hasActiveFilters =>
+      currentTypeFilter != null ||
+      currentSearchQuery != null ||
+      currentParentUlidFilter != null ||
+      currentIsRootOnlyFilter != null;
+
+  // * Get current params for refetching (useful for pagination)
+  GetCategoriesParams get currentParams => GetCategoriesParams(
+    cursor: nextCursor,
+    type: currentTypeFilter,
+    searchQuery: currentSearchQuery,
+    sortBy: currentSortBy,
+    sortOrder: currentSortOrder,
+    parentUlid: currentParentUlidFilter,
+    isRootOnly: currentIsRootOnlyFilter,
+  );
 
   CategoryState copyWith({
     CategoryStatus? status,
@@ -47,7 +78,12 @@ final class CategoryState extends Equatable {
     String? Function()? errorMessage,
     bool? hasReachedMax,
     String? Function()? nextCursor,
-    CategoryType? Function()? currentFilter,
+    CategoryType? Function()? currentTypeFilter,
+    String? Function()? currentSearchQuery,
+    CategorySortBy? currentSortBy,
+    CategorySortOrder? currentSortOrder,
+    String? Function()? currentParentUlidFilter,
+    bool? Function()? currentIsRootOnlyFilter,
     CategoryWriteStatus? writeStatus,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
@@ -59,9 +95,20 @@ final class CategoryState extends Equatable {
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       nextCursor: nextCursor != null ? nextCursor() : this.nextCursor,
-      currentFilter: currentFilter != null
-          ? currentFilter()
-          : this.currentFilter,
+      currentTypeFilter: currentTypeFilter != null
+          ? currentTypeFilter()
+          : this.currentTypeFilter,
+      currentSearchQuery: currentSearchQuery != null
+          ? currentSearchQuery()
+          : this.currentSearchQuery,
+      currentSortBy: currentSortBy ?? this.currentSortBy,
+      currentSortOrder: currentSortOrder ?? this.currentSortOrder,
+      currentParentUlidFilter: currentParentUlidFilter != null
+          ? currentParentUlidFilter()
+          : this.currentParentUlidFilter,
+      currentIsRootOnlyFilter: currentIsRootOnlyFilter != null
+          ? currentIsRootOnlyFilter()
+          : this.currentIsRootOnlyFilter,
       writeStatus: writeStatus ?? this.writeStatus,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
@@ -82,7 +129,12 @@ final class CategoryState extends Equatable {
     errorMessage,
     hasReachedMax,
     nextCursor,
-    currentFilter,
+    currentTypeFilter,
+    currentSearchQuery,
+    currentSortBy,
+    currentSortOrder,
+    currentParentUlidFilter,
+    currentIsRootOnlyFilter,
     writeStatus,
     writeSuccessMessage,
     writeErrorMessage,
