@@ -11,6 +11,8 @@ class AppDateTimePicker extends StatelessWidget {
   final DateTime? initialValue;
   final DateTime? firstDate;
   final DateTime? lastDate;
+  final String? hintText;
+  final Widget? prefixIcon;
 
   const AppDateTimePicker({
     super.key,
@@ -22,6 +24,8 @@ class AppDateTimePicker extends StatelessWidget {
     this.initialValue,
     this.firstDate,
     this.lastDate,
+    this.hintText,
+    this.prefixIcon,
   });
 
   IconData get _defaultIcon {
@@ -42,6 +46,8 @@ class AppDateTimePicker extends StatelessWidget {
       inputType: inputType,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hintText,
+        prefixIcon: prefixIcon,
         suffixIcon: Icon(icon ?? _defaultIcon),
         filled: true,
         fillColor: context.colors.surface,

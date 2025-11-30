@@ -2,64 +2,83 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
-import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
-import 'package:ikuyo_finance/features/asset/widgets/asset_card.dart';
+import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
+import 'package:ikuyo_finance/features/budget/models/budget.dart';
+import 'package:ikuyo_finance/features/budget/widgets/budget_card.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
-class AssetScreen extends StatefulWidget {
-  const AssetScreen({super.key});
+class BudgetScreen extends StatefulWidget {
+  const BudgetScreen({super.key});
 
   @override
-  State<AssetScreen> createState() => _AssetScreenState();
+  State<BudgetScreen> createState() => _BudgetScreenState();
 }
 
-class _AssetScreenState extends State<AssetScreen>
+class _BudgetScreenState extends State<BudgetScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  BudgetPeriod? _currentFilter;
 
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
+    _tabController.addListener(_onTabChanged);
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
   }
 
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+
+    final newFilter = switch (_tabController.index) {
+      0 => null, // * Semua
+      1 => BudgetPeriod.monthly,
+      2 => BudgetPeriod.weekly,
+      3 => BudgetPeriod.yearly,
+      4 => BudgetPeriod.custom,
+      _ => null,
+    };
+
+    if (newFilter != _currentFilter) {
+      _currentFilter = newFilter;
+      context.read<BudgetBloc>().add(BudgetFetched(period: newFilter));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AssetBloc, AssetState>(
+    return BlocBuilder<BudgetBloc, BudgetState>(
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
             title: const AppText(
-              'Aset',
+              'Anggaran',
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
             bottom: TabBar(
               controller: _tabController,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
               tabs: const [
-                Tab(text: 'Daftar'),
-                Tab(text: 'Statistik'),
+                Tab(text: 'Semua'),
+                Tab(text: 'Bulanan'),
+                Tab(text: 'Mingguan'),
+                Tab(text: 'Tahunan'),
+                Tab(text: 'Kustom'),
               ],
             ),
           ),
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              // * Tab 1: Daftar Aset
-              ScreenWrapper(child: _buildListView(context, state)),
-              // * Tab 2: Statistik (Coming Soon)
-              _buildStatisticView(context),
-            ],
-          ),
+          body: ScreenWrapper(child: _buildBody(context, state)),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => context.go('/asset/add'),
+            onPressed: () => context.go('/budget/add'),
             child: const Icon(Icons.add),
           ),
         );
@@ -67,14 +86,14 @@ class _AssetScreenState extends State<AssetScreen>
     );
   }
 
-  Widget _buildListView(BuildContext context, AssetState state) {
+  Widget _buildBody(BuildContext context, BudgetState state) {
     // * Handle loading state
     if (state.isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
 
     // * Handle error state
-    if (state.status == AssetStatus.failure) {
+    if (state.status == BudgetStatus.failure) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -96,7 +115,7 @@ class _AssetScreenState extends State<AssetScreen>
     }
 
     // * Handle empty state
-    if (state.assets.isEmpty) {
+    if (state.budgets.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -108,13 +127,13 @@ class _AssetScreenState extends State<AssetScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              'Belum ada aset',
+              'Belum ada anggaran',
               style: AppTextStyle.bodyLarge,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Tekan + untuk menambah aset baru',
+              'Tekan + untuk menambah anggaran baru',
               style: AppTextStyle.bodySmall,
               color: context.colorScheme.outline,
             ),
@@ -123,61 +142,18 @@ class _AssetScreenState extends State<AssetScreen>
       );
     }
 
-    // * Success state - ListView dengan AssetCard
+    // * Success state - ListView dengan BudgetCard
     return RefreshIndicator(
       onRefresh: () async =>
-          context.read<AssetBloc>().add(const AssetRefreshed()),
+          context.read<BudgetBloc>().add(const BudgetRefreshed()),
       child: ListView.separated(
         padding: const EdgeInsets.all(16),
-        itemCount: state.assets.length,
+        itemCount: state.budgets.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
-          final asset = state.assets[index];
-          return AssetCard(asset: asset);
+          final budget = state.budgets[index];
+          return BudgetCard(budget: budget);
         },
-      ),
-    );
-  }
-
-  Widget _buildStatisticView(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.bar_chart_outlined,
-            size: 80,
-            color: context.colorScheme.outline.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 24),
-          AppText(
-            'Statistik',
-            style: AppTextStyle.headlineSmall,
-            fontWeight: FontWeight.bold,
-            color: context.colorScheme.outline,
-          ),
-          const SizedBox(height: 8),
-          AppText(
-            'Coming Soon',
-            style: AppTextStyle.bodyLarge,
-            color: context.colorScheme.outline.withValues(alpha: 0.7),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: context.colorScheme.primaryContainer.withValues(
-                alpha: 0.3,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: AppText(
-              'Fitur ini sedang dalam pengembangan',
-              style: AppTextStyle.bodySmall,
-              color: context.colorScheme.primary,
-            ),
-          ),
-        ],
       ),
     );
   }

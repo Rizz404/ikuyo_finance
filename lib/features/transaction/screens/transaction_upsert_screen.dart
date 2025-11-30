@@ -48,6 +48,123 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
     }
   }
 
+  void _handleWriteStatus(BuildContext context, TransactionState state) {
+    if (state.writeStatus == TransactionWriteStatus.success) {
+      ToastHelper.instance.showSuccess(
+        context: context,
+        title: widget.isEdit
+            ? 'Transaksi berhasil diperbarui'
+            : 'Transaksi berhasil ditambahkan',
+      );
+      context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
+      context.pop(true);
+    } else if (state.writeStatus == TransactionWriteStatus.failure) {
+      ToastHelper.instance.showError(
+        context: context,
+        title: 'Gagal menyimpan transaksi',
+        description: state.writeErrorMessage,
+      );
+      context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
+    }
+  }
+
+  void _onSubmit() {
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      final values = _formKey.currentState!.value;
+      final amountStr = (values['amount'] as String).replaceAll('.', '');
+      final amount = double.tryParse(amountStr) ?? 0;
+
+      if (widget.isEdit) {
+        context.read<TransactionBloc>().add(
+          TransactionUpdated(
+            params: UpdateTransactionParams(
+              ulid: widget.transaction!.ulid,
+              assetUlid: values['assetUlid'] as String?,
+              categoryUlid: values['categoryUlid'] as String?,
+              amount: amount,
+              transactionDate: values['transactionDate'] as DateTime?,
+              description: values['description'] as String?,
+            ),
+          ),
+        );
+      } else {
+        context.read<TransactionBloc>().add(
+          TransactionCreated(
+            params: CreateTransactionParams(
+              assetUlid: values['assetUlid'] as String,
+              categoryUlid: values['categoryUlid'] as String?,
+              amount: amount,
+              transactionDate: values['transactionDate'] as DateTime?,
+              description: values['description'] as String?,
+            ),
+          ),
+        );
+      }
+    }
+  }
+
+  void _onDelete() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const AppText(
+          'Hapus Transaksi',
+          style: AppTextStyle.titleMedium,
+          fontWeight: FontWeight.bold,
+        ),
+        content: const AppText(
+          'Apakah Anda yakin ingin menghapus transaksi ini?',
+          style: AppTextStyle.bodyMedium,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: AppText('Batal', color: context.colorScheme.outline),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              context.read<TransactionBloc>().add(
+                TransactionDeleted(ulid: widget.transaction!.ulid),
+              );
+            },
+            child: AppText(
+              'Hapus',
+              color: context.semantic.error,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  IconData _getAssetIcon(AssetType type) {
+    switch (type) {
+      case AssetType.cash:
+        return Icons.money;
+      case AssetType.bank:
+        return Icons.account_balance;
+      case AssetType.eWallet:
+        return Icons.phone_android;
+      case AssetType.stock:
+        return Icons.trending_up;
+      case AssetType.crypto:
+        return Icons.connecting_airports_outlined;
+    }
+  }
+
+  Color _getCategoryColor(Category category, BuildContext context) {
+    if (category.color != null) {
+      try {
+        return Color(int.parse(category.color!.replaceFirst('#', '0xFF')));
+      } catch (_) {}
+    }
+    return category.categoryType == CategoryType.expense
+        ? context.semantic.error
+        : context.semantic.success;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<TransactionBloc, TransactionState>(
@@ -234,123 +351,6 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
         ),
       ),
     );
-  }
-
-  void _handleWriteStatus(BuildContext context, TransactionState state) {
-    if (state.writeStatus == TransactionWriteStatus.success) {
-      ToastHelper.instance.showSuccess(
-        context: context,
-        title: widget.isEdit
-            ? 'Transaksi berhasil diperbarui'
-            : 'Transaksi berhasil ditambahkan',
-      );
-      context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
-      context.pop(true);
-    } else if (state.writeStatus == TransactionWriteStatus.failure) {
-      ToastHelper.instance.showError(
-        context: context,
-        title: 'Gagal menyimpan transaksi',
-        description: state.writeErrorMessage,
-      );
-      context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
-    }
-  }
-
-  void _onSubmit() {
-    if (_formKey.currentState?.saveAndValidate() ?? false) {
-      final values = _formKey.currentState!.value;
-      final amountStr = (values['amount'] as String).replaceAll('.', '');
-      final amount = double.tryParse(amountStr) ?? 0;
-
-      if (widget.isEdit) {
-        context.read<TransactionBloc>().add(
-          TransactionUpdated(
-            params: UpdateTransactionParams(
-              ulid: widget.transaction!.ulid,
-              assetUlid: values['assetUlid'] as String?,
-              categoryUlid: values['categoryUlid'] as String?,
-              amount: amount,
-              transactionDate: values['transactionDate'] as DateTime?,
-              description: values['description'] as String?,
-            ),
-          ),
-        );
-      } else {
-        context.read<TransactionBloc>().add(
-          TransactionCreated(
-            params: CreateTransactionParams(
-              assetUlid: values['assetUlid'] as String,
-              categoryUlid: values['categoryUlid'] as String?,
-              amount: amount,
-              transactionDate: values['transactionDate'] as DateTime?,
-              description: values['description'] as String?,
-            ),
-          ),
-        );
-      }
-    }
-  }
-
-  void _onDelete() {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: const AppText(
-          'Hapus Transaksi',
-          style: AppTextStyle.titleMedium,
-          fontWeight: FontWeight.bold,
-        ),
-        content: const AppText(
-          'Apakah Anda yakin ingin menghapus transaksi ini?',
-          style: AppTextStyle.bodyMedium,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: AppText('Batal', color: context.colorScheme.outline),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(ctx).pop();
-              context.read<TransactionBloc>().add(
-                TransactionDeleted(ulid: widget.transaction!.ulid),
-              );
-            },
-            child: AppText(
-              'Hapus',
-              color: context.semantic.error,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getAssetIcon(AssetType type) {
-    switch (type) {
-      case AssetType.cash:
-        return Icons.money;
-      case AssetType.bank:
-        return Icons.account_balance;
-      case AssetType.eWallet:
-        return Icons.phone_android;
-      case AssetType.stock:
-        return Icons.trending_up;
-      case AssetType.crypto:
-        return Icons.connecting_airports_outlined;
-    }
-  }
-
-  Color _getCategoryColor(Category category, BuildContext context) {
-    if (category.color != null) {
-      try {
-        return Color(int.parse(category.color!.replaceFirst('#', '0xFF')));
-      } catch (_) {}
-    }
-    return category.categoryType == CategoryType.expense
-        ? context.semantic.error
-        : context.semantic.success;
   }
 }
 

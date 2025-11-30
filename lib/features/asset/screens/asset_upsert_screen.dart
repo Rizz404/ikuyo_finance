@@ -5,61 +5,51 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
-import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
-import 'package:ikuyo_finance/features/category/models/category.dart';
-import 'package:ikuyo_finance/features/category/models/create_category_params.dart';
-import 'package:ikuyo_finance/features/category/models/update_category_params.dart';
-import 'package:ikuyo_finance/features/category/validators/create_category_validator.dart';
-import 'package:ikuyo_finance/features/category/validators/update_category_validator.dart';
+import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
+import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
+import 'package:ikuyo_finance/features/asset/models/update_asset_params.dart';
+import 'package:ikuyo_finance/features/asset/validators/create_asset_validator.dart';
+import 'package:ikuyo_finance/features/asset/validators/update_asset_validator.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
-import 'package:ikuyo_finance/shared/widgets/app_color_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';
 import 'package:ikuyo_finance/shared/widgets/app_file_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text_field.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
-class CategoryUpsertScreen extends StatefulWidget {
-  final Category? category;
+class AssetUpsertScreen extends StatefulWidget {
+  final Asset? asset;
 
-  const CategoryUpsertScreen({super.key, this.category});
+  const AssetUpsertScreen({super.key, this.asset});
 
-  bool get isEdit => category != null;
+  bool get isEdit => asset != null;
 
   @override
-  State<CategoryUpsertScreen> createState() => _CategoryUpsertScreenState();
+  State<AssetUpsertScreen> createState() => _AssetUpsertScreenState();
 }
 
-class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
+class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   final _filePickerKey = GlobalKey<AppFilePickerState>();
-  String? _selectedColor;
 
-  @override
-  void initState() {
-    super.initState();
-    if (widget.isEdit) {
-      _selectedColor = widget.category!.color;
-    }
-  }
-
-  void _handleWriteStatus(BuildContext context, CategoryState state) {
-    if (state.writeStatus == CategoryWriteStatus.success) {
+  void _handleWriteStatus(BuildContext context, AssetState state) {
+    if (state.writeStatus == AssetWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
         title: widget.isEdit
-            ? 'Kategori berhasil diperbarui'
-            : 'Kategori berhasil ditambahkan',
+            ? 'Aset berhasil diperbarui'
+            : 'Aset berhasil ditambahkan',
       );
-      context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
+      context.read<AssetBloc>().add(const AssetWriteStatusReset());
       context.pop(true);
-    } else if (state.writeStatus == CategoryWriteStatus.failure) {
+    } else if (state.writeStatus == AssetWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: 'Gagal menyimpan kategori',
+        title: 'Gagal menyimpan aset',
         description: state.writeErrorMessage,
       );
-      context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
+      context.read<AssetBloc>().add(const AssetWriteStatusReset());
     }
   }
 
@@ -67,8 +57,10 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final values = _formKey.currentState!.value;
       final name = values['name'] as String;
-      final type = CategoryType.values[values['type'] as int];
-      final color = values['color'] as String?;
+      final type = AssetType.values[values['type'] as int];
+      final balanceStr = values['balance'] as String?;
+      final balance =
+          double.tryParse(balanceStr?.replaceAll(',', '.') ?? '0') ?? 0;
 
       // * Get icon path from file picker
       String? iconPath;
@@ -78,25 +70,25 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       }
 
       if (widget.isEdit) {
-        context.read<CategoryBloc>().add(
-          CategoryUpdated(
-            params: UpdateCategoryParams(
-              ulid: widget.category!.ulid,
+        context.read<AssetBloc>().add(
+          AssetUpdated(
+            params: UpdateAssetParams(
+              ulid: widget.asset!.ulid,
               name: name,
               type: type,
-              icon: iconPath ?? widget.category!.icon,
-              color: color,
+              balance: balance,
+              icon: iconPath ?? widget.asset!.icon,
             ),
           ),
         );
       } else {
-        context.read<CategoryBloc>().add(
-          CategoryCreated(
-            params: CreateCategoryParams(
+        context.read<AssetBloc>().add(
+          AssetCreated(
+            params: CreateAssetParams(
               name: name,
               type: type,
+              balance: balance,
               icon: iconPath,
-              color: color,
             ),
           ),
         );
@@ -109,13 +101,13 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const AppText(
-          'Hapus Kategori',
+          'Hapus Aset',
           style: AppTextStyle.titleMedium,
           fontWeight: FontWeight.bold,
         ),
         content: const AppText(
-          'Apakah Anda yakin ingin menghapus kategori ini? '
-          'Transaksi yang menggunakan kategori ini akan kehilangan kategorinya.',
+          'Apakah Anda yakin ingin menghapus aset ini? '
+          'Transaksi yang terkait dengan aset ini akan terpengaruh.',
           style: AppTextStyle.bodyMedium,
         ),
         actions: [
@@ -126,8 +118,8 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
           TextButton(
             onPressed: () {
               Navigator.of(ctx).pop();
-              context.read<CategoryBloc>().add(
-                CategoryDeleted(ulid: widget.category!.ulid),
+              context.read<AssetBloc>().add(
+                AssetDeleted(ulid: widget.asset!.ulid),
               );
             },
             child: AppText(
@@ -143,13 +135,13 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CategoryBloc, CategoryState>(
+    return BlocListener<AssetBloc, AssetState>(
       listenWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
       listener: _handleWriteStatus,
       child: Scaffold(
         appBar: AppBar(
           title: AppText(
-            widget.isEdit ? 'Edit Kategori' : 'Tambah Kategori',
+            widget.isEdit ? 'Edit Aset' : 'Tambah Aset',
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -166,50 +158,92 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // * Category Type Dropdown
+                  // * Asset Type Dropdown
                   AppDropdown<int>(
                     name: 'type',
-                    label: 'Tipe Kategori',
-                    hintText: 'Pilih tipe kategori',
-                    initialValue:
-                        widget.category?.type ?? CategoryType.expense.index,
-                    prefixIcon: const Icon(Icons.category_outlined),
+                    label: 'Tipe Aset',
+                    hintText: 'Pilih tipe aset',
+                    initialValue: widget.asset?.type ?? AssetType.cash.index,
+                    prefixIcon: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                    ),
                     items: [
                       AppDropdownItem(
-                        value: CategoryType.expense.index,
-                        label: 'Pengeluaran',
+                        value: AssetType.cash.index,
+                        label: 'Kas',
                         icon: Icon(
-                          Icons.arrow_downward,
+                          Icons.wallet_outlined,
                           size: 20,
-                          color: context.semantic.error,
+                          color: Colors.green,
                         ),
                       ),
                       AppDropdownItem(
-                        value: CategoryType.income.index,
-                        label: 'Pemasukan',
+                        value: AssetType.bank.index,
+                        label: 'Bank',
                         icon: Icon(
-                          Icons.arrow_upward,
+                          Icons.account_balance_outlined,
                           size: 20,
-                          color: context.semantic.success,
+                          color: Colors.blue,
+                        ),
+                      ),
+                      AppDropdownItem(
+                        value: AssetType.eWallet.index,
+                        label: 'E-Wallet',
+                        icon: Icon(
+                          Icons.phone_android_outlined,
+                          size: 20,
+                          color: Colors.orange,
+                        ),
+                      ),
+                      AppDropdownItem(
+                        value: AssetType.stock.index,
+                        label: 'Saham',
+                        icon: Icon(
+                          Icons.trending_up_outlined,
+                          size: 20,
+                          color: Colors.purple,
+                        ),
+                      ),
+                      AppDropdownItem(
+                        value: AssetType.crypto.index,
+                        label: 'Crypto',
+                        icon: Icon(
+                          Icons.currency_bitcoin_outlined,
+                          size: 20,
+                          color: Colors.amber,
                         ),
                       ),
                     ],
                     validator: widget.isEdit
-                        ? UpdateCategoryValidator.type
-                        : CreateCategoryValidator.type,
+                        ? UpdateAssetValidator.type
+                        : CreateAssetValidator.type,
                   ),
                   const SizedBox(height: 24),
 
                   // * Name Field
                   AppTextField(
                     name: 'name',
-                    label: 'Nama Kategori',
-                    initialValue: widget.category?.name,
-                    placeHolder: 'Contoh: Makan & Minum',
+                    label: 'Nama Aset',
+                    initialValue: widget.asset?.name,
+                    placeHolder: 'Contoh: BCA, GoPay, Dompet',
                     validator: widget.isEdit
-                        ? UpdateCategoryValidator.name
-                        : CreateCategoryValidator.name,
+                        ? UpdateAssetValidator.name
+                        : CreateAssetValidator.name,
                     prefixIcon: const Icon(Icons.label_outline),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // * Balance Field
+                  AppTextField(
+                    name: 'balance',
+                    label: 'Saldo Awal',
+                    initialValue: widget.asset?.balance.toStringAsFixed(0),
+                    placeHolder: '0',
+                    type: AppTextFieldType.number,
+                    validator: widget.isEdit
+                        ? UpdateAssetValidator.balance
+                        : CreateAssetValidator.balance,
+                    prefixIcon: const Icon(Icons.attach_money_outlined),
                   ),
                   const SizedBox(height: 24),
 
@@ -217,34 +251,24 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                   AppFilePicker(
                     key: _filePickerKey,
                     name: 'icon',
-                    label: 'Ikon Kategori',
+                    label: 'Ikon Aset',
                     hintText: 'Pilih gambar ikon (opsional)',
                     fileType: FileType.image,
                     allowMultiple: false,
                     maxFiles: 1,
                     maxSizeInMB: 2,
                   ),
-                  const SizedBox(height: 24),
-
-                  // * Color Picker
-                  AppColorPicker(
-                    name: 'color',
-                    label: 'Warna Kategori',
-                    initialValue: _selectedColor,
-                    onChanged: (color) =>
-                        setState(() => _selectedColor = color),
-                  ),
                   const SizedBox(height: 32),
 
                   // * Submit Button
-                  BlocBuilder<CategoryBloc, CategoryState>(
+                  BlocBuilder<AssetBloc, AssetState>(
                     buildWhen: (prev, curr) =>
                         prev.writeStatus != curr.writeStatus,
                     builder: (context, state) {
                       return AppButton(
                         text: widget.isEdit
                             ? 'Simpan Perubahan'
-                            : 'Tambah Kategori',
+                            : 'Tambah Aset',
                         isLoading: state.isWriting,
                         onPressed: state.isWriting ? null : _onSubmit,
                         leadingIcon: Icon(
@@ -257,12 +281,12 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
 
                   // * Delete Button (only for edit mode)
                   if (widget.isEdit) ...[
-                    BlocBuilder<CategoryBloc, CategoryState>(
+                    BlocBuilder<AssetBloc, AssetState>(
                       buildWhen: (prev, curr) =>
                           prev.writeStatus != curr.writeStatus,
                       builder: (context, state) {
                         return AppButton(
-                          text: 'Hapus Kategori',
+                          text: 'Hapus Aset',
                           variant: AppButtonVariant.outlined,
                           color: AppButtonColor.error,
                           isLoading: state.isWriting,
