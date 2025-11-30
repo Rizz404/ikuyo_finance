@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
@@ -22,7 +22,7 @@ class AssetCard extends StatelessWidget {
     );
 
     return GestureDetector(
-      onTap: onTap ?? () => context.go('/asset/edit', extra: asset),
+      onTap: onTap ?? () => context.pushToEditAsset(asset),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

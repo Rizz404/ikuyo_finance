@@ -7,6 +7,9 @@ import 'package:ikuyo_finance/features/asset/screens/asset_screen.dart';
 import 'package:ikuyo_finance/features/asset/screens/asset_upsert_screen.dart';
 import 'package:ikuyo_finance/features/auth/screens/sign_in_screen.dart';
 import 'package:ikuyo_finance/features/auth/screens/sign_up_screen.dart';
+import 'package:ikuyo_finance/features/budget/models/budget.dart';
+import 'package:ikuyo_finance/features/budget/screens/budget_screen.dart';
+import 'package:ikuyo_finance/features/budget/screens/budget_upsert_screen.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/screens/category_screen.dart';
 import 'package:ikuyo_finance/features/category/screens/category_upsert_screen.dart';
@@ -190,6 +193,38 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
               return AppPageTransitions.slideRight(
                 key: state.pageKey,
                 child: CategoryUpsertScreen(category: category),
+              );
+            },
+          ),
+        ],
+      ),
+      // * Budget routes - outside shell (fullscreen)
+      GoRoute(
+        name: AppRoutes.budgetName,
+        path: AppRoutes.budgetPath,
+        pageBuilder: (context, state) => AppPageTransitions.slideRight(
+          key: state.pageKey,
+          child: const BudgetScreen(),
+        ),
+        routes: [
+          // * Add budget - slide from bottom
+          GoRoute(
+            name: AppRoutes.budgetAddName,
+            path: AppRoutes.budgetAddPath,
+            pageBuilder: (context, state) => AppPageTransitions.slideBottom(
+              key: state.pageKey,
+              child: const BudgetUpsertScreen(),
+            ),
+          ),
+          // * Edit budget - slide from right
+          GoRoute(
+            name: AppRoutes.budgetEditName,
+            path: AppRoutes.budgetEditPath,
+            pageBuilder: (context, state) {
+              final budget = state.extra as Budget?;
+              return AppPageTransitions.slideRight(
+                key: state.pageKey,
+                child: BudgetUpsertScreen(budget: budget),
               );
             },
           ),

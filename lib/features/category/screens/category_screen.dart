@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -72,7 +72,7 @@ class _CategoryScreenState extends State<CategoryScreen>
           ),
           body: ScreenWrapper(child: _buildBody(context, state)),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => context.go('/category/add'),
+            onPressed: () => context.pushToAddCategory(),
             child: const Icon(Icons.add),
           ),
         );

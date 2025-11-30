@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
@@ -17,7 +17,7 @@ class CategoryCard extends StatelessWidget {
     final color = _getCategoryColor(context);
 
     return GestureDetector(
-      onTap: onTap ?? () => context.go('/category/edit', extra: category),
+      onTap: onTap ?? () => context.pushToEditCategory(category),
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

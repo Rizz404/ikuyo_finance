@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
@@ -19,7 +19,7 @@ class TransactionTile extends StatelessWidget {
     final isExpense = category?.categoryType == CategoryType.expense;
 
     return GestureDetector(
-      onTap: () => context.go('/transaction/edit', extra: transaction),
+      onTap: () => context.pushToEditTransaction(transaction),
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),

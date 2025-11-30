@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/router/app_routes.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
+import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 
@@ -37,6 +38,15 @@ extension AppNavigator on BuildContext {
   void pushToEditCategory(Category category) => push(
     '${AppRoutes.categoryPath}/${AppRoutes.categoryEditPath}',
     extra: category,
+  );
+
+  // * Budget Navigation
+  void pushToBudget() => push(AppRoutes.budgetPath);
+  void pushToAddBudget() =>
+      push('${AppRoutes.budgetPath}/${AppRoutes.budgetAddPath}');
+  void pushToEditBudget(Budget budget) => push(
+    '${AppRoutes.budgetPath}/${AppRoutes.budgetEditPath}',
+    extra: budget,
   );
 
   // * Named Navigation (alternative using route names)

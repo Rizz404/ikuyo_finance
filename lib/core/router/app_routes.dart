@@ -55,4 +55,14 @@ final class AppRoutes {
 
   static const String categoryEditName = 'category-edit';
   static const String categoryEditPath = 'edit';
+
+  // * Budget Routes
+  static const String budgetName = 'budget';
+  static const String budgetPath = '/budget';
+
+  static const String budgetAddName = 'budget-add';
+  static const String budgetAddPath = 'add';
+
+  static const String budgetEditName = 'budget-edit';
+  static const String budgetEditPath = 'edit';
 }

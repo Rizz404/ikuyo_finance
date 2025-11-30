@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:ikuyo_finance/features/asset/widgets/asset_card.dart';
@@ -59,7 +59,7 @@ class _AssetScreenState extends State<AssetScreen>
             ],
           ),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => context.go('/asset/add'),
+            onPressed: () => context.pushToAddAsset(),
             child: const Icon(Icons.add),
           ),
         );

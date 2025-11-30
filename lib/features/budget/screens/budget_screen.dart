@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
@@ -78,7 +78,7 @@ class _BudgetScreenState extends State<BudgetScreen>
           ),
           body: ScreenWrapper(child: _buildBody(context, state)),
           floatingActionButton: FloatingActionButton(
-            onPressed: () => context.go('/budget/add'),
+            onPressed: () => context.pushToAddBudget(),
             child: const Icon(Icons.add),
           ),
         );
