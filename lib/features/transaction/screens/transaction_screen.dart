@@ -50,6 +50,7 @@ class _TransactionScreenState extends State<TransactionScreen>
   }
 
   bool get _isDailyTab => _currentTabIndex == 0;
+  bool get _isMonthlyTab => _currentTabIndex == 1;
   bool get _isDailyOrCalendarTab =>
       _currentTabIndex == 0 || _currentTabIndex == 2;
 
@@ -59,7 +60,9 @@ class _TransactionScreenState extends State<TransactionScreen>
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            title: _buildMonthNavigator(context, state),
+            title: _isMonthlyTab
+                ? _buildYearNavigator(context, state)
+                : _buildMonthNavigator(context, state),
             actions: [
               // * Only show actions on Daily/Calendar tab
               if (_isDailyOrCalendarTab) ...[
@@ -239,7 +242,13 @@ class _TransactionScreenState extends State<TransactionScreen>
           hasReachedMax: state.hasReachedMax,
           isLoadingMore: state.isLoadingMore,
         ),
-        const MonthlyTransactionView(),
+        MonthlyTransactionView(
+          transactions: state.transactions,
+          onRefresh: () =>
+              context.read<TransactionBloc>().add(const TransactionRefreshed()),
+          currentYear: state.currentYear,
+          currentMonth: state.currentMonth.month,
+        ),
         const CalendarTransactionView(),
       ],
     );
@@ -297,6 +306,61 @@ class _TransactionScreenState extends State<TransactionScreen>
     if (selected != null && context.mounted) {
       context.read<TransactionBloc>().add(
         TransactionMonthChanged(month: selected),
+      );
+    }
+  }
+
+  // * Year navigator widget with prev/next arrows (for Monthly tab)
+  Widget _buildYearNavigator(BuildContext context, TransactionState state) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: const Icon(Icons.chevron_left),
+          onPressed: () => _changeYear(context, state.currentYear, -1),
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+        const SizedBox(width: 8),
+        GestureDetector(
+          onTap: () => _showYearPicker(context, state.currentYear),
+          child: AppText(
+            '${state.currentYear}',
+            style: AppTextStyle.titleMedium,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(width: 8),
+        IconButton(
+          icon: const Icon(Icons.chevron_right),
+          onPressed: () => _changeYear(context, state.currentYear, 1),
+          visualDensity: VisualDensity.compact,
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+        ),
+      ],
+    );
+  }
+
+  void _changeYear(BuildContext context, int currentYear, int offset) {
+    context.read<TransactionBloc>().add(
+      TransactionYearChanged(year: currentYear + offset),
+    );
+  }
+
+  Future<void> _showYearPicker(BuildContext context, int currentYear) async {
+    final selected = await showDatePicker(
+      context: context,
+      initialDate: DateTime(currentYear),
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+      initialDatePickerMode: DatePickerMode.year,
+    );
+
+    if (selected != null && context.mounted) {
+      context.read<TransactionBloc>().add(
+        TransactionYearChanged(year: selected.year),
       );
     }
   }

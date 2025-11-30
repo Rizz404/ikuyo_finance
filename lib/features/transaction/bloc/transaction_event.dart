@@ -86,6 +86,13 @@ final class TransactionMonthChanged extends TransactionEvent {
   final DateTime month;
 }
 
+// * Year navigation - changes the current displayed year (for monthly view)
+final class TransactionYearChanged extends TransactionEvent {
+  const TransactionYearChanged({required this.year});
+
+  final int year;
+}
+
 // * Write Events
 final class TransactionCreated extends TransactionEvent {
   final CreateTransactionParams params;

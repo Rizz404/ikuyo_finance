@@ -31,6 +31,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<TransactionSorted>(_onTransactionSorted);
     on<TransactionFilterCleared>(_onTransactionFilterCleared);
     on<TransactionMonthChanged>(_onTransactionMonthChanged);
+    on<TransactionYearChanged>(_onTransactionYearChanged);
 
     // * Write events
     on<TransactionCreated>(_onTransactionCreated);
@@ -451,6 +452,61 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             sortOrder: state.currentSortOrder,
             minAmount: state.currentMinAmount,
             maxAmount: state.currentMaxAmount,
+          ),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Change year and fetch transactions for that year (for monthly view)
+  Future<void> _onTransactionYearChanged(
+    TransactionYearChanged event,
+    Emitter<TransactionState> emit,
+  ) async {
+    final startDate = DateTime(event.year, 1, 1);
+    final endDate = DateTime(event.year, 12, 31, 23, 59, 59);
+
+    emit(
+      state.copyWith(
+        status: TransactionStatus.loading,
+        currentYear: event.year,
+        currentStartDateFilter: () => startDate,
+        currentEndDateFilter: () => endDate,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _transactionRepository
+        .getTransactions(
+          GetTransactionsParams(
+            assetUlid: state.currentAssetFilter,
+            categoryUlid: state.currentCategoryFilter,
+            startDate: startDate,
+            endDate: endDate,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmount: state.currentMinAmount,
+            maxAmount: state.currentMaxAmount,
+            limit: 500, // * Fetch more for yearly view
           ),
         )
         .run();

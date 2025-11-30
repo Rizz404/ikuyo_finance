@@ -17,6 +17,9 @@ final class TransactionState extends Equatable {
   // * Month navigation state
   final DateTime currentMonth;
 
+  // * Year navigation state (for monthly view)
+  final int currentYear;
+
   // * Filter state
   final String? currentAssetFilter;
   final String? currentCategoryFilter;
@@ -41,6 +44,7 @@ final class TransactionState extends Equatable {
     this.hasReachedMax = false,
     this.nextCursor,
     DateTime? currentMonth,
+    int? currentYear,
     this.currentAssetFilter,
     this.currentCategoryFilter,
     this.currentStartDateFilter,
@@ -54,7 +58,8 @@ final class TransactionState extends Equatable {
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedTransaction,
-  }) : currentMonth = currentMonth ?? DateTime.now();
+  }) : currentMonth = currentMonth ?? DateTime.now(),
+       currentYear = currentYear ?? DateTime.now().year;
 
   // * Factory constructors for cleaner state creation
   factory TransactionState.initial() => TransactionState();
@@ -95,6 +100,7 @@ final class TransactionState extends Equatable {
     bool? hasReachedMax,
     String? Function()? nextCursor,
     DateTime? currentMonth,
+    int? currentYear,
     String? Function()? currentAssetFilter,
     String? Function()? currentCategoryFilter,
     DateTime? Function()? currentStartDateFilter,
@@ -116,6 +122,7 @@ final class TransactionState extends Equatable {
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       nextCursor: nextCursor != null ? nextCursor() : this.nextCursor,
       currentMonth: currentMonth ?? this.currentMonth,
+      currentYear: currentYear ?? this.currentYear,
       currentAssetFilter: currentAssetFilter != null
           ? currentAssetFilter()
           : this.currentAssetFilter,
@@ -160,6 +167,7 @@ final class TransactionState extends Equatable {
     hasReachedMax,
     nextCursor,
     currentMonth,
+    currentYear,
     currentAssetFilter,
     currentCategoryFilter,
     currentStartDateFilter,
