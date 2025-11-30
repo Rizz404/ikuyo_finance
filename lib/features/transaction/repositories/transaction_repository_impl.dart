@@ -12,6 +12,12 @@ import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
+// * Helper untuk menghitung balance adjustment berdasarkan category type
+double _getBalanceAdjustment(double amount, Category? category) {
+  if (category == null) return amount; // * Default: treat as income
+  return category.categoryType == CategoryType.expense ? -amount : amount;
+}
+
 class TransactionRepositoryImpl implements TransactionRepository {
   final ObjectBoxStorage _storage;
 
@@ -63,7 +69,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
         }
 
         _box.put(transaction);
-        logInfo('Transaction created successfully');
+
+        // * Update asset balance berdasarkan category type
+        // * Income: +amount, Expense: -amount
+        final balanceAdjustment = _getBalanceAdjustment(
+          params.amount,
+          transaction.category.target,
+        );
+        asset.balance += balanceAdjustment;
+        asset.updatedAt = DateTime.now();
+        _assetBox.put(asset);
+
+        logInfo('Transaction created successfully, asset balance updated');
 
         return Success(message: 'Transaction created', data: transaction);
       },
@@ -273,6 +290,10 @@ class TransactionRepositoryImpl implements TransactionRepository {
           throw Exception('Transaction not found');
         }
 
+        final oldAmount = transaction.amount;
+        final oldAsset = transaction.asset.target;
+        final oldCategory = transaction.category.target;
+
         // * Update fields jika ada
         if (params.amount != null) transaction.amount = params.amount!;
         if (params.transactionDate != null) {
@@ -284,17 +305,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
         if (params.imagePath != null) transaction.imagePath = params.imagePath;
 
         // * Update asset jika ada
+        Asset? newAsset;
         if (params.assetUlid != null) {
-          final asset = _assetBox
+          newAsset = _assetBox
               .query(Asset_.ulid.equals(params.assetUlid!))
               .build()
               .findFirst();
 
-          if (asset == null) {
+          if (newAsset == null) {
             throw Exception('Asset not found');
           }
 
-          transaction.asset.target = asset;
+          transaction.asset.target = newAsset;
         }
 
         // * Update category jika ada
@@ -311,10 +333,47 @@ class TransactionRepositoryImpl implements TransactionRepository {
           transaction.category.target = category;
         }
 
+        // * Handle balance updates
+        final amountChanged =
+            params.amount != null && params.amount != oldAmount;
+        final assetChanged =
+            newAsset != null && newAsset.ulid != oldAsset?.ulid;
+        final categoryChanged =
+            params.categoryUlid != null &&
+            transaction.category.target?.ulid != oldCategory?.ulid;
+
+        // * Calculate old and new balance adjustments
+        final oldBalanceAdjustment = _getBalanceAdjustment(
+          oldAmount,
+          oldCategory,
+        );
+        final newBalanceAdjustment = _getBalanceAdjustment(
+          transaction.amount,
+          transaction.category.target,
+        );
+
+        if (assetChanged && oldAsset != null) {
+          // * Revert old asset balance (undo old adjustment)
+          oldAsset.balance -= oldBalanceAdjustment;
+          oldAsset.updatedAt = DateTime.now();
+          _assetBox.put(oldAsset);
+
+          // * Apply to new asset
+          newAsset.balance += newBalanceAdjustment;
+          newAsset.updatedAt = DateTime.now();
+          _assetBox.put(newAsset);
+        } else if ((amountChanged || categoryChanged) && oldAsset != null) {
+          // * Same asset, different amount or category: adjust by difference
+          final difference = newBalanceAdjustment - oldBalanceAdjustment;
+          oldAsset.balance += difference;
+          oldAsset.updatedAt = DateTime.now();
+          _assetBox.put(oldAsset);
+        }
+
         transaction.updatedAt = DateTime.now();
         _box.put(transaction);
 
-        logInfo('Transaction updated successfully');
+        logInfo('Transaction updated successfully, asset balance updated');
         return Success(message: 'Transaction updated', data: transaction);
       },
       (error, stackTrace) {
@@ -343,8 +402,20 @@ class TransactionRepositoryImpl implements TransactionRepository {
           throw Exception('Transaction not found');
         }
 
+        // * Revert asset balance (undo the original adjustment)
+        final asset = transaction.asset.target;
+        if (asset != null) {
+          final balanceAdjustment = _getBalanceAdjustment(
+            transaction.amount,
+            transaction.category.target,
+          );
+          asset.balance -= balanceAdjustment;
+          asset.updatedAt = DateTime.now();
+          _assetBox.put(asset);
+        }
+
         _box.remove(transaction.id);
-        logInfo('Transaction deleted successfully');
+        logInfo('Transaction deleted successfully, asset balance reverted');
 
         return const ActionSuccess(message: 'Transaction deleted');
       },

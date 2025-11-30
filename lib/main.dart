@@ -49,16 +49,30 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(create: (_) => getIt<ThemeCubit>()),
       ],
-      child: BlocBuilder<ThemeCubit, ThemeState>(
-        builder: (context, themeState) {
-          return MaterialApp.router(
-            title: 'Ikuyo Finance',
-            theme: themeState.lightTheme,
-            darkTheme: themeState.darkTheme,
-            themeMode: themeState.themeMode,
-            routerConfig: getIt<GoRouter>(),
-          );
-        },
+      // * Use BlocListener for loose coupling between blocs (best practice)
+      child: MultiBlocListener(
+        listeners: [
+          BlocListener<TransactionBloc, TransactionState>(
+            listenWhen: (previous, current) =>
+                previous.writeStatus != current.writeStatus &&
+                current.writeStatus == TransactionWriteStatus.success,
+            listener: (context, state) {
+              // * Refresh asset list when transaction write succeeds
+              context.read<AssetBloc>().add(const AssetRefreshed());
+            },
+          ),
+        ],
+        child: BlocBuilder<ThemeCubit, ThemeState>(
+          builder: (context, themeState) {
+            return MaterialApp.router(
+              title: 'Ikuyo Finance',
+              theme: themeState.lightTheme,
+              darkTheme: themeState.darkTheme,
+              themeMode: themeState.themeMode,
+              routerConfig: getIt<GoRouter>(),
+            );
+          },
+        ),
       ),
     );
   }
