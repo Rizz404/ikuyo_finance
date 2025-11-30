@@ -13,7 +13,14 @@ final class AssetState extends Equatable {
   final String? errorMessage;
   final bool hasReachedMax;
   final String? nextCursor;
-  final AssetType? currentFilter;
+
+  // * Filter state
+  final AssetType? currentTypeFilter;
+  final String? currentSearchQuery;
+  final AssetSortBy currentSortBy;
+  final AssetSortOrder currentSortOrder;
+  final double? currentMinBalance;
+  final double? currentMaxBalance;
 
   // * Write state (terpisah dari read)
   final AssetWriteStatus writeStatus;
@@ -27,7 +34,12 @@ final class AssetState extends Equatable {
     this.errorMessage,
     this.hasReachedMax = false,
     this.nextCursor,
-    this.currentFilter,
+    this.currentTypeFilter,
+    this.currentSearchQuery,
+    this.currentSortBy = AssetSortBy.createdAt,
+    this.currentSortOrder = AssetSortOrder.descending,
+    this.currentMinBalance,
+    this.currentMaxBalance,
     this.writeStatus = AssetWriteStatus.initial,
     this.writeSuccessMessage,
     this.writeErrorMessage,
@@ -37,9 +49,28 @@ final class AssetState extends Equatable {
   // * Factory constructors for cleaner state creation
   const AssetState.initial() : this();
 
+  // * Computed properties
   bool get isLoading => status == AssetStatus.loading;
   bool get isLoadingMore => status == AssetStatus.loadingMore;
   bool get isWriting => writeStatus == AssetWriteStatus.loading;
+
+  // * Check if any filter is active
+  bool get hasActiveFilters =>
+      currentTypeFilter != null ||
+      currentSearchQuery != null ||
+      currentMinBalance != null ||
+      currentMaxBalance != null;
+
+  // * Get current params for refetching (useful for pagination)
+  GetAssetsParams get currentParams => GetAssetsParams(
+    cursor: nextCursor,
+    type: currentTypeFilter,
+    searchQuery: currentSearchQuery,
+    sortBy: currentSortBy,
+    sortOrder: currentSortOrder,
+    minBalance: currentMinBalance,
+    maxBalance: currentMaxBalance,
+  );
 
   AssetState copyWith({
     AssetStatus? status,
@@ -47,7 +78,12 @@ final class AssetState extends Equatable {
     String? Function()? errorMessage,
     bool? hasReachedMax,
     String? Function()? nextCursor,
-    AssetType? Function()? currentFilter,
+    AssetType? Function()? currentTypeFilter,
+    String? Function()? currentSearchQuery,
+    AssetSortBy? currentSortBy,
+    AssetSortOrder? currentSortOrder,
+    double? Function()? currentMinBalance,
+    double? Function()? currentMaxBalance,
     AssetWriteStatus? writeStatus,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
@@ -59,9 +95,20 @@ final class AssetState extends Equatable {
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
       nextCursor: nextCursor != null ? nextCursor() : this.nextCursor,
-      currentFilter: currentFilter != null
-          ? currentFilter()
-          : this.currentFilter,
+      currentTypeFilter: currentTypeFilter != null
+          ? currentTypeFilter()
+          : this.currentTypeFilter,
+      currentSearchQuery: currentSearchQuery != null
+          ? currentSearchQuery()
+          : this.currentSearchQuery,
+      currentSortBy: currentSortBy ?? this.currentSortBy,
+      currentSortOrder: currentSortOrder ?? this.currentSortOrder,
+      currentMinBalance: currentMinBalance != null
+          ? currentMinBalance()
+          : this.currentMinBalance,
+      currentMaxBalance: currentMaxBalance != null
+          ? currentMaxBalance()
+          : this.currentMaxBalance,
       writeStatus: writeStatus ?? this.writeStatus,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
@@ -82,7 +129,12 @@ final class AssetState extends Equatable {
     errorMessage,
     hasReachedMax,
     nextCursor,
-    currentFilter,
+    currentTypeFilter,
+    currentSearchQuery,
+    currentSortBy,
+    currentSortOrder,
+    currentMinBalance,
+    currentMaxBalance,
     writeStatus,
     writeSuccessMessage,
     writeErrorMessage,

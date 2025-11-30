@@ -68,35 +68,129 @@ class BudgetRepositoryImpl implements BudgetRepository {
       () async {
         logService(
           'Get budgets',
-          'cursor: ${params.cursor}, limit: ${params.limit}',
+          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
         );
 
-        var query = _box.query();
+        // * Build conditions list
+        final List<Condition<Budget>> conditions = [];
 
-        // * Filter by period jika ada
+        // * Filter by period
         if (params.period != null) {
-          query = _box.query(Budget_.period.equals(params.period!.index));
+          conditions.add(Budget_.period.equals(params.period!.index));
         }
 
-        // * Pagination dengan cursor (offset-based)
-        final offset = params.cursor != null
-            ? int.tryParse(params.cursor!) ?? 0
-            : 0;
-        query = query..order(Budget_.createdAt, flags: Order.descending);
+        // * Amount limit range filter
+        if (params.minAmountLimit != null && params.maxAmountLimit != null) {
+          conditions.add(
+            Budget_.amountLimit.between(
+              params.minAmountLimit!,
+              params.maxAmountLimit!,
+            ),
+          );
+        } else if (params.minAmountLimit != null) {
+          conditions.add(
+            Budget_.amountLimit.greaterOrEqual(params.minAmountLimit!),
+          );
+        } else if (params.maxAmountLimit != null) {
+          conditions.add(
+            Budget_.amountLimit.lessOrEqual(params.maxAmountLimit!),
+          );
+        }
 
-        final builtQuery = query.build();
+        // * Start date range filter
+        if (params.startDateFrom != null && params.startDateTo != null) {
+          conditions.add(
+            Budget_.startDate.betweenDate(
+              params.startDateFrom!,
+              params.startDateTo!,
+            ),
+          );
+        } else if (params.startDateFrom != null) {
+          conditions.add(
+            Budget_.startDate.greaterOrEqualDate(params.startDateFrom!),
+          );
+        } else if (params.startDateTo != null) {
+          conditions.add(
+            Budget_.startDate.lessOrEqualDate(params.startDateTo!),
+          );
+        }
+
+        // * End date range filter
+        if (params.endDateFrom != null && params.endDateTo != null) {
+          conditions.add(
+            Budget_.endDate.betweenDate(params.endDateFrom!, params.endDateTo!),
+          );
+        } else if (params.endDateFrom != null) {
+          conditions.add(
+            Budget_.endDate.greaterOrEqualDate(params.endDateFrom!),
+          );
+        } else if (params.endDateTo != null) {
+          conditions.add(Budget_.endDate.lessOrEqualDate(params.endDateTo!));
+        }
+
+        // * Build query with conditions
+        QueryBuilder<Budget> queryBuilder;
+        if (conditions.isNotEmpty) {
+          Condition<Budget> combinedCondition = conditions.first;
+          for (int i = 1; i < conditions.length; i++) {
+            combinedCondition = combinedCondition.and(conditions[i]);
+          }
+          queryBuilder = _box.query(combinedCondition);
+        } else {
+          queryBuilder = _box.query();
+        }
+
+        // * Apply sorting based on sortBy parameter
+        final orderFlags = params.sortOrder == BudgetSortOrder.descending
+            ? Order.descending
+            : 0;
+
+        switch (params.sortBy) {
+          case BudgetSortBy.amountLimit:
+            queryBuilder.order(Budget_.amountLimit, flags: orderFlags);
+            break;
+          case BudgetSortBy.startDate:
+            queryBuilder.order(Budget_.startDate, flags: orderFlags);
+            break;
+          case BudgetSortBy.endDate:
+            queryBuilder.order(Budget_.endDate, flags: orderFlags);
+            break;
+          case BudgetSortBy.createdAt:
+            queryBuilder.order(Budget_.createdAt, flags: orderFlags);
+            break;
+        }
+
+        final builtQuery = queryBuilder.build();
         final allResults = builtQuery.find();
         builtQuery.close();
 
-        // * Filter by category jika ada
+        // * Filter by category (ObjectBox doesn't support ToOne query directly)
         var filteredResults = allResults;
         if (params.categoryUlid != null) {
-          filteredResults = allResults
+          filteredResults = filteredResults
               .where((b) => b.category.target?.ulid == params.categoryUlid)
               .toList();
         }
 
-        // * Manual offset & limit
+        // * Filter by search query (search by category name)
+        if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
+          final searchLower = params.searchQuery!.toLowerCase();
+          filteredResults = filteredResults
+              .where(
+                (b) =>
+                    b.category.target?.name.toLowerCase().contains(
+                      searchLower,
+                    ) ??
+                    false,
+              )
+              .toList();
+        }
+
+        // * Cursor-based pagination (offset-based internally)
+        final offset = params.cursor != null
+            ? int.tryParse(params.cursor!) ?? 0
+            : 0;
+
         final startIndex = offset < filteredResults.length
             ? offset
             : filteredResults.length;
@@ -115,7 +209,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
           perPage: params.limit,
         );
 
-        logInfo('Budgets retrieved: ${budgets.length}');
+        logInfo('Budgets retrieved: ${budgets.length}, hasMore: $hasMore');
 
         return SuccessCursor(
           message: 'Budgets retrieved',

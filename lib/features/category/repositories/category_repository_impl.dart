@@ -81,34 +81,82 @@ class CategoryRepositoryImpl implements CategoryRepository {
       () async {
         logService(
           'Get categories',
-          'cursor: ${params.cursor}, limit: ${params.limit}',
+          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
         );
 
-        var query = _box.query();
+        // * Build conditions list
+        final List<Condition<Category>> conditions = [];
 
-        // * Filter by type jika ada
+        // * Filter by type
         if (params.type != null) {
-          query = _box.query(Category_.type.equals(params.type!.index));
+          conditions.add(Category_.type.equals(params.type!.index));
         }
 
-        // * Pagination dengan cursor (offset-based)
-        final offset = params.cursor != null
-            ? int.tryParse(params.cursor!) ?? 0
-            : 0;
-        query = query..order(Category_.createdAt, flags: Order.descending);
+        // * Case-insensitive search by name
+        if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
+          conditions.add(
+            Category_.name.contains(params.searchQuery!, caseSensitive: false),
+          );
+        }
 
-        final builtQuery = query.build();
+        // * Build query with conditions
+        QueryBuilder<Category> queryBuilder;
+        if (conditions.isNotEmpty) {
+          Condition<Category> combinedCondition = conditions.first;
+          for (int i = 1; i < conditions.length; i++) {
+            combinedCondition = combinedCondition.and(conditions[i]);
+          }
+          queryBuilder = _box.query(combinedCondition);
+        } else {
+          queryBuilder = _box.query();
+        }
+
+        // * Apply sorting based on sortBy parameter
+        final orderFlags = params.sortOrder == CategorySortOrder.descending
+            ? Order.descending
+            : 0;
+
+        switch (params.sortBy) {
+          case CategorySortBy.name:
+            queryBuilder.order(Category_.name, flags: orderFlags);
+            break;
+          case CategorySortBy.createdAt:
+            queryBuilder.order(Category_.createdAt, flags: orderFlags);
+            break;
+        }
+
+        final builtQuery = queryBuilder.build();
         final allResults = builtQuery.find();
         builtQuery.close();
 
-        // * Manual offset & limit
-        final startIndex = offset < allResults.length
+        // * Filter by parent (ObjectBox doesn't support ToOne query directly)
+        var filteredResults = allResults;
+        if (params.parentUlid != null) {
+          filteredResults = filteredResults
+              .where((c) => c.parent.target?.ulid == params.parentUlid)
+              .toList();
+        }
+
+        // * Filter root only (no parent)
+        if (params.isRootOnly == true) {
+          filteredResults = filteredResults
+              .where((c) => c.parent.target == null)
+              .toList();
+        }
+
+        // * Cursor-based pagination (offset-based internally)
+        final offset = params.cursor != null
+            ? int.tryParse(params.cursor!) ?? 0
+            : 0;
+
+        final startIndex = offset < filteredResults.length
             ? offset
-            : allResults.length;
-        final endIndex = (startIndex + params.limit + 1) < allResults.length
+            : filteredResults.length;
+        final endIndex =
+            (startIndex + params.limit + 1) < filteredResults.length
             ? startIndex + params.limit + 1
-            : allResults.length;
-        final results = allResults.sublist(startIndex, endIndex);
+            : filteredResults.length;
+        final results = filteredResults.sublist(startIndex, endIndex);
 
         final hasMore = results.length > params.limit;
         final categories = hasMore ? results.sublist(0, params.limit) : results;
@@ -119,7 +167,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
           perPage: params.limit,
         );
 
-        logInfo('Categories retrieved: ${categories.length}');
+        logInfo(
+          'Categories retrieved: ${categories.length}, hasMore: $hasMore',
+        );
 
         return SuccessCursor(
           message: 'Categories retrieved',

@@ -59,27 +59,73 @@ class AssetRepositoryImpl implements AssetRepository {
       () async {
         logService(
           'Get assets',
-          'cursor: ${params.cursor}, limit: ${params.limit}',
+          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
         );
 
-        var query = _box.query();
+        // * Build conditions list
+        final List<Condition<Asset>> conditions = [];
 
-        // * Filter by type jika ada
+        // * Filter by type
         if (params.type != null) {
-          query = _box.query(Asset_.type.equals(params.type!.index));
+          conditions.add(Asset_.type.equals(params.type!.index));
         }
 
-        // * Pagination dengan cursor (offset-based)
-        final offset = params.cursor != null
-            ? int.tryParse(params.cursor!) ?? 0
-            : 0;
-        query = query..order(Asset_.createdAt, flags: Order.descending);
+        // * Balance range filter
+        if (params.minBalance != null && params.maxBalance != null) {
+          conditions.add(
+            Asset_.balance.between(params.minBalance!, params.maxBalance!),
+          );
+        } else if (params.minBalance != null) {
+          conditions.add(Asset_.balance.greaterOrEqual(params.minBalance!));
+        } else if (params.maxBalance != null) {
+          conditions.add(Asset_.balance.lessOrEqual(params.maxBalance!));
+        }
 
-        final builtQuery = query.build();
+        // * Case-insensitive search by name
+        if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
+          conditions.add(
+            Asset_.name.contains(params.searchQuery!, caseSensitive: false),
+          );
+        }
+
+        // * Build query with conditions
+        QueryBuilder<Asset> queryBuilder;
+        if (conditions.isNotEmpty) {
+          Condition<Asset> combinedCondition = conditions.first;
+          for (int i = 1; i < conditions.length; i++) {
+            combinedCondition = combinedCondition.and(conditions[i]);
+          }
+          queryBuilder = _box.query(combinedCondition);
+        } else {
+          queryBuilder = _box.query();
+        }
+
+        // * Apply sorting based on sortBy parameter
+        final orderFlags = params.sortOrder == AssetSortOrder.descending
+            ? Order.descending
+            : 0;
+
+        switch (params.sortBy) {
+          case AssetSortBy.name:
+            queryBuilder.order(Asset_.name, flags: orderFlags);
+            break;
+          case AssetSortBy.balance:
+            queryBuilder.order(Asset_.balance, flags: orderFlags);
+            break;
+          case AssetSortBy.createdAt:
+            queryBuilder.order(Asset_.createdAt, flags: orderFlags);
+            break;
+        }
+
+        final builtQuery = queryBuilder.build();
         final allResults = builtQuery.find();
         builtQuery.close();
 
-        // * Manual offset & limit
+        // * Cursor-based pagination (offset-based internally)
+        final offset = params.cursor != null
+            ? int.tryParse(params.cursor!) ?? 0
+            : 0;
+
         final startIndex = offset < allResults.length
             ? offset
             : allResults.length;
@@ -97,7 +143,7 @@ class AssetRepositoryImpl implements AssetRepository {
           perPage: params.limit,
         );
 
-        logInfo('Assets retrieved: ${assets.length}');
+        logInfo('Assets retrieved: ${assets.length}, hasMore: $hasMore');
 
         return SuccessCursor(
           message: 'Assets retrieved',
