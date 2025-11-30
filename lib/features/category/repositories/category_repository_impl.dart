@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fpdart/fpdart.dart' hide Order;
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
@@ -9,6 +11,9 @@ import 'package:ikuyo_finance/features/category/models/get_categories_params.dar
 import 'package:ikuyo_finance/features/category/models/update_category_params.dart';
 import 'package:ikuyo_finance/features/category/repositories/category_repository.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
+import 'package:ulid/ulid.dart';
 
 class CategoryRepositoryImpl implements CategoryRepository {
   final ObjectBoxStorage _storage;
@@ -16,6 +21,63 @@ class CategoryRepositoryImpl implements CategoryRepository {
   const CategoryRepositoryImpl(this._storage);
 
   Box<Category> get _box => _storage.box<Category>();
+
+  // * Copy icon file ke app storage dan return path baru
+  Future<String?> _saveIconToAppStorage(String? sourcePath) async {
+    if (sourcePath == null || sourcePath.isEmpty) return null;
+
+    // * Skip jika sudah merupakan asset path (bukan file dari device)
+    if (sourcePath.startsWith('assets/')) return sourcePath;
+
+    final sourceFile = File(sourcePath);
+    if (!await sourceFile.exists()) {
+      logError('Icon file not found', sourcePath, StackTrace.current);
+      return null;
+    }
+
+    try {
+      // * Get app documents directory
+      final appDir = await getApplicationDocumentsDirectory();
+      final iconsDir = Directory(p.join(appDir.path, 'category_icons'));
+
+      // * Create directory jika belum ada
+      if (!await iconsDir.exists()) {
+        await iconsDir.create(recursive: true);
+      }
+
+      // * Generate unique filename dengan ULID
+      final extension = p.extension(sourcePath);
+      final newFileName = '${Ulid().toString()}$extension';
+      final newPath = p.join(iconsDir.path, newFileName);
+
+      // * Copy file ke app storage
+      await sourceFile.copy(newPath);
+      logInfo('Icon saved to app storage: $newPath');
+
+      return newPath;
+    } catch (e, s) {
+      logError('Failed to save icon to app storage', e, s);
+      return null;
+    }
+  }
+
+  // * Delete old icon file from app storage
+  Future<void> _deleteIconFromAppStorage(String? iconPath) async {
+    if (iconPath == null || iconPath.isEmpty) return;
+
+    // * Skip jika merupakan asset path
+    if (iconPath.startsWith('assets/')) return;
+
+    try {
+      final file = File(iconPath);
+      if (await file.exists()) {
+        await file.delete();
+        logInfo('Old icon deleted: $iconPath');
+      }
+    } catch (e, s) {
+      logError('Failed to delete old icon', e, s);
+    }
+  }
 
   @override
   TaskEither<Failure, Success<Category>> createCategory(
@@ -25,10 +87,13 @@ class CategoryRepositoryImpl implements CategoryRepository {
       () async {
         logService('Create category', params.name);
 
+        // * Save icon to app storage
+        final savedIconPath = await _saveIconToAppStorage(params.icon);
+
         final category = Category(
           name: params.name,
           type: params.type.index,
-          icon: params.icon,
+          icon: savedIconPath,
           color: params.color,
         );
 
@@ -176,8 +241,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
         // * Update fields jika ada
         if (params.name != null) category.name = params.name!;
         if (params.type != null) category.type = params.type!.index;
-        if (params.icon != null) category.icon = params.icon;
         if (params.color != null) category.color = params.color;
+
+        // * Handle icon update - save new and delete old
+        if (params.icon != null && params.icon != category.icon) {
+          final oldIconPath = category.icon;
+          final savedIconPath = await _saveIconToAppStorage(params.icon);
+          category.icon = savedIconPath;
+
+          // * Delete old icon setelah save berhasil
+          if (savedIconPath != null) {
+            await _deleteIconFromAppStorage(oldIconPath);
+          }
+        }
 
         // * Update parent jika ada
         if (params.parentUlid != null) {
@@ -239,6 +315,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
         if (hasChildren) {
           throw Exception('Cannot delete category with subcategories');
         }
+
+        // * Delete icon file from app storage
+        await _deleteIconFromAppStorage(category.icon);
 
         _box.remove(category.id);
         logInfo('Category deleted successfully');
