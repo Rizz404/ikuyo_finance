@@ -18,8 +18,17 @@ class SettingCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Card(
-        child: Column(
-          children: [Icon(icon), SizedBox(height: 4), AppText(text)],
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 32),
+              SizedBox(height: 8),
+              AppText(text, style: AppTextStyle.labelMedium),
+            ],
+          ),
         ),
       ),
     );

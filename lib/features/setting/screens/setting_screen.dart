@@ -19,7 +19,7 @@ class SettingScreen extends StatelessWidget {
           children: [
             SettingCard(
               icon: Icons.settings,
-              text: "Kelola Pengaturan",
+              text: "Pengaturan",
               onTap: () => ToastHelper.instance.showInfo(
                 context: context,
                 title: "Belum di implementasikan",
@@ -27,7 +27,7 @@ class SettingScreen extends StatelessWidget {
             ),
             SettingCard(
               icon: Icons.settings,
-              text: "Kelola Pengaturan",
+              text: "Pengaturan",
               onTap: () => ToastHelper.instance.showInfo(
                 context: context,
                 title: "Belum di implementasikan",
@@ -35,7 +35,7 @@ class SettingScreen extends StatelessWidget {
             ),
             SettingCard(
               icon: Icons.settings,
-              text: "Kelola Pengaturan",
+              text: "Pengaturan",
               onTap: () => ToastHelper.instance.showInfo(
                 context: context,
                 title: "Belum di implementasikan",
@@ -43,7 +43,7 @@ class SettingScreen extends StatelessWidget {
             ),
             SettingCard(
               icon: Icons.settings,
-              text: "Kelola Pengaturan",
+              text: "Pengaturan",
               onTap: () => ToastHelper.instance.showInfo(
                 context: context,
                 title: "Belum di implementasikan",
@@ -51,7 +51,7 @@ class SettingScreen extends StatelessWidget {
             ),
             SettingCard(
               icon: Icons.settings,
-              text: "Kelola Pengaturan",
+              text: "Pengaturan",
               onTap: () => ToastHelper.instance.showInfo(
                 context: context,
                 title: "Belum di implementasikan",

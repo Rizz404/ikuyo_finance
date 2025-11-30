@@ -90,7 +90,6 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
       onRefresh: () async => widget.onRefresh(),
       child: ListView.builder(
         controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         itemCount: groupedTransactions.length + (widget.hasReachedMax ? 0 : 1),
         itemBuilder: (context, index) {
           // * Show loading indicator at the bottom
@@ -110,20 +109,17 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
   }
 
   Widget _buildLoadingIndicator() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: Center(
-        child: widget.isLoadingMore
-            ? SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: context.colorScheme.primary,
-                ),
-              )
-            : const SizedBox.shrink(),
-      ),
+    return Center(
+      child: widget.isLoadingMore
+          ? SizedBox(
+              height: 24,
+              width: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: context.colorScheme.primary,
+              ),
+            )
+          : const SizedBox.shrink(),
     );
   }
 

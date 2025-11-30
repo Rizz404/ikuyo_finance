@@ -128,7 +128,6 @@ class _AssetScreenState extends State<AssetScreen>
       onRefresh: () async =>
           context.read<AssetBloc>().add(const AssetRefreshed()),
       child: ListView.separated(
-        padding: const EdgeInsets.all(16),
         itemCount: state.assets.length,
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
