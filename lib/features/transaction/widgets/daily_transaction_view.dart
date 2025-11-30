@@ -7,20 +7,62 @@ import 'package:intl/intl.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 
 /// * Widget untuk menampilkan transaksi yang dikelompokkan berdasarkan hari
-/// * Menerima data transactions melalui constructor (tidak langsung akses Bloc)
-class DailyTransactionView extends StatelessWidget {
+/// * Pure UI widget, no bloc logic - all callbacks handled by parent
+/// * Supports infinite scroll with cursor-based pagination
+class DailyTransactionView extends StatefulWidget {
   final List<Transaction> transactions;
   final VoidCallback onRefresh;
+  final VoidCallback onLoadMore;
+  final bool hasReachedMax;
+  final bool isLoadingMore;
 
   const DailyTransactionView({
     super.key,
     required this.transactions,
     required this.onRefresh,
+    required this.onLoadMore,
+    this.hasReachedMax = false,
+    this.isLoadingMore = false,
   });
 
   @override
+  State<DailyTransactionView> createState() => _DailyTransactionViewState();
+}
+
+class _DailyTransactionViewState extends State<DailyTransactionView> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_isBottom && !widget.hasReachedMax && !widget.isLoadingMore) {
+      widget.onLoadMore();
+    }
+  }
+
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    // * Trigger load more when 200px from bottom
+    return currentScroll >= (maxScroll - 200);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (transactions.isEmpty) {
+    if (widget.transactions.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -42,14 +84,20 @@ class DailyTransactionView extends StatelessWidget {
     }
 
     // * Group transactions by date
-    final groupedTransactions = _groupTransactionsByDate(transactions);
+    final groupedTransactions = _groupTransactionsByDate(widget.transactions);
 
     return RefreshIndicator(
-      onRefresh: () async => onRefresh(),
+      onRefresh: () async => widget.onRefresh(),
       child: ListView.builder(
+        controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        itemCount: groupedTransactions.length,
+        itemCount: groupedTransactions.length + (widget.hasReachedMax ? 0 : 1),
         itemBuilder: (context, index) {
+          // * Show loading indicator at the bottom
+          if (index >= groupedTransactions.length) {
+            return _buildLoadingIndicator();
+          }
+
           final entry = groupedTransactions.entries.elementAt(index);
           return _dailyTransactionGroup(
             context: context,
@@ -57,6 +105,24 @@ class DailyTransactionView extends StatelessWidget {
             transactions: entry.value,
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: Center(
+        child: widget.isLoadingMore
+            ? SizedBox(
+                height: 24,
+                width: 24,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: context.colorScheme.primary,
+                ),
+              )
+            : const SizedBox.shrink(),
       ),
     );
   }

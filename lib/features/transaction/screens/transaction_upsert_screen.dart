@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -219,32 +220,55 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                   // * Asset Dropdown
                   BlocBuilder<AssetBloc, AssetState>(
                     builder: (context, state) {
-                      return AppDropdown<String>(
-                        name: 'assetUlid',
-                        label: 'Asset',
-                        hintText: 'Pilih asset',
-                        initialValue: widget.transaction?.asset.target?.ulid,
-                        items: state.assets
-                            .map(
-                              (asset) => AppDropdownItem(
-                                value: asset.ulid,
-                                label: asset.name,
-                                imagePath: asset.icon,
-                                icon: Icon(
-                                  _getAssetIcon(asset.assetType),
-                                  size: 20,
-                                  color: context.colorScheme.primary,
-                                ),
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: AppDropdown<String>(
+                              name: 'assetUlid',
+                              label: 'Asset',
+                              hintText: state.assets.isEmpty
+                                  ? 'Belum ada asset'
+                                  : 'Pilih asset',
+                              initialValue:
+                                  widget.transaction?.asset.target?.ulid,
+                              items: state.assets
+                                  .map(
+                                    (asset) => AppDropdownItem(
+                                      value: asset.ulid,
+                                      label: asset.name,
+                                      imagePath: asset.icon,
+                                      icon: Icon(
+                                        _getAssetIcon(asset.assetType),
+                                        size: 20,
+                                        color: context.colorScheme.primary,
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              validator: widget.isEdit
+                                  ? UpdateTransactionValidator.assetUlid
+                                  : CreateTransactionValidator.assetUlid,
+                              prefixIcon: const Icon(
+                                Icons.account_balance_wallet_outlined,
                               ),
-                            )
-                            .toList(),
-                        validator: widget.isEdit
-                            ? UpdateTransactionValidator.assetUlid
-                            : CreateTransactionValidator.assetUlid,
-                        prefixIcon: const Icon(
-                          Icons.account_balance_wallet_outlined,
-                        ),
-                        imageColor: context.colorScheme.primary,
+                              imageColor: context.colorScheme.primary,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24),
+                            child: IconButton.filled(
+                              onPressed: () => context.pushToAddAsset(),
+                              icon: const Icon(Icons.add),
+                              tooltip: 'Tambah Asset',
+                              style: IconButton.styleFrom(
+                                backgroundColor: context.colorScheme.primary,
+                                foregroundColor: context.colorScheme.onPrimary,
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -257,29 +281,55 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                           .where((c) => c.categoryType == _selectedType)
                           .toList();
 
-                      return AppDropdown<String>(
-                        name: 'categoryUlid',
-                        label: 'Kategori',
-                        hintText: 'Pilih kategori',
-                        initialValue: widget.transaction?.category.target?.ulid,
-                        items: filteredCategories
-                            .map(
-                              (c) => AppDropdownItem(
-                                value: c.ulid,
-                                label: c.name,
-                                imagePath: c.icon,
-                                icon: Icon(
-                                  Icons.category_outlined,
-                                  size: 20,
-                                  color: _getCategoryColor(c, context),
-                                ),
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: AppDropdown<String>(
+                              name: 'categoryUlid',
+                              label: 'Kategori',
+                              hintText: filteredCategories.isEmpty
+                                  ? 'Belum ada kategori'
+                                  : 'Pilih kategori',
+                              initialValue:
+                                  widget.transaction?.category.target?.ulid,
+                              items: filteredCategories
+                                  .map(
+                                    (c) => AppDropdownItem(
+                                      value: c.ulid,
+                                      label: c.name,
+                                      imagePath: c.icon,
+                                      icon: Icon(
+                                        Icons.category_outlined,
+                                        size: 20,
+                                        color: _getCategoryColor(c, context),
+                                      ),
+                                    ),
+                                  )
+                                  .toList(),
+                              prefixIcon: const Icon(Icons.category_outlined),
+                              imageColor: _selectedType == CategoryType.expense
+                                  ? context.semantic.error
+                                  : context.semantic.success,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 24),
+                            child: IconButton.filled(
+                              onPressed: () => context.pushToAddCategory(),
+                              icon: const Icon(Icons.add),
+                              tooltip: 'Tambah Kategori',
+                              style: IconButton.styleFrom(
+                                backgroundColor:
+                                    _selectedType == CategoryType.expense
+                                    ? context.semantic.error
+                                    : context.semantic.success,
+                                foregroundColor: context.colorScheme.onPrimary,
                               ),
-                            )
-                            .toList(),
-                        prefixIcon: const Icon(Icons.category_outlined),
-                        imageColor: _selectedType == CategoryType.expense
-                            ? context.semantic.error
-                            : context.semantic.success,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),

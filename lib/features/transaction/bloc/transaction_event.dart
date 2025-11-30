@@ -11,12 +11,22 @@ final class TransactionFetched extends TransactionEvent {
     this.categoryUlid,
     this.startDate,
     this.endDate,
+    this.searchQuery,
+    this.sortBy,
+    this.sortOrder,
+    this.minAmount,
+    this.maxAmount,
   });
 
   final String? assetUlid;
   final String? categoryUlid;
   final DateTime? startDate;
   final DateTime? endDate;
+  final String? searchQuery;
+  final TransactionSortBy? sortBy;
+  final SortOrder? sortOrder;
+  final double? minAmount;
+  final double? maxAmount;
 }
 
 final class TransactionFetchedMore extends TransactionEvent {
@@ -25,6 +35,48 @@ final class TransactionFetchedMore extends TransactionEvent {
 
 final class TransactionRefreshed extends TransactionEvent {
   const TransactionRefreshed();
+}
+
+// * Search event - dedicated for search functionality
+final class TransactionSearched extends TransactionEvent {
+  const TransactionSearched({required this.query});
+
+  final String query;
+}
+
+// * Filter event - apply multiple filters at once
+final class TransactionFiltered extends TransactionEvent {
+  const TransactionFiltered({
+    this.assetUlid,
+    this.categoryUlid,
+    this.startDate,
+    this.endDate,
+    this.minAmount,
+    this.maxAmount,
+  });
+
+  final String? assetUlid;
+  final String? categoryUlid;
+  final DateTime? startDate;
+  final DateTime? endDate;
+  final double? minAmount;
+  final double? maxAmount;
+}
+
+// * Sort event - change sorting options
+final class TransactionSorted extends TransactionEvent {
+  const TransactionSorted({
+    required this.sortBy,
+    this.sortOrder = SortOrder.descending,
+  });
+
+  final TransactionSortBy sortBy;
+  final SortOrder sortOrder;
+}
+
+// * Clear all filters
+final class TransactionFilterCleared extends TransactionEvent {
+  const TransactionFilterCleared();
 }
 
 // * Write Events

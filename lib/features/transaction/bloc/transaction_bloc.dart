@@ -5,9 +5,15 @@ import 'package:ikuyo_finance/features/transaction/models/create_transaction_par
 import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
+import 'package:stream_transform/stream_transform.dart';
 
 part 'transaction_event.dart';
 part 'transaction_state.dart';
+
+// * Debounce transformer for search
+EventTransformer<E> debounce<E>(Duration duration) {
+  return (events, mapper) => events.debounce(duration).switchMap(mapper);
+}
 
 class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
   TransactionBloc(this._transactionRepository)
@@ -16,6 +22,15 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<TransactionFetched>(_onTransactionFetched);
     on<TransactionFetchedMore>(_onTransactionFetchedMore);
     on<TransactionRefreshed>(_onTransactionRefreshed);
+
+    // * Search & filter events
+    on<TransactionSearched>(
+      _onTransactionSearched,
+      transformer: debounce(const Duration(milliseconds: 300)),
+    );
+    on<TransactionFiltered>(_onTransactionFiltered);
+    on<TransactionSorted>(_onTransactionSorted);
+    on<TransactionFilterCleared>(_onTransactionFilterCleared);
 
     // * Write events
     on<TransactionCreated>(_onTransactionCreated);
@@ -26,7 +41,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
   final TransactionRepository _transactionRepository;
 
-  // * Fetch initial transactions
+  // * Fetch initial transactions with all filter options
   Future<void> _onTransactionFetched(
     TransactionFetched event,
     Emitter<TransactionState> emit,
@@ -38,6 +53,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         currentCategoryFilter: () => event.categoryUlid,
         currentStartDateFilter: () => event.startDate,
         currentEndDateFilter: () => event.endDate,
+        currentSearchQuery: () => event.searchQuery,
+        currentSortBy: event.sortBy ?? state.currentSortBy,
+        currentSortOrder: event.sortOrder ?? state.currentSortOrder,
+        currentMinAmount: () => event.minAmount,
+        currentMaxAmount: () => event.maxAmount,
       ),
     );
 
@@ -48,6 +68,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             categoryUlid: event.categoryUlid,
             startDate: event.startDate,
             endDate: event.endDate,
+            searchQuery: event.searchQuery,
+            sortBy: event.sortBy ?? state.currentSortBy,
+            sortOrder: event.sortOrder ?? state.currentSortOrder,
+            minAmount: event.minAmount,
+            maxAmount: event.maxAmount,
           ),
         )
         .run();
@@ -71,7 +96,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     );
   }
 
-  // * Load more transactions (pagination)
+  // * Load more transactions (cursor-based pagination)
   Future<void> _onTransactionFetchedMore(
     TransactionFetchedMore event,
     Emitter<TransactionState> emit,
@@ -88,6 +113,11 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             categoryUlid: state.currentCategoryFilter,
             startDate: state.currentStartDateFilter,
             endDate: state.currentEndDateFilter,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmount: state.currentMinAmount,
+            maxAmount: state.currentMaxAmount,
           ),
         )
         .run();
@@ -111,7 +141,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     );
   }
 
-  // * Refresh transactions (reset & fetch)
+  // * Refresh transactions (reset & fetch with current filters)
   Future<void> _onTransactionRefreshed(
     TransactionRefreshed event,
     Emitter<TransactionState> emit,
@@ -131,8 +161,213 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             categoryUlid: state.currentCategoryFilter,
             startDate: state.currentStartDateFilter,
             endDate: state.currentEndDateFilter,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmount: state.currentMinAmount,
+            maxAmount: state.currentMaxAmount,
           ),
         )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Search transactions by description (debounced)
+  Future<void> _onTransactionSearched(
+    TransactionSearched event,
+    Emitter<TransactionState> emit,
+  ) async {
+    final query = event.query.trim();
+
+    emit(
+      state.copyWith(
+        status: TransactionStatus.loading,
+        currentSearchQuery: () => query.isEmpty ? null : query,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _transactionRepository
+        .getTransactions(
+          GetTransactionsParams(
+            assetUlid: state.currentAssetFilter,
+            categoryUlid: state.currentCategoryFilter,
+            startDate: state.currentStartDateFilter,
+            endDate: state.currentEndDateFilter,
+            searchQuery: query.isEmpty ? null : query,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmount: state.currentMinAmount,
+            maxAmount: state.currentMaxAmount,
+          ),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Apply multiple filters at once
+  Future<void> _onTransactionFiltered(
+    TransactionFiltered event,
+    Emitter<TransactionState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: TransactionStatus.loading,
+        currentAssetFilter: () => event.assetUlid,
+        currentCategoryFilter: () => event.categoryUlid,
+        currentStartDateFilter: () => event.startDate,
+        currentEndDateFilter: () => event.endDate,
+        currentMinAmount: () => event.minAmount,
+        currentMaxAmount: () => event.maxAmount,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _transactionRepository
+        .getTransactions(
+          GetTransactionsParams(
+            assetUlid: event.assetUlid,
+            categoryUlid: event.categoryUlid,
+            startDate: event.startDate,
+            endDate: event.endDate,
+            searchQuery: state.currentSearchQuery,
+            sortBy: state.currentSortBy,
+            sortOrder: state.currentSortOrder,
+            minAmount: event.minAmount,
+            maxAmount: event.maxAmount,
+          ),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Change sorting options
+  Future<void> _onTransactionSorted(
+    TransactionSorted event,
+    Emitter<TransactionState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: TransactionStatus.loading,
+        currentSortBy: event.sortBy,
+        currentSortOrder: event.sortOrder,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _transactionRepository
+        .getTransactions(
+          GetTransactionsParams(
+            assetUlid: state.currentAssetFilter,
+            categoryUlid: state.currentCategoryFilter,
+            startDate: state.currentStartDateFilter,
+            endDate: state.currentEndDateFilter,
+            searchQuery: state.currentSearchQuery,
+            sortBy: event.sortBy,
+            sortOrder: event.sortOrder,
+            minAmount: state.currentMinAmount,
+            maxAmount: state.currentMaxAmount,
+          ),
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: TransactionStatus.failure,
+          errorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          status: TransactionStatus.success,
+          transactions: success.data,
+          hasReachedMax: !success.cursor.hasNextPage,
+          nextCursor: () => success.cursor.nextCursor,
+          errorMessage: () => null,
+        ),
+      ),
+    );
+  }
+
+  // * Clear all filters and reset to default
+  Future<void> _onTransactionFilterCleared(
+    TransactionFilterCleared event,
+    Emitter<TransactionState> emit,
+  ) async {
+    emit(
+      state.copyWith(
+        status: TransactionStatus.loading,
+        currentAssetFilter: () => null,
+        currentCategoryFilter: () => null,
+        currentStartDateFilter: () => null,
+        currentEndDateFilter: () => null,
+        currentSearchQuery: () => null,
+        currentMinAmount: () => null,
+        currentMaxAmount: () => null,
+        currentSortBy: TransactionSortBy.transactionDate,
+        currentSortOrder: SortOrder.descending,
+        hasReachedMax: false,
+        nextCursor: () => null,
+      ),
+    );
+
+    final result = await _transactionRepository
+        .getTransactions(const GetTransactionsParams())
         .run();
 
     result.fold(

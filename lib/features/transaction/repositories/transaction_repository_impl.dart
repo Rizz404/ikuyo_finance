@@ -86,40 +86,87 @@ class TransactionRepositoryImpl implements TransactionRepository {
       () async {
         logService(
           'Get transactions',
-          'cursor: ${params.cursor}, limit: ${params.limit}',
+          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
         );
 
-        var query = _box.query();
+        // * Build conditions list
+        final List<Condition<Transaction>> conditions = [];
 
-        // * Filter by date range jika ada
+        // * Date range filter
         if (params.startDate != null && params.endDate != null) {
-          query = _box.query(
+          conditions.add(
             Transaction_.transactionDate.betweenDate(
               params.startDate!,
               params.endDate!,
             ),
           );
         } else if (params.startDate != null) {
-          query = _box.query(
+          conditions.add(
             Transaction_.transactionDate.greaterOrEqualDate(params.startDate!),
           );
         } else if (params.endDate != null) {
-          query = _box.query(
+          conditions.add(
             Transaction_.transactionDate.lessOrEqualDate(params.endDate!),
           );
         }
 
-        // * Pagination dengan cursor (offset-based)
-        final offset = params.cursor != null
-            ? int.tryParse(params.cursor!) ?? 0
-            : 0;
-        query = query..order(Transaction_.createdAt, flags: Order.descending);
+        // * Amount range filter
+        if (params.minAmount != null && params.maxAmount != null) {
+          conditions.add(
+            Transaction_.amount.between(params.minAmount!, params.maxAmount!),
+          );
+        } else if (params.minAmount != null) {
+          conditions.add(Transaction_.amount.greaterOrEqual(params.minAmount!));
+        } else if (params.maxAmount != null) {
+          conditions.add(Transaction_.amount.lessOrEqual(params.maxAmount!));
+        }
 
-        final builtQuery = query.build();
+        // * Case-insensitive search by description
+        if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
+          conditions.add(
+            Transaction_.description.contains(
+              params.searchQuery!,
+              caseSensitive: false,
+            ),
+          );
+        }
+
+        // * Build query with conditions
+        QueryBuilder<Transaction> queryBuilder;
+        if (conditions.isNotEmpty) {
+          Condition<Transaction> combinedCondition = conditions.first;
+          for (int i = 1; i < conditions.length; i++) {
+            combinedCondition = combinedCondition.and(conditions[i]);
+          }
+          queryBuilder = _box.query(combinedCondition);
+        } else {
+          queryBuilder = _box.query();
+        }
+
+        // * Apply sorting based on sortBy parameter
+        final orderFlags = params.sortOrder == SortOrder.descending
+            ? Order.descending
+            : 0;
+
+        switch (params.sortBy) {
+          case TransactionSortBy.amount:
+            queryBuilder.order(Transaction_.amount, flags: orderFlags);
+            break;
+          case TransactionSortBy.createdAt:
+            queryBuilder.order(Transaction_.createdAt, flags: orderFlags);
+            break;
+          case TransactionSortBy.transactionDate:
+            // * Secondary sort by createdAt for transactions on same date
+            queryBuilder.order(Transaction_.transactionDate, flags: orderFlags);
+            queryBuilder.order(Transaction_.createdAt, flags: Order.descending);
+            break;
+        }
+
+        final builtQuery = queryBuilder.build();
         final allResults = builtQuery.find();
         builtQuery.close();
 
-        // * Filter by asset jika ada
+        // * Filter by asset (ObjectBox doesn't support ToOne query directly)
         var filteredResults = allResults;
         if (params.assetUlid != null) {
           filteredResults = filteredResults
@@ -127,14 +174,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
               .toList();
         }
 
-        // * Filter by category jika ada
+        // * Filter by category
         if (params.categoryUlid != null) {
           filteredResults = filteredResults
               .where((t) => t.category.target?.ulid == params.categoryUlid)
               .toList();
         }
 
-        // * Manual offset & limit
+        // * Cursor-based pagination (offset-based internally)
+        final offset = params.cursor != null
+            ? int.tryParse(params.cursor!) ?? 0
+            : 0;
+
         final startIndex = offset < filteredResults.length
             ? offset
             : filteredResults.length;
@@ -155,7 +206,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
           perPage: params.limit,
         );
 
-        logInfo('Transactions retrieved: ${transactions.length}');
+        logInfo(
+          'Transactions retrieved: ${transactions.length}, hasMore: $hasMore',
+        );
 
         return SuccessCursor(
           message: 'Transactions retrieved',

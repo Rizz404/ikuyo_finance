@@ -13,10 +13,17 @@ final class TransactionState extends Equatable {
   final String? errorMessage;
   final bool hasReachedMax;
   final String? nextCursor;
+
+  // * Filter state
   final String? currentAssetFilter;
   final String? currentCategoryFilter;
   final DateTime? currentStartDateFilter;
   final DateTime? currentEndDateFilter;
+  final String? currentSearchQuery;
+  final TransactionSortBy currentSortBy;
+  final SortOrder currentSortOrder;
+  final double? currentMinAmount;
+  final double? currentMaxAmount;
 
   // * Write state (terpisah dari read)
   final TransactionWriteStatus writeStatus;
@@ -34,6 +41,11 @@ final class TransactionState extends Equatable {
     this.currentCategoryFilter,
     this.currentStartDateFilter,
     this.currentEndDateFilter,
+    this.currentSearchQuery,
+    this.currentSortBy = TransactionSortBy.transactionDate,
+    this.currentSortOrder = SortOrder.descending,
+    this.currentMinAmount,
+    this.currentMaxAmount,
     this.writeStatus = TransactionWriteStatus.initial,
     this.writeSuccessMessage,
     this.writeErrorMessage,
@@ -43,9 +55,34 @@ final class TransactionState extends Equatable {
   // * Factory constructors for cleaner state creation
   const TransactionState.initial() : this();
 
+  // * Computed properties
   bool get isLoading => status == TransactionStatus.loading;
   bool get isLoadingMore => status == TransactionStatus.loadingMore;
   bool get isWriting => writeStatus == TransactionWriteStatus.loading;
+
+  // * Check if any filter is active
+  bool get hasActiveFilters =>
+      currentAssetFilter != null ||
+      currentCategoryFilter != null ||
+      currentStartDateFilter != null ||
+      currentEndDateFilter != null ||
+      currentSearchQuery != null ||
+      currentMinAmount != null ||
+      currentMaxAmount != null;
+
+  // * Get current params for refetching (useful for pagination)
+  GetTransactionsParams get currentParams => GetTransactionsParams(
+    cursor: nextCursor,
+    assetUlid: currentAssetFilter,
+    categoryUlid: currentCategoryFilter,
+    startDate: currentStartDateFilter,
+    endDate: currentEndDateFilter,
+    searchQuery: currentSearchQuery,
+    sortBy: currentSortBy,
+    sortOrder: currentSortOrder,
+    minAmount: currentMinAmount,
+    maxAmount: currentMaxAmount,
+  );
 
   TransactionState copyWith({
     TransactionStatus? status,
@@ -57,6 +94,11 @@ final class TransactionState extends Equatable {
     String? Function()? currentCategoryFilter,
     DateTime? Function()? currentStartDateFilter,
     DateTime? Function()? currentEndDateFilter,
+    String? Function()? currentSearchQuery,
+    TransactionSortBy? currentSortBy,
+    SortOrder? currentSortOrder,
+    double? Function()? currentMinAmount,
+    double? Function()? currentMaxAmount,
     TransactionWriteStatus? writeStatus,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
@@ -80,6 +122,17 @@ final class TransactionState extends Equatable {
       currentEndDateFilter: currentEndDateFilter != null
           ? currentEndDateFilter()
           : this.currentEndDateFilter,
+      currentSearchQuery: currentSearchQuery != null
+          ? currentSearchQuery()
+          : this.currentSearchQuery,
+      currentSortBy: currentSortBy ?? this.currentSortBy,
+      currentSortOrder: currentSortOrder ?? this.currentSortOrder,
+      currentMinAmount: currentMinAmount != null
+          ? currentMinAmount()
+          : this.currentMinAmount,
+      currentMaxAmount: currentMaxAmount != null
+          ? currentMaxAmount()
+          : this.currentMaxAmount,
       writeStatus: writeStatus ?? this.writeStatus,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
@@ -104,6 +157,11 @@ final class TransactionState extends Equatable {
     currentCategoryFilter,
     currentStartDateFilter,
     currentEndDateFilter,
+    currentSearchQuery,
+    currentSortBy,
+    currentSortOrder,
+    currentMinAmount,
+    currentMaxAmount,
     writeStatus,
     writeSuccessMessage,
     writeErrorMessage,

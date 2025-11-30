@@ -75,6 +75,7 @@ dependencies:
   file_picker: ^10.3.7
   toastification: ^3.0.3
   flutter_svg: ^2.0.10+1
+  stream_transform: ^2.1.1
 
 dev_dependencies:
   flutter_test:
