@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -213,11 +216,44 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // * Icon File Picker
+                  // * Icon File Picker with current preview
+                  if (widget.isEdit && widget.category?.icon != null) ...[
+                    const AppText(
+                      'Ikon Saat Ini',
+                      style: AppTextStyle.labelMedium,
+                    ),
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: context.colorScheme.surfaceContainerHighest,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: context.colorScheme.outline.withOpacity(0.3),
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          _buildIconPreview(widget.category!.icon!, size: 48),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AppText(
+                              widget.category!.icon!.split('/').last,
+                              style: AppTextStyle.bodySmall,
+                              color: context.colorScheme.outline,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   AppFilePicker(
                     key: _filePickerKey,
                     name: 'icon',
-                    label: 'Ikon Kategori',
+                    label: widget.isEdit ? 'Ganti Ikon' : 'Ikon Kategori',
                     hintText: 'Pilih gambar ikon (opsional)',
                     fileType: FileType.image,
                     allowMultiple: false,
@@ -277,6 +313,57 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// * Adaptive icon preview - handles SVG, asset images, and file images
+  Widget _buildIconPreview(String path, {double size = 48}) {
+    final isSvg = path.toLowerCase().endsWith('.svg');
+    final isAsset = path.startsWith('assets/');
+
+    if (isAsset) {
+      // * Asset file (from assets/ folder)
+      if (isSvg) {
+        return SvgPicture.asset(
+          path,
+          width: size,
+          height: size,
+          fit: BoxFit.contain,
+        );
+      }
+      return Image.asset(
+        path,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+        errorBuilder: (_, __, ___) => Icon(
+          Icons.broken_image_outlined,
+          size: size,
+          color: context.colorScheme.error,
+        ),
+      );
+    }
+
+    // * File from device storage
+    final file = File(path);
+    if (isSvg) {
+      return SvgPicture.file(
+        file,
+        width: size,
+        height: size,
+        fit: BoxFit.contain,
+      );
+    }
+    return Image.file(
+      file,
+      width: size,
+      height: size,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => Icon(
+        Icons.broken_image_outlined,
+        size: size,
+        color: context.colorScheme.error,
       ),
     );
   }

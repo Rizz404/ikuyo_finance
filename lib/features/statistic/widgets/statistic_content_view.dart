@@ -37,7 +37,7 @@ class StatisticContentView extends StatelessWidget {
           // * Chart section
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(vertical: 16),
               child: StatisticChartView(
                 summaries: summaries,
                 total: total,
@@ -63,7 +63,6 @@ class StatisticContentView extends StatelessWidget {
 
   Widget _buildSummaryCard(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(

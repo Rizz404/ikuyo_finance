@@ -26,7 +26,7 @@ class CategorySummaryList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 8),
           child: AppText(
             isIncome ? 'Pendapatan per Kategori' : 'Pengeluaran per Kategori',
             style: AppTextStyle.titleSmall,
@@ -63,7 +63,7 @@ class _CategorySummaryTile extends StatelessWidget {
     final color = _getCategoryColor(context);
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: context.colorScheme.surface,
