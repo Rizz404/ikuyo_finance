@@ -10,6 +10,12 @@ class ToastHelper {
   static final ToastHelper _instance = ToastHelper._();
   static ToastHelper get instance => _instance;
 
+  // * Asset paths for toast images
+  static const String _successImage = 'assets/images/success-img.png';
+  static const String _errorImage = 'assets/images/error-img.png';
+  static const String _warningImage = 'assets/images/warning-img.png';
+  static const String _infoImage = 'assets/images/info-img.png';
+
   /// Show success toast
   ToastificationItem showSuccess({
     required BuildContext context,
@@ -21,6 +27,7 @@ class ToastHelper {
     bool closeOnClick = true,
     bool pauseOnHover = true,
     bool dragToClose = true,
+    bool showImage = true,
   }) {
     final colors = context.colors;
     final semantic = context.semantic;
@@ -30,15 +37,22 @@ class ToastHelper {
     return toastification.show(
       context: context,
       type: ToastificationType.success,
-      style: ToastificationStyle.flatColored,
+      style: ToastificationStyle.flat,
       title: Text(title),
       description: description != null ? Text(description) : null,
-      alignment: alignment ?? Alignment.topRight,
+      alignment: alignment ?? Alignment.topCenter,
       autoCloseDuration: duration ?? const Duration(seconds: 4),
       primaryColor: semantic.success,
       backgroundColor: colors.surface,
       foregroundColor: colors.textPrimary,
-      icon: const Icon(Icons.check_circle_rounded),
+      icon: showImage
+          ? Image.asset(
+              _successImage,
+              width: 32,
+              height: 32,
+              filterQuality: FilterQuality.high,
+            )
+          : const Icon(Icons.check_circle_rounded),
       showIcon: true,
       showProgressBar: showProgressBar,
       closeOnClick: closeOnClick,
@@ -47,14 +61,14 @@ class ToastHelper {
       borderRadius: BorderRadius.circular(12),
       boxShadow: [
         BoxShadow(
-          color: semantic.success.withValues(alpha: 0.1),
+          color: semantic.success.withValues(alpha: 0.15),
           blurRadius: 16,
           offset: const Offset(0, 4),
           spreadRadius: 0,
         ),
       ],
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.fromLTRB(12, 56, 12, 8),
       animationDuration: const Duration(milliseconds: 300),
       callbacks: ToastificationCallbacks(
         onTap: (item) => logInfo('Success toast tapped: ${item.id}'),
@@ -74,6 +88,7 @@ class ToastHelper {
     bool closeOnClick = true,
     bool pauseOnHover = true,
     bool dragToClose = true,
+    bool showImage = true,
   }) {
     final colors = context.colors;
     final semantic = context.semantic;
@@ -83,15 +98,22 @@ class ToastHelper {
     return toastification.show(
       context: context,
       type: ToastificationType.error,
-      style: ToastificationStyle.flatColored,
+      style: ToastificationStyle.flat,
       title: Text(title),
       description: description != null ? Text(description) : null,
-      alignment: alignment ?? Alignment.topRight,
+      alignment: alignment ?? Alignment.topCenter,
       autoCloseDuration: duration ?? const Duration(seconds: 5),
       primaryColor: semantic.error,
       backgroundColor: colors.surface,
       foregroundColor: colors.textPrimary,
-      icon: const Icon(Icons.error_rounded),
+      icon: showImage
+          ? Image.asset(
+              _errorImage,
+              width: 32,
+              height: 32,
+              filterQuality: FilterQuality.high,
+            )
+          : const Icon(Icons.error_rounded),
       showIcon: true,
       showProgressBar: showProgressBar,
       closeOnClick: closeOnClick,
@@ -100,14 +122,14 @@ class ToastHelper {
       borderRadius: BorderRadius.circular(12),
       boxShadow: [
         BoxShadow(
-          color: semantic.error.withValues(alpha: 0.1),
+          color: semantic.error.withValues(alpha: 0.15),
           blurRadius: 16,
           offset: const Offset(0, 4),
           spreadRadius: 0,
         ),
       ],
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.fromLTRB(12, 56, 12, 8),
       animationDuration: const Duration(milliseconds: 300),
       callbacks: ToastificationCallbacks(
         onTap: (item) => logInfo('Error toast tapped: ${item.id}'),
@@ -127,6 +149,7 @@ class ToastHelper {
     bool closeOnClick = true,
     bool pauseOnHover = true,
     bool dragToClose = true,
+    bool showImage = true,
   }) {
     final colors = context.colors;
     final semantic = context.semantic;
@@ -136,15 +159,22 @@ class ToastHelper {
     return toastification.show(
       context: context,
       type: ToastificationType.warning,
-      style: ToastificationStyle.flatColored,
+      style: ToastificationStyle.flat,
       title: Text(title),
       description: description != null ? Text(description) : null,
-      alignment: alignment ?? Alignment.topRight,
+      alignment: alignment ?? Alignment.topCenter,
       autoCloseDuration: duration ?? const Duration(seconds: 4),
       primaryColor: semantic.warning,
       backgroundColor: colors.surface,
       foregroundColor: colors.textPrimary,
-      icon: const Icon(Icons.warning_rounded),
+      icon: showImage
+          ? Image.asset(
+              _warningImage,
+              width: 32,
+              height: 32,
+              filterQuality: FilterQuality.high,
+            )
+          : const Icon(Icons.warning_rounded),
       showIcon: true,
       showProgressBar: showProgressBar,
       closeOnClick: closeOnClick,
@@ -153,14 +183,14 @@ class ToastHelper {
       borderRadius: BorderRadius.circular(12),
       boxShadow: [
         BoxShadow(
-          color: semantic.warning.withValues(alpha: 0.1),
+          color: semantic.warning.withValues(alpha: 0.15),
           blurRadius: 16,
           offset: const Offset(0, 4),
           spreadRadius: 0,
         ),
       ],
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.fromLTRB(12, 56, 12, 8),
       animationDuration: const Duration(milliseconds: 300),
       callbacks: ToastificationCallbacks(
         onTap: (item) => logInfo('Warning toast tapped: ${item.id}'),
@@ -180,6 +210,7 @@ class ToastHelper {
     bool closeOnClick = true,
     bool pauseOnHover = true,
     bool dragToClose = true,
+    bool showImage = true,
   }) {
     final colors = context.colors;
     final semantic = context.semantic;
@@ -189,15 +220,22 @@ class ToastHelper {
     return toastification.show(
       context: context,
       type: ToastificationType.info,
-      style: ToastificationStyle.flatColored,
+      style: ToastificationStyle.flat,
       title: Text(title),
       description: description != null ? Text(description) : null,
-      alignment: alignment ?? Alignment.topRight,
+      alignment: alignment ?? Alignment.topCenter,
       autoCloseDuration: duration ?? const Duration(seconds: 4),
       primaryColor: semantic.info,
       backgroundColor: colors.surface,
       foregroundColor: colors.textPrimary,
-      icon: const Icon(Icons.info_rounded),
+      icon: showImage
+          ? Image.asset(
+              _infoImage,
+              width: 32,
+              height: 32,
+              filterQuality: FilterQuality.high,
+            )
+          : const Icon(Icons.info_rounded),
       showIcon: true,
       showProgressBar: showProgressBar,
       closeOnClick: closeOnClick,
@@ -206,14 +244,14 @@ class ToastHelper {
       borderRadius: BorderRadius.circular(12),
       boxShadow: [
         BoxShadow(
-          color: semantic.info.withValues(alpha: 0.1),
+          color: semantic.info.withValues(alpha: 0.15),
           blurRadius: 16,
           offset: const Offset(0, 4),
           spreadRadius: 0,
         ),
       ],
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      margin: const EdgeInsets.fromLTRB(12, 56, 12, 8),
       animationDuration: const Duration(milliseconds: 300),
       callbacks: ToastificationCallbacks(
         onTap: (item) => logInfo('Info toast tapped: ${item.id}'),
