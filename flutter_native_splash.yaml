@@ -6,10 +6,10 @@ flutter_native_splash:
   color_dark: "#121212"
 
   # Splash image
-  image: assets/images/splash-img.png
+  image: assets/images/splash-img-resizer-3.png
 
   # Dark mode splash image (same image, adjust if needed)
-  image_dark: assets/images/splash-img.png
+  image_dark: assets/images/splash-img-resizer-3.png
 
   # Fullscreen mode
   fullscreen: true
@@ -24,6 +24,13 @@ flutter_native_splash:
   web_image_mode: center
 
   # Android 12+ specific configuration
+  # Branding image (logo/text at bottom of splash screen)
+  # Create an image 800x320 px with your app name "Ikuyo Finance"
+  branding: assets/images/branding-img.png
+  branding_dark: assets/images/branding-img-dark.png
+  branding_mode: bottom
+  branding_bottom_padding: 48
+
   android_12:
     # Background color (light)
     color: "#FFFBFA"
@@ -34,9 +41,13 @@ flutter_native_splash:
     # Center splash image
     # with background: 960x960 px (fit within circle 640px in diameter)
     # without background: 1152x1152 px (fit within circle 768px in diameter)
-    image: assets/images/splash-img.png
-    image_dark: assets/images/splash-img.png
+    image: assets/images/splash-img-resizer-3.png
+    image_dark: assets/images/splash-img-resizer-3.png
 
     # Icon background color using primary color (Kita Red)
-    icon_background_color: "#E53935"
-    icon_background_color_dark: "#EF5350"
+    # icon_background_color: "#E53935"
+    # icon_background_color_dark: "#EF5350"
+
+    # Branding for Android 12+ (800x320 px)
+    branding: assets/images/branding-img.png
+    branding_dark: assets/images/branding-img-dark.png
