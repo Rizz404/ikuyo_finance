@@ -141,7 +141,6 @@ class _CategoryScreenState extends State<CategoryScreen>
       onRefresh: () async =>
           context.read<CategoryBloc>().add(const CategoryRefreshed()),
       child: GridView.builder(
-        padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
           crossAxisSpacing: 12,
