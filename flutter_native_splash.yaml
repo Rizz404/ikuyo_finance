@@ -1,0 +1,42 @@
+flutter_native_splash:
+  # Light mode background (from AppColors.light.background)
+  color: "#FFFBFA"
+
+  # Dark mode background (from AppColors.dark.background)
+  color_dark: "#121212"
+
+  # Splash image
+  image: assets/images/splash-img.png
+
+  # Dark mode splash image (same image, adjust if needed)
+  image_dark: assets/images/splash-img.png
+
+  # Fullscreen mode
+  fullscreen: true
+
+  # Android gravity
+  android_gravity: center
+
+  # iOS content mode
+  ios_content_mode: center
+
+  # Web image mode
+  web_image_mode: center
+
+  # Android 12+ specific configuration
+  android_12:
+    # Background color (light)
+    color: "#FFFBFA"
+
+    # Background color (dark)
+    color_dark: "#121212"
+
+    # Center splash image
+    # with background: 960x960 px (fit within circle 640px in diameter)
+    # without background: 1152x1152 px (fit within circle 768px in diameter)
+    image: assets/images/splash-img.png
+    image_dark: assets/images/splash-img.png
+
+    # Icon background color using primary color (Kita Red)
+    icon_background_color: "#E53935"
+    icon_background_color_dark: "#EF5350"
