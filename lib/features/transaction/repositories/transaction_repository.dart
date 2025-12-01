@@ -1,6 +1,8 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
+import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
+import 'package:ikuyo_finance/features/statistic/models/get_statistic_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
@@ -20,4 +22,9 @@ abstract class TransactionRepository {
     UpdateTransactionParams params,
   );
   TaskEither<Failure, ActionSuccess> deleteTransaction({required String ulid});
+
+  /// * Get transactions grouped by category for statistics
+  TaskEither<Failure, Success<StatisticSummary>> getStatisticSummary(
+    GetStatisticParams params,
+  );
 }

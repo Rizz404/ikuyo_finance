@@ -3,6 +3,8 @@ import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
+import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
+import 'package:ikuyo_finance/features/statistic/models/get_statistic_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
@@ -425,6 +427,130 @@ class TransactionRepositoryImpl implements TransactionRepository {
           message: error.toString().contains('not found')
               ? 'Transaction not found'
               : 'Failed to delete transaction. Please try again.',
+        );
+      },
+    );
+  }
+
+  @override
+  TaskEither<Failure, Success<StatisticSummary>> getStatisticSummary(
+    GetStatisticParams params,
+  ) {
+    return TaskEither.tryCatch(
+      () async {
+        logService(
+          'Get statistic summary',
+          'start: ${params.startDate}, end: ${params.endDate}',
+        );
+
+        // * Query transactions within date range
+        final queryBuilder = _box.query(
+          Transaction_.transactionDate.betweenDate(
+            params.startDate,
+            params.endDate,
+          ),
+        );
+
+        final builtQuery = queryBuilder.build();
+        final transactions = builtQuery.find();
+        builtQuery.close();
+
+        // * Group transactions by category and type
+        final Map<String?, List<Transaction>> incomeByCategory = {};
+        final Map<String?, List<Transaction>> expenseByCategory = {};
+
+        for (final transaction in transactions) {
+          final category = transaction.category.target;
+          final categoryUlid = category?.ulid;
+          final categoryType = category?.categoryType;
+
+          if (categoryType == CategoryType.income) {
+            incomeByCategory.putIfAbsent(categoryUlid, () => []);
+            incomeByCategory[categoryUlid]!.add(transaction);
+          } else if (categoryType == CategoryType.expense) {
+            expenseByCategory.putIfAbsent(categoryUlid, () => []);
+            expenseByCategory[categoryUlid]!.add(transaction);
+          } else {
+            // * Transaksi tanpa kategori - treat as expense
+            expenseByCategory.putIfAbsent(null, () => []);
+            expenseByCategory[null]!.add(transaction);
+          }
+        }
+
+        // * Calculate totals
+        double totalIncome = 0;
+        double totalExpense = 0;
+
+        // * Build income summaries
+        final incomeSummaries = <CategorySummary>[];
+        for (final entry in incomeByCategory.entries) {
+          final categoryTransactions = entry.value;
+          final total = categoryTransactions.fold<double>(
+            0,
+            (sum, t) => sum + t.amount,
+          );
+          totalIncome += total;
+
+          incomeSummaries.add(
+            CategorySummary(
+              category: categoryTransactions.first.category.target,
+              totalAmount: total,
+              transactionCount: categoryTransactions.length,
+            ),
+          );
+        }
+
+        // * Build expense summaries
+        final expenseSummaries = <CategorySummary>[];
+        for (final entry in expenseByCategory.entries) {
+          final categoryTransactions = entry.value;
+          final total = categoryTransactions.fold<double>(
+            0,
+            (sum, t) => sum + t.amount,
+          );
+          totalExpense += total;
+
+          expenseSummaries.add(
+            CategorySummary(
+              category: categoryTransactions.first.category.target,
+              totalAmount: total,
+              transactionCount: categoryTransactions.length,
+            ),
+          );
+        }
+
+        // * Calculate percentages and sort by amount descending
+        final incomeWithPercentage = incomeSummaries.map((summary) {
+          final percentage = totalIncome > 0
+              ? (summary.totalAmount / totalIncome) * 100
+              : 0.0;
+          return summary.copyWithPercentage(percentage);
+        }).toList()..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+
+        final expenseWithPercentage = expenseSummaries.map((summary) {
+          final percentage = totalExpense > 0
+              ? (summary.totalAmount / totalExpense) * 100
+              : 0.0;
+          return summary.copyWithPercentage(percentage);
+        }).toList()..sort((a, b) => b.totalAmount.compareTo(a.totalAmount));
+
+        final summary = StatisticSummary(
+          totalIncome: totalIncome,
+          totalExpense: totalExpense,
+          incomeSummaries: incomeWithPercentage,
+          expenseSummaries: expenseWithPercentage,
+        );
+
+        logInfo(
+          'Statistic summary retrieved: income=${summary.totalIncome}, expense=${summary.totalExpense}',
+        );
+
+        return Success(message: 'Statistic summary retrieved', data: summary);
+      },
+      (error, stackTrace) {
+        logError('Get statistic summary failed', error, stackTrace);
+        return Failure(
+          message: 'Failed to retrieve statistic summary. Please try again.',
         );
       },
     );

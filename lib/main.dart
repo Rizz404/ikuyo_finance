@@ -8,6 +8,7 @@ import 'package:ikuyo_finance/di/injection.dart';
 import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
+import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -47,6 +48,7 @@ class MyApp extends StatelessWidget {
           create: (_) =>
               getIt<TransactionBloc>()..add(const TransactionFetched()),
         ),
+        BlocProvider(create: (_) => getIt<StatisticBloc>()),
         BlocProvider(create: (_) => getIt<ThemeCubit>()),
       ],
       // * Use BlocListener for loose coupling between blocs (best practice)
