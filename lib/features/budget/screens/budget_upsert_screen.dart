@@ -50,17 +50,14 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
     if (state.writeStatus == BudgetWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: widget.isEdit
-            ? 'Anggaran berhasil diperbarui'
-            : 'Anggaran berhasil ditambahkan',
+        title: state.writeSuccessMessage ?? 'Berhasil',
       );
       context.read<BudgetBloc>().add(const BudgetWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == BudgetWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: 'Gagal menyimpan anggaran',
-        description: state.writeErrorMessage,
+        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
       );
       context.read<BudgetBloc>().add(const BudgetWriteStatusReset());
     }

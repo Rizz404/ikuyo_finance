@@ -39,17 +39,14 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
     if (state.writeStatus == AssetWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: widget.isEdit
-            ? 'Aset berhasil diperbarui'
-            : 'Aset berhasil ditambahkan',
+        title: state.writeSuccessMessage ?? 'Berhasil',
       );
       context.read<AssetBloc>().add(const AssetWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == AssetWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: 'Gagal menyimpan aset',
-        description: state.writeErrorMessage,
+        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
       );
       context.read<AssetBloc>().add(const AssetWriteStatusReset());
     }

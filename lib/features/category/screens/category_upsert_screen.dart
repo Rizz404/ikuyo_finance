@@ -208,17 +208,14 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
     if (state.writeStatus == CategoryWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: widget.isEdit
-            ? 'Kategori berhasil diperbarui'
-            : 'Kategori berhasil ditambahkan',
+        title: state.writeSuccessMessage ?? 'Berhasil',
       );
       context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == CategoryWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: 'Gagal menyimpan kategori',
-        description: state.writeErrorMessage,
+        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
       );
       context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
     }

@@ -112,17 +112,14 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
     if (state.writeStatus == TransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: widget.isEdit
-            ? 'Transaksi berhasil diperbarui'
-            : 'Transaksi berhasil ditambahkan',
+        title: state.writeSuccessMessage ?? 'Berhasil',
       );
       context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == TransactionWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: 'Gagal menyimpan transaksi',
-        description: state.writeErrorMessage,
+        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
       );
       context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
     }
