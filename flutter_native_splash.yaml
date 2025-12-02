@@ -6,10 +6,10 @@ flutter_native_splash:
   color_dark: "#121212"
 
   # Splash image
-  image: assets/images/splash-img-resizer-3.png
+  image: assets/images/splash-img.png
 
   # Dark mode splash image (same image, adjust if needed)
-  image_dark: assets/images/splash-img-resizer-3.png
+  image_dark: assets/images/splash-img.png
 
   # Fullscreen mode
   fullscreen: true
@@ -41,8 +41,8 @@ flutter_native_splash:
     # Center splash image
     # with background: 960x960 px (fit within circle 640px in diameter)
     # without background: 1152x1152 px (fit within circle 768px in diameter)
-    image: assets/images/splash-img-resizer-3.png
-    image_dark: assets/images/splash-img-resizer-3.png
+    image: assets/images/splash-img.png
+    image_dark: assets/images/splash-img.png
 
     # Icon background color using primary color (Kita Red)
     # icon_background_color: "#E53935"
