@@ -1,5 +1,6 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 
 class SecureLocalStorage extends LocalStorage {
   final FlutterSecureStorage _secureStorage;
@@ -13,7 +14,7 @@ class SecureLocalStorage extends LocalStorage {
 
   @override
   Future<String?> accessToken() async {
-    return await _secureStorage.read(key: 'supabase.auth.token');
+    return await _secureStorage.read(key: StorageKeys.supabaseAuthToken);
   }
 
   @override
@@ -25,13 +26,13 @@ class SecureLocalStorage extends LocalStorage {
   @override
   Future<void> persistSession(String persistSessionString) async {
     await _secureStorage.write(
-      key: 'supabase.auth.token',
+      key: StorageKeys.supabaseAuthToken,
       value: persistSessionString,
     );
   }
 
   @override
   Future<void> removePersistedSession() async {
-    await _secureStorage.delete(key: 'supabase.auth.token');
+    await _secureStorage.delete(key: StorageKeys.supabaseAuthToken);
   }
 }

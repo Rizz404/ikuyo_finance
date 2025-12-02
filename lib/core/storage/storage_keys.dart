@@ -2,8 +2,12 @@ class StorageKeys {
   StorageKeys._();
 
   // Preference Storage Keys
-  static const String isFirstLaunch = 'is_first_launch';
+  static const String databaseSeeded = 'database_seeded';
   static const String onboardingCompleted = 'onboarding_completed';
+  static const String themeMode = 'theme_mode';
+
+  // Secure Storage Keys (Supabase Auth)
+  static const String supabaseAuthToken = 'supabase.auth.token';
 
   // ObjectBox Storage Keys (digunakan untuk konfigurasi)
   static const String dbVersion = 'db_version';

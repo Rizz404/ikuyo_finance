@@ -5,6 +5,7 @@ import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/database_seeder.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
+import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
@@ -49,12 +50,22 @@ Future<void> _setupStorage() async {
     final objectBoxStorage = ObjectBoxStorage();
     await objectBoxStorage.init();
 
-    // * Seed default data saat pertama kali install
+    return objectBoxStorage;
+  });
+}
+
+/// Seed data hanya sekali saat pertama kali install
+Future<void> seedDatabaseIfNeeded() async {
+  final prefs = getIt<SharedPreferences>();
+  final hasSeeded = prefs.getBool(StorageKeys.databaseSeeded) ?? false;
+
+  if (!hasSeeded) {
+    final objectBoxStorage = await getIt.getAsync<ObjectBoxStorage>();
     final seeder = DatabaseSeeder(objectBoxStorage);
     await seeder.seedAll();
 
-    return objectBoxStorage;
-  });
+    await prefs.setBool(StorageKeys.databaseSeeded, true);
+  }
 }
 
 Future<void> _setupSupabase() async {

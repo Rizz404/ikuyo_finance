@@ -10,6 +10,9 @@ Future<void> setupDependencies() async {
   // * Setup commons (logger, storage, supabase)
   await setupCommons();
 
+  // * Seed database only on first install
+  await seedDatabaseIfNeeded();
+
   // * Setup repositories (depends on supabase client)
   setupRepositories();
 

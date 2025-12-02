@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 
 part 'theme_state.dart';
 
 class ThemeCubit extends Cubit<ThemeState> {
   final SharedPreferences _prefs;
-  static const String _themeKey = 'theme_mode';
 
   ThemeCubit(this._prefs)
     : super(
@@ -22,7 +22,7 @@ class ThemeCubit extends Cubit<ThemeState> {
   }
 
   static ThemeMode _loadThemeMode(SharedPreferences prefs) {
-    final themeName = prefs.getString(_themeKey);
+    final themeName = prefs.getString(StorageKeys.themeMode);
     return ThemeMode.values.firstWhere(
       (mode) => mode.name == themeName,
       orElse: () => ThemeMode.system,
@@ -31,7 +31,7 @@ class ThemeCubit extends Cubit<ThemeState> {
 
   Future<void> setThemeMode(ThemeMode mode) async {
     try {
-      await _prefs.setString(_themeKey, mode.name);
+      await _prefs.setString(StorageKeys.themeMode, mode.name);
       emit(state.copyWith(themeMode: mode));
       this.logInfo('Theme changed to ${mode.name}');
     } catch (e, s) {
