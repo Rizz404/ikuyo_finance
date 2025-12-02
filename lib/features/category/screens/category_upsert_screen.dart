@@ -485,6 +485,15 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       );
     }
 
+    // * Skip old asset paths (no longer supported)
+    if (iconData.startsWith('assets/')) {
+      return Icon(
+        Icons.image_outlined,
+        size: size,
+        color: context.colorScheme.primary,
+      );
+    }
+
     // * Otherwise treat as file path (user uploaded image)
     final file = File(iconData);
     return Image.file(

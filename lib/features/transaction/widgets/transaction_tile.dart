@@ -33,18 +33,7 @@ class TransactionTile extends StatelessWidget {
         child: Row(
           children: [
             // * Category Icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: _getCategoryColor(
-                  category,
-                  context,
-                ).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(child: _buildCategoryIcon(category, context)),
-            ),
+            _buildCategoryIconContainer(category, context),
             const SizedBox(width: 12),
             // * Transaction Details
             Expanded(
@@ -131,14 +120,56 @@ class TransactionTile extends StatelessWidget {
         : context.semantic.success;
   }
 
+  /// * Check if icon is a Flutter Icon codePoint
+  bool _isFlutterIcon(String? iconData) {
+    if (iconData == null || iconData.isEmpty) return true;
+    return int.tryParse(iconData) != null;
+  }
+
+  Widget _buildCategoryIconContainer(Category? category, BuildContext context) {
+    final iconData = category?.icon;
+    final color = _getCategoryColor(category, context);
+    final isFlutterIcon = _isFlutterIcon(iconData);
+
+    // * User uploaded image - show without colored background
+    if (!isFlutterIcon && iconData != null && iconData.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: AppImage.icon(iconData: iconData, size: 48),
+        ),
+      );
+    }
+
+    // * Flutter Icon - show with colored background
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(child: _buildCategoryIcon(category, context)),
+    );
+  }
+
   /// * Build icon widget dari codePoint atau file path
   Widget _buildCategoryIcon(Category? category, BuildContext context) {
     final iconData = category?.icon;
     final color = _getCategoryColor(category, context);
 
-    // * Jika ada icon data (codePoint atau file path)
+    // * Jika ada icon data (codePoint)
     if (iconData != null && iconData.isNotEmpty) {
-      return AppImage.icon(iconData: iconData, size: 24, color: color);
+      final codePoint = int.tryParse(iconData);
+      if (codePoint != null) {
+        return Icon(
+          IconData(codePoint, fontFamily: 'MaterialIcons'),
+          size: 24,
+          color: color,
+        );
+      }
     }
 
     // * Fallback ke icon default

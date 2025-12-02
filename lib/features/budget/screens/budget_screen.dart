@@ -78,6 +78,7 @@ class _BudgetScreenState extends State<BudgetScreen>
           ),
           body: ScreenWrapper(child: _buildBody(context, state)),
           floatingActionButton: FloatingActionButton(
+            heroTag: 'budget_fab',
             onPressed: () => context.pushToAddBudget(),
             child: const Icon(Icons.add),
           ),

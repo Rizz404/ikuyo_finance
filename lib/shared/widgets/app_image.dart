@@ -172,15 +172,38 @@ class AppImage extends StatelessWidget {
       );
     }
 
+    // * Skip old asset paths (no longer supported)
+    if (iconData.startsWith('assets/')) {
+      return Icon(Icons.image_outlined, size: size, color: color);
+    }
+
     // * Otherwise treat as file path (user uploaded image)
-    return Image.file(
-      File(iconData),
-      width: size,
-      height: size,
-      fit: fit,
-      color: color,
-      errorBuilder: (context, error, stackTrace) {
-        return Icon(Icons.broken_image_outlined, size: size, color: color);
+    // * Note: Don't apply color tint to user uploaded images
+    final file = File(iconData);
+    return FutureBuilder<bool>(
+      future: file.exists(),
+      builder: (context, snapshot) {
+        if (snapshot.data == true) {
+          return Image.file(
+            file,
+            width: size,
+            height: size,
+            fit: fit,
+            errorBuilder: (context, error, stackTrace) {
+              return Icon(
+                Icons.broken_image_outlined,
+                size: size,
+                color: color,
+              );
+            },
+          );
+        }
+        // * File doesn't exist or still checking
+        return Icon(
+          Icons.image_not_supported_outlined,
+          size: size,
+          color: color,
+        );
       },
     );
   }

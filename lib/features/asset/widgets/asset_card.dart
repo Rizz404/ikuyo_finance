@@ -42,15 +42,7 @@ class AssetCard extends StatelessWidget {
         child: Row(
           children: [
             // * Asset Icon
-            Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(child: _buildAssetIcon(context, color)),
-            ),
+            _buildAssetIconContainer(context, color),
             const SizedBox(width: 12),
             // * Asset Info
             Expanded(
@@ -129,12 +121,53 @@ class AssetCard extends StatelessWidget {
     };
   }
 
+  /// * Check if icon is a Flutter Icon codePoint
+  bool _isFlutterIcon(String? iconData) {
+    if (iconData == null || iconData.isEmpty) return true;
+    return int.tryParse(iconData) != null;
+  }
+
+  Widget _buildAssetIconContainer(BuildContext context, Color color) {
+    final iconData = asset.icon;
+    final isFlutterIcon = _isFlutterIcon(iconData);
+
+    // * User uploaded image - show without colored background
+    if (!isFlutterIcon && iconData != null && iconData.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          width: 48,
+          height: 48,
+          child: AppImage.icon(iconData: iconData, size: 48),
+        ),
+      );
+    }
+
+    // * Flutter Icon - show with colored background
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(child: _buildAssetIcon(context, color)),
+    );
+  }
+
   Widget _buildAssetIcon(BuildContext context, Color color) {
     final iconData = asset.icon;
 
-    // * Jika ada icon data (codePoint atau file path)
+    // * Jika ada icon data (codePoint)
     if (iconData != null && iconData.isNotEmpty) {
-      return AppImage.icon(iconData: iconData, size: 24, color: color);
+      final codePoint = int.tryParse(iconData);
+      if (codePoint != null) {
+        return Icon(
+          IconData(codePoint, fontFamily: 'MaterialIcons'),
+          size: 24,
+          color: color,
+        );
+      }
     }
 
     // * Fallback ke icon default berdasarkan tipe

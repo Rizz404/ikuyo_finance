@@ -38,15 +38,7 @@ class CategoryCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // * Category Icon
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Center(child: _buildCategoryIcon(context, color)),
-            ),
+            _buildCategoryIconContainer(context, color),
             const SizedBox(height: 12),
             // * Category Name
             AppText(
@@ -89,12 +81,53 @@ class CategoryCard extends StatelessWidget {
         : context.semantic.success;
   }
 
+  /// * Check if icon is a Flutter Icon codePoint
+  bool _isFlutterIcon(String? iconData) {
+    if (iconData == null || iconData.isEmpty) return true;
+    return int.tryParse(iconData) != null;
+  }
+
+  Widget _buildCategoryIconContainer(BuildContext context, Color color) {
+    final iconData = category.icon;
+    final isFlutterIcon = _isFlutterIcon(iconData);
+
+    // * User uploaded image - show without colored background
+    if (!isFlutterIcon && iconData != null && iconData.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: SizedBox(
+          width: 56,
+          height: 56,
+          child: AppImage.icon(iconData: iconData, size: 56),
+        ),
+      );
+    }
+
+    // * Flutter Icon - show with colored background
+    return Container(
+      width: 56,
+      height: 56,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Center(child: _buildCategoryIcon(context, color)),
+    );
+  }
+
   Widget _buildCategoryIcon(BuildContext context, Color color) {
     final iconData = category.icon;
 
-    // * Jika ada icon data (codePoint atau file path)
+    // * Jika ada icon data (codePoint)
     if (iconData != null && iconData.isNotEmpty) {
-      return AppImage.icon(iconData: iconData, size: 28, color: color);
+      final codePoint = int.tryParse(iconData);
+      if (codePoint != null) {
+        return Icon(
+          IconData(codePoint, fontFamily: 'MaterialIcons'),
+          size: 28,
+          color: color,
+        );
+      }
     }
 
     // * Fallback ke icon default

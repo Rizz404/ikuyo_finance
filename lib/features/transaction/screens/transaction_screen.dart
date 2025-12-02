@@ -151,6 +151,7 @@ class _TransactionScreenState extends State<TransactionScreen>
             ),
           ),
           floatingActionButton: FloatingActionButton(
+            heroTag: 'transaction_fab',
             onPressed: () => context.pushToAddTransaction(),
             child: const Icon(Icons.add),
           ),

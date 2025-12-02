@@ -72,6 +72,7 @@ class _CategoryScreenState extends State<CategoryScreen>
           ),
           body: ScreenWrapper(child: _buildBody(context, state)),
           floatingActionButton: FloatingActionButton(
+            heroTag: 'category_fab',
             onPressed: () => context.pushToAddCategory(),
             child: const Icon(Icons.add),
           ),

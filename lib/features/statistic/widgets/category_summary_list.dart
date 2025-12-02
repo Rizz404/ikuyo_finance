@@ -75,15 +75,7 @@ class _CategorySummaryTile extends StatelessWidget {
       child: Row(
         children: [
           // * Category icon/color indicator
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(child: _buildIcon(context, color)),
-          ),
+          _buildIconContainer(context, color),
           const SizedBox(width: 12),
           // * Category info
           Expanded(
@@ -168,6 +160,40 @@ class _CategorySummaryTile extends StatelessWidget {
       isIncome ? Icons.trending_up : Icons.trending_down,
       color: color,
       size: 24,
+    );
+  }
+
+  /// * Check if icon is a Flutter Icon codePoint
+  bool _isFlutterIcon(String? iconData) {
+    if (iconData == null || iconData.isEmpty) return true;
+    return int.tryParse(iconData) != null;
+  }
+
+  Widget _buildIconContainer(BuildContext context, Color color) {
+    final iconData = summary.categoryIcon;
+    final isFlutterIcon = _isFlutterIcon(iconData);
+
+    // * User uploaded image - show without colored background
+    if (!isFlutterIcon && iconData != null && iconData.isNotEmpty) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          width: 44,
+          height: 44,
+          child: AppImage.icon(iconData: iconData, size: 44),
+        ),
+      );
+    }
+
+    // * Flutter Icon - show with colored background
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Center(child: _buildIcon(context, color)),
     );
   }
 

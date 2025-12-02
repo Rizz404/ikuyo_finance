@@ -59,6 +59,7 @@ class _AssetScreenState extends State<AssetScreen>
             ],
           ),
           floatingActionButton: FloatingActionButton(
+            heroTag: 'asset_fab',
             onPressed: () => context.pushToAddAsset(),
             child: const Icon(Icons.add),
           ),
