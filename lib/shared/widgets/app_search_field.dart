@@ -34,7 +34,7 @@ class AppSearchField<T> extends StatefulWidget {
   final int debounceMilliseconds;
   final String? initialDisplayText;
 
-  AppSearchField({
+  const AppSearchField({
     super.key,
     required this.name,
     this.hintText,

@@ -23,7 +23,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   TaskEither<Failure, Success<Budget>> createBudget(CreateBudgetParams params) {
     return TaskEither.tryCatch(
       () async {
-        logService('Create budget', 'category: ${params.categoryUlid}');
+        logService('Buat anggaran', 'kategori: ${params.categoryUlid}');
 
         // * Get category
         final category = _categoryBox
@@ -32,7 +32,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
             .findFirst();
 
         if (category == null) {
-          throw Exception('Category not found');
+          throw Exception('Kategori tidak ditemukan');
         }
 
         final budget = Budget(
@@ -45,16 +45,16 @@ class BudgetRepositoryImpl implements BudgetRepository {
         budget.category.target = category;
 
         _box.put(budget);
-        logInfo('Budget created successfully');
+        logInfo('Anggaran berhasil dibuat');
 
-        return Success(message: 'Budget created', data: budget);
+        return Success(message: 'Anggaran berhasil dibuat', data: budget);
       },
       (error, stackTrace) {
-        logError('Create budget failed', error, stackTrace);
+        logError('Gagal membuat anggaran', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
+          message: error.toString().contains('tidak ditemukan')
               ? error.toString()
-              : 'Failed to create budget. Please try again.',
+              : 'Gagal membuat anggaran. Silakan coba lagi.',
         );
       },
     );
@@ -67,8 +67,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
     return TaskEither.tryCatch(
       () async {
         logService(
-          'Get budgets',
-          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
+          'Ambil anggaran',
+          'cursor: ${params.cursor}, limit: ${params.limit}, cari: ${params.searchQuery}, urutkan: ${params.sortBy}',
         );
 
         // * Build conditions list
@@ -209,19 +209,17 @@ class BudgetRepositoryImpl implements BudgetRepository {
           perPage: params.limit,
         );
 
-        logInfo('Budgets retrieved: ${budgets.length}, hasMore: $hasMore');
+        logInfo('Anggaran diambil: ${budgets.length}, adaLagi: $hasMore');
 
         return SuccessCursor(
-          message: 'Budgets retrieved',
+          message: 'Anggaran berhasil diambil',
           data: budgets,
           cursor: cursorInfo,
         );
       },
       (error, stackTrace) {
-        logError('Get budgets failed', error, stackTrace);
-        return Failure(
-          message: 'Failed to retrieve budgets. Please try again.',
-        );
+        logError('Gagal mengambil anggaran', error, stackTrace);
+        return Failure(message: 'Gagal mengambil anggaran. Silakan coba lagi.');
       },
     );
   }
@@ -230,7 +228,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   TaskEither<Failure, Success<Budget>> getBudgetById({required String ulid}) {
     return TaskEither.tryCatch(
       () async {
-        logService('Get budget by id', ulid);
+        logService('Ambil anggaran berdasarkan id', ulid);
 
         final budget = _box
             .query(Budget_.ulid.equals(ulid))
@@ -238,18 +236,18 @@ class BudgetRepositoryImpl implements BudgetRepository {
             .findFirst();
 
         if (budget == null) {
-          throw Exception('Budget not found');
+          throw Exception('Anggaran tidak ditemukan');
         }
 
-        logInfo('Budget retrieved');
-        return Success(message: 'Budget retrieved', data: budget);
+        logInfo('Anggaran berhasil diambil');
+        return Success(message: 'Anggaran berhasil diambil', data: budget);
       },
       (error, stackTrace) {
-        logError('Get budget by id failed', error, stackTrace);
+        logError('Gagal mengambil anggaran berdasarkan id', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Budget not found'
-              : 'Failed to retrieve budget. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Anggaran tidak ditemukan'
+              : 'Gagal mengambil anggaran. Silakan coba lagi.',
         );
       },
     );
@@ -259,7 +257,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   TaskEither<Failure, Success<Budget>> updateBudget(UpdateBudgetParams params) {
     return TaskEither.tryCatch(
       () async {
-        logService('Update budget', params.ulid);
+        logService('Perbarui anggaran', params.ulid);
 
         final budget = _box
             .query(Budget_.ulid.equals(params.ulid))
@@ -267,7 +265,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
             .findFirst();
 
         if (budget == null) {
-          throw Exception('Budget not found');
+          throw Exception('Anggaran tidak ditemukan');
         }
 
         // * Update fields jika ada
@@ -285,7 +283,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
               .findFirst();
 
           if (category == null) {
-            throw Exception('Category not found');
+            throw Exception('Kategori tidak ditemukan');
           }
 
           budget.category.target = category;
@@ -294,15 +292,15 @@ class BudgetRepositoryImpl implements BudgetRepository {
         budget.updatedAt = DateTime.now();
         _box.put(budget);
 
-        logInfo('Budget updated successfully');
-        return Success(message: 'Budget updated', data: budget);
+        logInfo('Anggaran berhasil diperbarui');
+        return Success(message: 'Anggaran berhasil diperbarui', data: budget);
       },
       (error, stackTrace) {
-        logError('Update budget failed', error, stackTrace);
+        logError('Gagal memperbarui anggaran', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
+          message: error.toString().contains('tidak ditemukan')
               ? error.toString()
-              : 'Failed to update budget. Please try again.',
+              : 'Gagal memperbarui anggaran. Silakan coba lagi.',
         );
       },
     );
@@ -312,7 +310,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
   TaskEither<Failure, ActionSuccess> deleteBudget({required String ulid}) {
     return TaskEither.tryCatch(
       () async {
-        logService('Delete budget', ulid);
+        logService('Hapus anggaran', ulid);
 
         final budget = _box
             .query(Budget_.ulid.equals(ulid))
@@ -320,20 +318,20 @@ class BudgetRepositoryImpl implements BudgetRepository {
             .findFirst();
 
         if (budget == null) {
-          throw Exception('Budget not found');
+          throw Exception('Anggaran tidak ditemukan');
         }
 
         _box.remove(budget.id);
-        logInfo('Budget deleted successfully');
+        logInfo('Anggaran berhasil dihapus');
 
-        return const ActionSuccess(message: 'Budget deleted');
+        return const ActionSuccess(message: 'Anggaran berhasil dihapus');
       },
       (error, stackTrace) {
-        logError('Delete budget failed', error, stackTrace);
+        logError('Gagal menghapus anggaran', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Budget not found'
-              : 'Failed to delete budget. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Anggaran tidak ditemukan'
+              : 'Gagal menghapus anggaran. Silakan coba lagi.',
         );
       },
     );

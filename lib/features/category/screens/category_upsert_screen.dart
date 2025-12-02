@@ -17,6 +17,7 @@ import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_color_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';
 import 'package:ikuyo_finance/shared/widgets/app_file_picker.dart';
+import 'package:ikuyo_finance/shared/widgets/app_searchable_dropdown.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text_field.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
@@ -97,8 +98,6 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
   Widget _buildParentCategoryDropdown() {
     return BlocBuilder<CategoryBloc, CategoryState>(
       buildWhen: (prev, curr) =>
-          prev.validParentCategories != curr.validParentCategories ||
-          prev.isLoadingParentCategories != curr.isLoadingParentCategories ||
           prev.editingCategoryHasChildren != curr.editingCategoryHasChildren,
       builder: (context, state) {
         // * Don't show if shouldn't
@@ -121,53 +120,64 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
           return const SizedBox.shrink();
         }
 
-        // * Loading state
-        if (state.isLoadingParentCategories) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-
-        // * Build dropdown items - include "None" option
-        final items = <AppDropdownItem<String?>>[
-          AppDropdownItem(
-            value: null,
-            label: 'Tidak ada (Kategori Utama)',
-            icon: Icon(
-              Icons.folder_outlined,
-              size: 20,
-              color: context.colorScheme.outline,
-            ),
-          ),
-          ...state.validParentCategories.map(
-            (cat) => AppDropdownItem(
-              value: cat.ulid,
-              label: cat.name,
-              icon: cat.icon != null
-                  ? _buildIconPreview(cat.icon!, size: 20)
-                  : Icon(
-                      Icons.category_outlined,
-                      size: 20,
-                      color: context.colorScheme.primary,
-                    ),
-            ),
-          ),
-        ];
-
-        return AppDropdown<String?>(
+        return AppSearchableDropdown<String?>(
+          key: ValueKey(_selectedType), // * Reset when type changes
           name: 'parentUlid',
           label: 'Kategori Induk (Opsional)',
-          hintText: 'Pilih kategori induk',
+          hintText: 'Tidak ada (Kategori Utama)',
+          searchHintText: 'Cari kategori induk...',
           initialValue: _selectedParentUlid,
+          initialDisplayText: widget.category?.parent.target?.name,
           prefixIcon: const Icon(Icons.account_tree_outlined),
-          items: items,
+          onSearch: (query) => _searchParentCategories(query),
+          onLoadInitial: () => _searchParentCategories(''),
           onChanged: (value) => setState(() => _selectedParentUlid = value),
+          emptyMessage: 'Tidak ada kategori induk tersedia',
         );
       },
     );
+  }
+
+  // * Search parent categories using bloc method
+  Future<List<AppSearchableDropdownItem<String?>>> _searchParentCategories(
+    String query,
+  ) async {
+    final bloc = context.read<CategoryBloc>();
+    final categories = await bloc.searchParentCategoriesForDropdown(
+      query: query.isEmpty ? null : query,
+      type: _selectedType,
+      excludeUlid: widget.category?.ulid,
+    );
+
+    if (!mounted) return [];
+
+    // * Add "None" option at the beginning
+    return [
+      AppSearchableDropdownItem(
+        value: null,
+        label: 'Tidak ada (Kategori Utama)',
+        subtitle: 'Jadikan kategori utama tanpa induk',
+        leading: Icon(
+          Icons.folder_outlined,
+          size: 24,
+          color: context.colorScheme.outline,
+        ),
+      ),
+      ...categories.map(
+        (cat) => AppSearchableDropdownItem(
+          value: cat.ulid,
+          label: cat.name,
+          subtitle: 'Kategori Induk', // * All items here are parents
+          leading: cat.icon != null
+              ? _buildIconPreview(cat.icon!, size: 24)
+              : Icon(
+                  Icons.folder_outlined,
+                  size: 24,
+                  color: context.colorScheme.primary,
+                ),
+        ),
+      ),
+    ];
   }
 
   Widget _buildInfoCard({required IconData icon, required String message}) {

@@ -461,4 +461,22 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
       ),
     );
   }
+
+  // * Public method for searchable dropdown - returns Future directly
+  // * Does NOT affect bloc state, purely for dropdown search
+  Future<List<Asset>> searchAssetsForDropdown({
+    String? query,
+    AssetType? type,
+  }) async {
+    final result = await _assetRepository
+        .getAssets(
+          GetAssetsParams(
+            searchQuery: query?.isEmpty == true ? null : query,
+            type: type,
+          ),
+        )
+        .run();
+
+    return result.fold((failure) => [], (success) => success.data ?? []);
+  }
 }

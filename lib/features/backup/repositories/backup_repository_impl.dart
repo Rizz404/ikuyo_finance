@@ -25,7 +25,7 @@ class BackupRepositoryImpl implements BackupRepository {
   TaskEither<Failure, Success<BackupData>> exportData() {
     return TaskEither.tryCatch(
       () async {
-        logService('Export data', 'Starting backup export');
+        logService('Ekspor data', 'Memulai ekspor cadangan');
 
         // * Get all data from ObjectBox
         final categories = _categoryBox.getAll();
@@ -50,12 +50,12 @@ class BackupRepositoryImpl implements BackupRepository {
               .toList(),
         );
 
-        logInfo('Export completed: ${backupData.totalItems} items');
+        logInfo('Ekspor selesai: ${backupData.totalItems} item');
 
         return Success(message: 'Data berhasil diekspor', data: backupData);
       },
       (error, stackTrace) {
-        logError('Export data failed', error, stackTrace);
+        logError('Gagal mengekspor data', error, stackTrace);
         return Failure(message: 'Gagal mengekspor data: ${error.toString()}');
       },
     );
@@ -65,7 +65,7 @@ class BackupRepositoryImpl implements BackupRepository {
   TaskEither<Failure, Success<void>> importData(BackupData backupData) {
     return TaskEither.tryCatch(
       () async {
-        logService('Import data', 'Starting backup import');
+        logService('Impor data', 'Memulai impor cadangan');
 
         // * Clear existing data (order matters due to relations)
         _transactionBox.removeAll();
@@ -73,7 +73,7 @@ class BackupRepositoryImpl implements BackupRepository {
         _categoryBox.removeAll();
         _assetBox.removeAll();
 
-        logInfo('Cleared existing data');
+        logInfo('Data yang ada berhasil dihapus');
 
         // * Import categories (parents first)
         final categoryMap = <String, Category>{};
@@ -105,7 +105,7 @@ class BackupRepositoryImpl implements BackupRepository {
           }
         }
 
-        logInfo('Imported ${backupData.categories.length} categories');
+        logInfo('Kategori diimpor: ${backupData.categories.length}');
 
         // * Import assets
         final assetMap = <String, Asset>{};
@@ -123,7 +123,7 @@ class BackupRepositoryImpl implements BackupRepository {
           assetMap[backup.ulid] = asset;
         }
 
-        logInfo('Imported ${backupData.assets.length} assets');
+        logInfo('Aset diimpor: ${backupData.assets.length}');
 
         // * Import transactions
         for (final backup in backupData.transactions) {
@@ -152,7 +152,7 @@ class BackupRepositoryImpl implements BackupRepository {
           _transactionBox.put(transaction);
         }
 
-        logInfo('Imported ${backupData.transactions.length} transactions');
+        logInfo('Transaksi diimpor: ${backupData.transactions.length}');
 
         // * Import budgets
         for (final backup in backupData.budgets) {
@@ -173,13 +173,13 @@ class BackupRepositoryImpl implements BackupRepository {
           _budgetBox.put(budget);
         }
 
-        logInfo('Imported ${backupData.budgets.length} budgets');
-        logInfo('Import completed: ${backupData.totalItems} items');
+        logInfo('Anggaran diimpor: ${backupData.budgets.length}');
+        logInfo('Impor selesai: ${backupData.totalItems} item');
 
         return const Success(message: 'Data berhasil diimpor');
       },
       (error, stackTrace) {
-        logError('Import data failed', error, stackTrace);
+        logError('Gagal mengimpor data', error, stackTrace);
         return Failure(message: 'Gagal mengimpor data: ${error.toString()}');
       },
     );
@@ -196,10 +196,10 @@ class BackupRepositoryImpl implements BackupRepository {
           'budgets': _budgetBox.count(),
         };
 
-        return Success(message: 'Summary fetched', data: summary);
+        return Success(message: 'Ringkasan berhasil diambil', data: summary);
       },
       (error, stackTrace) {
-        logError('Get data summary failed', error, stackTrace);
+        logError('Gagal mengambil ringkasan data', error, stackTrace);
         return Failure(message: 'Gagal mengambil ringkasan data');
       },
     );

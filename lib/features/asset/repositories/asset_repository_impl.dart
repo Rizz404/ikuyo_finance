@@ -26,7 +26,7 @@ class AssetRepositoryImpl implements AssetRepository {
   TaskEither<Failure, Success<Asset>> createAsset(CreateAssetParams params) {
     return TaskEither.tryCatch(
       () async {
-        logService('Create asset', params.name);
+        logService('Buat aset', params.name);
 
         // * Save icon to app storage
         final savedIconPath = await _fileStorage.saveFile(
@@ -42,13 +42,13 @@ class AssetRepositoryImpl implements AssetRepository {
         );
 
         _box.put(asset);
-        logInfo('Asset created successfully');
+        logInfo('Aset berhasil dibuat');
 
-        return Success(message: 'Asset created', data: asset);
+        return Success(message: 'Aset berhasil dibuat', data: asset);
       },
       (error, stackTrace) {
-        logError('Create asset failed', error, stackTrace);
-        return Failure(message: 'Failed to create asset. Please try again.');
+        logError('Gagal membuat aset', error, stackTrace);
+        return Failure(message: 'Gagal membuat aset. Silakan coba lagi.');
       },
     );
   }
@@ -58,8 +58,8 @@ class AssetRepositoryImpl implements AssetRepository {
     return TaskEither.tryCatch(
       () async {
         logService(
-          'Get assets',
-          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
+          'Ambil aset',
+          'cursor: ${params.cursor}, limit: ${params.limit}, cari: ${params.searchQuery}, urutkan: ${params.sortBy}',
         );
 
         // * Build conditions list
@@ -143,17 +143,17 @@ class AssetRepositoryImpl implements AssetRepository {
           perPage: params.limit,
         );
 
-        logInfo('Assets retrieved: ${assets.length}, hasMore: $hasMore');
+        logInfo('Aset diambil: ${assets.length}, adaLagi: $hasMore');
 
         return SuccessCursor(
-          message: 'Assets retrieved',
+          message: 'Aset berhasil diambil',
           data: assets,
           cursor: cursorInfo,
         );
       },
       (error, stackTrace) {
-        logError('Get assets failed', error, stackTrace);
-        return Failure(message: 'Failed to retrieve assets. Please try again.');
+        logError('Gagal mengambil aset', error, stackTrace);
+        return Failure(message: 'Gagal mengambil aset. Silakan coba lagi.');
       },
     );
   }
@@ -162,23 +162,23 @@ class AssetRepositoryImpl implements AssetRepository {
   TaskEither<Failure, Success<Asset>> getAssetById({required String ulid}) {
     return TaskEither.tryCatch(
       () async {
-        logService('Get asset by id', ulid);
+        logService('Ambil aset berdasarkan id', ulid);
 
         final asset = _box.query(Asset_.ulid.equals(ulid)).build().findFirst();
 
         if (asset == null) {
-          throw Exception('Asset not found');
+          throw Exception('Aset tidak ditemukan');
         }
 
-        logInfo('Asset retrieved');
-        return Success(message: 'Asset retrieved', data: asset);
+        logInfo('Aset berhasil diambil');
+        return Success(message: 'Aset berhasil diambil', data: asset);
       },
       (error, stackTrace) {
-        logError('Get asset by id failed', error, stackTrace);
+        logError('Gagal mengambil aset berdasarkan id', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Asset not found'
-              : 'Failed to retrieve asset. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Aset tidak ditemukan'
+              : 'Gagal mengambil aset. Silakan coba lagi.',
         );
       },
     );
@@ -188,7 +188,7 @@ class AssetRepositoryImpl implements AssetRepository {
   TaskEither<Failure, Success<Asset>> updateAsset(UpdateAssetParams params) {
     return TaskEither.tryCatch(
       () async {
-        logService('Update asset', params.ulid);
+        logService('Perbarui aset', params.ulid);
 
         final asset = _box
             .query(Asset_.ulid.equals(params.ulid))
@@ -196,7 +196,7 @@ class AssetRepositoryImpl implements AssetRepository {
             .findFirst();
 
         if (asset == null) {
-          throw Exception('Asset not found');
+          throw Exception('Aset tidak ditemukan');
         }
 
         // * Update fields jika ada
@@ -217,15 +217,15 @@ class AssetRepositoryImpl implements AssetRepository {
         asset.updatedAt = DateTime.now();
         _box.put(asset);
 
-        logInfo('Asset updated successfully');
-        return Success(message: 'Asset updated', data: asset);
+        logInfo('Aset berhasil diperbarui');
+        return Success(message: 'Aset berhasil diperbarui', data: asset);
       },
       (error, stackTrace) {
-        logError('Update asset failed', error, stackTrace);
+        logError('Gagal memperbarui aset', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Asset not found'
-              : 'Failed to update asset. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Aset tidak ditemukan'
+              : 'Gagal memperbarui aset. Silakan coba lagi.',
         );
       },
     );
@@ -235,28 +235,28 @@ class AssetRepositoryImpl implements AssetRepository {
   TaskEither<Failure, ActionSuccess> deleteAsset({required String ulid}) {
     return TaskEither.tryCatch(
       () async {
-        logService('Delete asset', ulid);
+        logService('Hapus aset', ulid);
 
         final asset = _box.query(Asset_.ulid.equals(ulid)).build().findFirst();
 
         if (asset == null) {
-          throw Exception('Asset not found');
+          throw Exception('Aset tidak ditemukan');
         }
 
         // * Delete icon file from app storage
         await _fileStorage.deleteFile(asset.icon);
 
         _box.remove(asset.id);
-        logInfo('Asset deleted successfully');
+        logInfo('Aset berhasil dihapus');
 
-        return const ActionSuccess(message: 'Asset deleted');
+        return const ActionSuccess(message: 'Aset berhasil dihapus');
       },
       (error, stackTrace) {
-        logError('Delete asset failed', error, stackTrace);
+        logError('Gagal menghapus aset', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Asset not found'
-              : 'Failed to delete asset. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Aset tidak ditemukan'
+              : 'Gagal menghapus aset. Silakan coba lagi.',
         );
       },
     );

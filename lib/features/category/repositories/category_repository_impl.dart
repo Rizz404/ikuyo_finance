@@ -28,7 +28,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Create category', params.name);
+        logService('Buat kategori', params.name);
 
         // * Save icon to app storage
         final savedIconPath = await _fileStorage.saveFile(
@@ -76,12 +76,12 @@ class CategoryRepositoryImpl implements CategoryRepository {
         }
 
         _box.put(category);
-        logInfo('Category created successfully');
+        logInfo('Kategori berhasil dibuat');
 
-        return Success(message: 'Category created', data: category);
+        return Success(message: 'Kategori berhasil dibuat', data: category);
       },
       (error, stackTrace) {
-        logError('Create category failed', error, stackTrace);
+        logError('Gagal membuat kategori', error, stackTrace);
         return Failure(
           message: error.toString().contains('Exception:')
               ? error.toString().replaceFirst('Exception: ', '')
@@ -98,8 +98,8 @@ class CategoryRepositoryImpl implements CategoryRepository {
     return TaskEither.tryCatch(
       () async {
         logService(
-          'Get categories',
-          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
+          'Ambil kategori',
+          'cursor: ${params.cursor}, limit: ${params.limit}, cari: ${params.searchQuery}, urutkan: ${params.sortBy}',
         );
 
         // * Build conditions list
@@ -185,21 +185,17 @@ class CategoryRepositoryImpl implements CategoryRepository {
           perPage: params.limit,
         );
 
-        logInfo(
-          'Categories retrieved: ${categories.length}, hasMore: $hasMore',
-        );
+        logInfo('Kategori diambil: ${categories.length}, adaLagi: $hasMore');
 
         return SuccessCursor(
-          message: 'Categories retrieved',
+          message: 'Kategori berhasil diambil',
           data: categories,
           cursor: cursorInfo,
         );
       },
       (error, stackTrace) {
-        logError('Get categories failed', error, stackTrace);
-        return Failure(
-          message: 'Failed to retrieve categories. Please try again.',
-        );
+        logError('Gagal mengambil kategori', error, stackTrace);
+        return Failure(message: 'Gagal mengambil kategori. Silakan coba lagi.');
       },
     );
   }
@@ -210,7 +206,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }) {
     return TaskEither.tryCatch(
       () async {
-        logService('Get category by id', ulid);
+        logService('Ambil kategori berdasarkan id', ulid);
 
         final category = _box
             .query(Category_.ulid.equals(ulid))
@@ -218,18 +214,18 @@ class CategoryRepositoryImpl implements CategoryRepository {
             .findFirst();
 
         if (category == null) {
-          throw Exception('Category not found');
+          throw Exception('Kategori tidak ditemukan');
         }
 
-        logInfo('Category retrieved');
-        return Success(message: 'Category retrieved', data: category);
+        logInfo('Kategori berhasil diambil');
+        return Success(message: 'Kategori berhasil diambil', data: category);
       },
       (error, stackTrace) {
-        logError('Get category by id failed', error, stackTrace);
+        logError('Gagal mengambil kategori berdasarkan id', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Category not found'
-              : 'Failed to retrieve category. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Kategori tidak ditemukan'
+              : 'Gagal mengambil kategori. Silakan coba lagi.',
         );
       },
     );
@@ -241,7 +237,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Update category', params.ulid);
+        logService('Perbarui kategori', params.ulid);
 
         final category = _box
             .query(Category_.ulid.equals(params.ulid))
@@ -312,11 +308,11 @@ class CategoryRepositoryImpl implements CategoryRepository {
         category.updatedAt = DateTime.now();
         _box.put(category);
 
-        logInfo('Category updated successfully');
-        return Success(message: 'Category updated', data: category);
+        logInfo('Kategori berhasil diperbarui');
+        return Success(message: 'Kategori berhasil diperbarui', data: category);
       },
       (error, stackTrace) {
-        logError('Update category failed', error, stackTrace);
+        logError('Gagal memperbarui kategori', error, stackTrace);
         return Failure(
           message: error.toString().contains('Exception:')
               ? error.toString().replaceFirst('Exception: ', '')
@@ -330,7 +326,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
   TaskEither<Failure, ActionSuccess> deleteCategory({required String ulid}) {
     return TaskEither.tryCatch(
       () async {
-        logService('Delete category', ulid);
+        logService('Hapus kategori', ulid);
 
         final category = _box
             .query(Category_.ulid.equals(ulid))
@@ -356,12 +352,12 @@ class CategoryRepositoryImpl implements CategoryRepository {
         await _fileStorage.deleteFile(category.icon);
 
         _box.remove(category.id);
-        logInfo('Category deleted successfully');
+        logInfo('Kategori berhasil dihapus');
 
-        return const ActionSuccess(message: 'Category deleted');
+        return const ActionSuccess(message: 'Kategori berhasil dihapus');
       },
       (error, stackTrace) {
-        logError('Delete category failed', error, stackTrace);
+        logError('Gagal menghapus kategori', error, stackTrace);
         return Failure(
           message: error.toString().contains('Exception:')
               ? error.toString().replaceFirst('Exception: ', '')
@@ -379,8 +375,8 @@ class CategoryRepositoryImpl implements CategoryRepository {
     return TaskEither.tryCatch(
       () async {
         logService(
-          'Get valid parent categories',
-          'type: ${type.name}, excludeUlid: $excludeUlid',
+          'Ambil kategori induk yang valid',
+          'tipe: ${type.name}, kecualiUlid: $excludeUlid',
         );
 
         // * Get all categories with the same type
@@ -408,16 +404,20 @@ class CategoryRepositoryImpl implements CategoryRepository {
           return isRoot && hasNoChildren && isNotSelf;
         }).toList();
 
-        logInfo('Valid parent categories: ${validParents.length}');
+        logInfo('Kategori induk yang valid: ${validParents.length}');
         return Success(
-          message: 'Valid parent categories retrieved',
+          message: 'Kategori induk yang valid berhasil diambil',
           data: validParents,
         );
       },
       (error, stackTrace) {
-        logError('Get valid parent categories failed', error, stackTrace);
+        logError(
+          'Gagal mengambil kategori induk yang valid',
+          error,
+          stackTrace,
+        );
         return Failure(
-          message: 'Failed to retrieve parent categories. Please try again.',
+          message: 'Gagal mengambil kategori induk. Silakan coba lagi.',
         );
       },
     );
@@ -427,19 +427,19 @@ class CategoryRepositoryImpl implements CategoryRepository {
   TaskEither<Failure, Success<bool>> hasChildren({required String ulid}) {
     return TaskEither.tryCatch(
       () async {
-        logService('Check category has children', ulid);
+        logService('Cek kategori memiliki anak', ulid);
 
         final allCategories = _box.query().build().find();
         final hasChildren = allCategories.any(
           (cat) => cat.parent.target?.ulid == ulid,
         );
 
-        logInfo('Category has children: $hasChildren');
-        return Success(message: 'Check completed', data: hasChildren);
+        logInfo('Kategori memiliki anak: $hasChildren');
+        return Success(message: 'Pengecekan selesai', data: hasChildren);
       },
       (error, stackTrace) {
-        logError('Check children failed', error, stackTrace);
-        return Failure(message: 'Failed to check category children.');
+        logError('Gagal mengecek anak kategori', error, stackTrace);
+        return Failure(message: 'Gagal mengecek anak kategori.');
       },
     );
   }

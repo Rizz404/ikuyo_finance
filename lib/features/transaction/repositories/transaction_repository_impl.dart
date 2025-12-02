@@ -35,7 +35,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Create transaction', 'asset: ${params.assetUlid}');
+        logService('Buat transaksi', 'aset: ${params.assetUlid}');
 
         // * Get asset (required)
         final asset = _assetBox
@@ -44,7 +44,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
             .findFirst();
 
         if (asset == null) {
-          throw Exception('Asset not found');
+          throw Exception('Aset tidak ditemukan');
         }
 
         final transaction = Transaction(
@@ -64,7 +64,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
               .findFirst();
 
           if (category == null) {
-            throw Exception('Category not found');
+            throw Exception('Kategori tidak ditemukan');
           }
 
           transaction.category.target = category;
@@ -82,16 +82,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
         asset.updatedAt = DateTime.now();
         _assetBox.put(asset);
 
-        logInfo('Transaction created successfully, asset balance updated');
+        logInfo('Transaksi berhasil dibuat, saldo aset diperbarui');
 
-        return Success(message: 'Transaction created', data: transaction);
+        return Success(message: 'Transaksi berhasil dibuat', data: transaction);
       },
       (error, stackTrace) {
-        logError('Create transaction failed', error, stackTrace);
+        logError('Gagal membuat transaksi', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
+          message: error.toString().contains('tidak ditemukan')
               ? error.toString()
-              : 'Failed to create transaction. Please try again.',
+              : 'Gagal membuat transaksi. Silakan coba lagi.',
         );
       },
     );
@@ -104,8 +104,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
     return TaskEither.tryCatch(
       () async {
         logService(
-          'Get transactions',
-          'cursor: ${params.cursor}, limit: ${params.limit}, search: ${params.searchQuery}, sortBy: ${params.sortBy}',
+          'Ambil transaksi',
+          'cursor: ${params.cursor}, limit: ${params.limit}, cari: ${params.searchQuery}, urutkan: ${params.sortBy}',
         );
 
         // * Build conditions list
@@ -225,20 +225,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
           perPage: params.limit,
         );
 
-        logInfo(
-          'Transactions retrieved: ${transactions.length}, hasMore: $hasMore',
-        );
+        logInfo('Transaksi diambil: ${transactions.length}, adaLagi: $hasMore');
 
         return SuccessCursor(
-          message: 'Transactions retrieved',
+          message: 'Transaksi berhasil diambil',
           data: transactions,
           cursor: cursorInfo,
         );
       },
       (error, stackTrace) {
-        logError('Get transactions failed', error, stackTrace);
+        logError('Gagal mengambil transaksi', error, stackTrace);
         return Failure(
-          message: 'Failed to retrieve transactions. Please try again.',
+          message: 'Gagal mengambil transaksi. Silakan coba lagi.',
         );
       },
     );
@@ -250,7 +248,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   }) {
     return TaskEither.tryCatch(
       () async {
-        logService('Get transaction by id', ulid);
+        logService('Ambil transaksi berdasarkan id', ulid);
 
         final transaction = _box
             .query(Transaction_.ulid.equals(ulid))
@@ -258,18 +256,21 @@ class TransactionRepositoryImpl implements TransactionRepository {
             .findFirst();
 
         if (transaction == null) {
-          throw Exception('Transaction not found');
+          throw Exception('Transaksi tidak ditemukan');
         }
 
-        logInfo('Transaction retrieved');
-        return Success(message: 'Transaction retrieved', data: transaction);
+        logInfo('Transaksi berhasil diambil');
+        return Success(
+          message: 'Transaksi berhasil diambil',
+          data: transaction,
+        );
       },
       (error, stackTrace) {
-        logError('Get transaction by id failed', error, stackTrace);
+        logError('Gagal mengambil transaksi berdasarkan id', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Transaction not found'
-              : 'Failed to retrieve transaction. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Transaksi tidak ditemukan'
+              : 'Gagal mengambil transaksi. Silakan coba lagi.',
         );
       },
     );
@@ -281,7 +282,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Update transaction', params.ulid);
+        logService('Perbarui transaksi', params.ulid);
 
         final transaction = _box
             .query(Transaction_.ulid.equals(params.ulid))
@@ -289,7 +290,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
             .findFirst();
 
         if (transaction == null) {
-          throw Exception('Transaction not found');
+          throw Exception('Transaksi tidak ditemukan');
         }
 
         final oldAmount = transaction.amount;
@@ -315,7 +316,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
               .findFirst();
 
           if (newAsset == null) {
-            throw Exception('Asset not found');
+            throw Exception('Aset tidak ditemukan');
           }
 
           transaction.asset.target = newAsset;
@@ -329,7 +330,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
               .findFirst();
 
           if (category == null) {
-            throw Exception('Category not found');
+            throw Exception('Kategori tidak ditemukan');
           }
 
           transaction.category.target = category;
@@ -375,15 +376,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
         transaction.updatedAt = DateTime.now();
         _box.put(transaction);
 
-        logInfo('Transaction updated successfully, asset balance updated');
-        return Success(message: 'Transaction updated', data: transaction);
+        logInfo('Transaksi berhasil diperbarui, saldo aset diperbarui');
+        return Success(
+          message: 'Transaksi berhasil diperbarui',
+          data: transaction,
+        );
       },
       (error, stackTrace) {
-        logError('Update transaction failed', error, stackTrace);
+        logError('Gagal memperbarui transaksi', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
+          message: error.toString().contains('tidak ditemukan')
               ? error.toString()
-              : 'Failed to update transaction. Please try again.',
+              : 'Gagal memperbarui transaksi. Silakan coba lagi.',
         );
       },
     );
@@ -393,7 +397,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
   TaskEither<Failure, ActionSuccess> deleteTransaction({required String ulid}) {
     return TaskEither.tryCatch(
       () async {
-        logService('Delete transaction', ulid);
+        logService('Hapus transaksi', ulid);
 
         final transaction = _box
             .query(Transaction_.ulid.equals(ulid))
@@ -401,7 +405,7 @@ class TransactionRepositoryImpl implements TransactionRepository {
             .findFirst();
 
         if (transaction == null) {
-          throw Exception('Transaction not found');
+          throw Exception('Transaksi tidak ditemukan');
         }
 
         // * Revert asset balance (undo the original adjustment)
@@ -417,16 +421,16 @@ class TransactionRepositoryImpl implements TransactionRepository {
         }
 
         _box.remove(transaction.id);
-        logInfo('Transaction deleted successfully, asset balance reverted');
+        logInfo('Transaksi berhasil dihapus, saldo aset dikembalikan');
 
-        return const ActionSuccess(message: 'Transaction deleted');
+        return const ActionSuccess(message: 'Transaksi berhasil dihapus');
       },
       (error, stackTrace) {
-        logError('Delete transaction failed', error, stackTrace);
+        logError('Gagal menghapus transaksi', error, stackTrace);
         return Failure(
-          message: error.toString().contains('not found')
-              ? 'Transaction not found'
-              : 'Failed to delete transaction. Please try again.',
+          message: error.toString().contains('tidak ditemukan')
+              ? 'Transaksi tidak ditemukan'
+              : 'Gagal menghapus transaksi. Silakan coba lagi.',
         );
       },
     );
@@ -439,8 +443,8 @@ class TransactionRepositoryImpl implements TransactionRepository {
     return TaskEither.tryCatch(
       () async {
         logService(
-          'Get statistic summary',
-          'start: ${params.startDate}, end: ${params.endDate}',
+          'Ambil ringkasan statistik',
+          'mulai: ${params.startDate}, akhir: ${params.endDate}',
         );
 
         // * Query transactions within date range
@@ -542,15 +546,18 @@ class TransactionRepositoryImpl implements TransactionRepository {
         );
 
         logInfo(
-          'Statistic summary retrieved: income=${summary.totalIncome}, expense=${summary.totalExpense}',
+          'Ringkasan statistik diambil: pemasukan=${summary.totalIncome}, pengeluaran=${summary.totalExpense}',
         );
 
-        return Success(message: 'Statistic summary retrieved', data: summary);
+        return Success(
+          message: 'Ringkasan statistik berhasil diambil',
+          data: summary,
+        );
       },
       (error, stackTrace) {
-        logError('Get statistic summary failed', error, stackTrace);
+        logError('Gagal mengambil ringkasan statistik', error, stackTrace);
         return Failure(
-          message: 'Failed to retrieve statistic summary. Please try again.',
+          message: 'Gagal mengambil ringkasan statistik. Silakan coba lagi.',
         );
       },
     );

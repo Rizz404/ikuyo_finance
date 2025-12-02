@@ -18,20 +18,20 @@ class AuthRepositoryImpl implements AuthRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Sign in with email', params.email);
+        logService('Masuk dengan email', params.email);
         final response = await _supabase.auth.signInWithPassword(
           email: params.email,
           password: params.password,
         );
-        logInfo('Sign in successful');
-        return Success(message: 'Sign in successful', data: response);
+        logInfo('Berhasil masuk');
+        return Success(message: 'Berhasil masuk', data: response);
       },
       (error, stackTrace) {
-        logError('Sign in failed', error, stackTrace);
+        logError('Gagal masuk', error, stackTrace);
         return Failure(
           message: error is AuthException
               ? error.message
-              : 'Failed to sign in. Please try again.',
+              : 'Gagal masuk. Silakan coba lagi.',
         );
       },
     );
@@ -43,20 +43,20 @@ class AuthRepositoryImpl implements AuthRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
-        logService('Sign up with email', params.email);
+        logService('Daftar dengan email', params.email);
         final response = await _supabase.auth.signUp(
           email: params.email,
           password: params.password,
         );
-        logInfo('Sign up successful');
-        return Success(message: 'Sign up successful', data: response);
+        logInfo('Berhasil daftar');
+        return Success(message: 'Berhasil daftar', data: response);
       },
       (error, stackTrace) {
-        logError('Sign up failed', error, stackTrace);
+        logError('Gagal daftar', error, stackTrace);
         return Failure(
           message: error is AuthException
               ? error.message
-              : 'Failed to sign up. Please try again.',
+              : 'Gagal daftar. Silakan coba lagi.',
         );
       },
     );
@@ -67,7 +67,7 @@ class AuthRepositoryImpl implements AuthRepository {
   TaskEither<Failure, Success<AuthResponse>> signInWithGoogle() {
     return TaskEither.tryCatch(
       () async {
-        logService('Sign in with Google');
+        logService('Masuk dengan Google');
         await _supabase.auth.signInWithOAuth(OAuthProvider.google);
 
         // TODO: Handle OAuth callback and get auth response
@@ -76,19 +76,19 @@ class AuthRepositoryImpl implements AuthRepository {
         final session = _supabase.auth.currentSession;
 
         if (user == null || session == null) {
-          throw const AuthException('OAuth sign in incomplete');
+          throw const AuthException('Masuk OAuth tidak lengkap');
         }
 
         final response = AuthResponse(session: session, user: user);
-        logInfo('Google sign in successful');
-        return Success(message: 'Google sign in successful', data: response);
+        logInfo('Berhasil masuk dengan Google');
+        return Success(message: 'Berhasil masuk dengan Google', data: response);
       },
       (error, stackTrace) {
-        logError('Google sign in failed', error, stackTrace);
+        logError('Gagal masuk dengan Google', error, stackTrace);
         return Failure(
           message: error is AuthException
               ? error.message
-              : 'Failed to sign in with Google. Please try again.',
+              : 'Gagal masuk dengan Google. Silakan coba lagi.',
         );
       },
     );
@@ -98,17 +98,17 @@ class AuthRepositoryImpl implements AuthRepository {
   TaskEither<Failure, ActionSuccess> signOut() {
     return TaskEither.tryCatch(
       () async {
-        logService('Sign out');
+        logService('Keluar');
         await _supabase.auth.signOut();
-        logInfo('Sign out successful');
-        return const ActionSuccess(message: 'Sign out successful');
+        logInfo('Berhasil keluar');
+        return const ActionSuccess(message: 'Berhasil keluar');
       },
       (error, stackTrace) {
-        logError('Sign out failed', error, stackTrace);
+        logError('Gagal keluar', error, stackTrace);
         return Failure(
           message: error is AuthException
               ? error.message
-              : 'Failed to sign out. Please try again.',
+              : 'Gagal keluar. Silakan coba lagi.',
         );
       },
     );
@@ -118,20 +118,20 @@ class AuthRepositoryImpl implements AuthRepository {
   TaskEither<Failure, Success<User>> getCurrentUser() {
     return TaskEither.tryCatch(
       () async {
-        logService('Get current user');
+        logService('Ambil pengguna saat ini');
         final user = _supabase.auth.currentUser;
         if (user == null) {
-          throw const AuthException('No user signed in');
+          throw const AuthException('Tidak ada pengguna yang masuk');
         }
-        logInfo('Current user retrieved');
-        return Success(message: 'User retrieved', data: user);
+        logInfo('Pengguna saat ini berhasil diambil');
+        return Success(message: 'Pengguna berhasil diambil', data: user);
       },
       (error, stackTrace) {
-        logError('Get current user failed', error, stackTrace);
+        logError('Gagal mengambil pengguna saat ini', error, stackTrace);
         return Failure(
           message: error is AuthException
               ? error.message
-              : 'Failed to get current user.',
+              : 'Gagal mengambil pengguna saat ini.',
         );
       },
     );

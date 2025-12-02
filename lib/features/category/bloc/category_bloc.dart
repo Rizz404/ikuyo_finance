@@ -514,4 +514,47 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       ),
     );
   }
+
+  // * Public method for searchable dropdown - returns Future directly
+  // * Does NOT affect bloc state, purely for dropdown search
+  Future<List<Category>> searchCategoriesForDropdown({
+    String? query,
+    CategoryType? type,
+    bool? isRootOnly,
+  }) async {
+    final result = await _categoryRepository
+        .getCategories(
+          GetCategoriesParams(
+            searchQuery: query?.isEmpty == true ? null : query,
+            type: type,
+            isRootOnly: isRootOnly,
+          ),
+        )
+        .run();
+
+    return result.fold((failure) => [], (success) => success.data ?? []);
+  }
+
+  // * Public method for searching valid parent categories
+  Future<List<Category>> searchParentCategoriesForDropdown({
+    String? query,
+    required CategoryType type,
+    String? excludeUlid,
+  }) async {
+    // * First get valid parents (root categories that can be parents)
+    final result = await _categoryRepository
+        .getValidParentCategories(type: type, excludeUlid: excludeUlid)
+        .run();
+
+    return result.fold((failure) => [], (success) {
+      final parents = success.data ?? [];
+      // * Filter by query if provided
+      if (query != null && query.isNotEmpty) {
+        return parents
+            .where((c) => c.name.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+      }
+      return parents;
+    });
+  }
 }
