@@ -33,7 +33,16 @@
 // ✅ DO: Use these widgets instead of raw Material/Cupertino widgets
 // ❌ DON'T: Create new TextField, Dropdown, Button when app widgets exist
 
-// 8) Terminal: use modern CLI tools
+// 8) Widget Organization (separation rules)
+// ✅ Reusable widgets → separate file in /widgets
+// ✅ Single-use widgets → builder function that returns Widget
+// ❌ DON'T: Create class widgets in same file unless reusable elsewhere
+// Example:
+Widget _buildHeader(BuildContext context) => Container(...);
+Widget _buildListItem(String title) => ListTile(...);
+// NOT: class _HeaderWidget extends StatelessWidget {...}
+
+// 9) Terminal: use modern CLI tools
 // Files: eza, fd, rg, bat, sd | Git: lazygit, gh, delta
 // Nav: z (zoxide), fzf, yazi | Dev: glow, jq, tldr, micro
 // Monitor: btm, procs, dust, duf
@@ -45,10 +54,9 @@ Widget build(BuildContext context) => Container(
   child: AppText(context.l10n.ok, style: AppStyle.titleMedium),
 );
 
-AppButton(
-  text: context.l10n.submit,
-  onPressed: onSubmit,
-)
+Widget _buildCard() => Card(
+  child: AppButton(text: context.l10n.submit, onPressed: onSubmit),
+);
 
 // Terminal workflows:
 // fd -e dart | rg "TODO"  // find TODOs

@@ -14,6 +14,7 @@ import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/screens/category_screen.dart';
 import 'package:ikuyo_finance/features/category/screens/category_upsert_screen.dart';
 import 'package:ikuyo_finance/features/other/screens/other_screen.dart';
+import 'package:ikuyo_finance/features/other/screens/setting_screen.dart';
 import 'package:ikuyo_finance/features/statistic/screens/statistic_screen.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_screen.dart';
@@ -240,6 +241,15 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
             },
           ),
         ],
+      ),
+      // * Setting routes - outside shell (fullscreen)
+      GoRoute(
+        name: AppRoutes.settingName,
+        path: AppRoutes.settingPath,
+        pageBuilder: (context, state) => AppPageTransitions.slideRight(
+          key: state.pageKey,
+          child: const SettingScreen(),
+        ),
       ),
     ],
   );

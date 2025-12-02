@@ -49,6 +49,10 @@ final class AppRoutes {
   static const String otherName = 'other';
   static const String otherPath = '/other';
 
+  // * Setting Routes
+  static const String settingName = 'setting';
+  static const String settingPath = '/setting';
+
   // * Category Routes
   static const String categoryName = 'category';
   static const String categoryPath = '/categories';
