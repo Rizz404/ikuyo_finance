@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
-class SettingCard extends StatelessWidget {
+class OtherCard extends StatelessWidget {
   final GestureTapCallback? onTap;
   final IconData icon;
   final String text;
   final Color? iconColor;
   final Color? iconBackgroundColor;
 
-  const SettingCard({
+  const OtherCard({
     super.key,
     required this.icon,
     required this.text,

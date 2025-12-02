@@ -45,9 +45,9 @@ final class AppRoutes {
   static const String assetEditName = 'asset-edit';
   static const String assetEditPath = 'edit';
 
-  // * Setting Routes
-  static const String settingName = 'setting';
-  static const String settingPath = '/setting';
+  // * Other Routes
+  static const String otherName = 'other';
+  static const String otherPath = '/other';
 
   // * Category Routes
   static const String categoryName = 'category';

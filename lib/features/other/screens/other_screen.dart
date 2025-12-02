@@ -2,13 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
-import 'package:ikuyo_finance/features/setting/widgets/setting_card.dart';
+import 'package:ikuyo_finance/features/other/widgets/other_card.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
-import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
-class SettingScreen extends StatelessWidget {
-  const SettingScreen({super.key});
+class OtherScreen extends StatelessWidget {
+  const OtherScreen({super.key});
 
   void _showComingSoon(BuildContext context) {
     ToastHelper.instance.showInfo(
@@ -21,7 +20,6 @@ class SettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final semantic = context.semantic;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Pengaturan'), centerTitle: true),
@@ -50,7 +48,7 @@ class SettingScreen extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 childAspectRatio: 0.95,
                 children: [
-                  SettingCard(
+                  OtherCard(
                     icon: Icons.settings_outlined,
                     text: "Pengaturan",
                     iconColor: colors.secondary,
@@ -59,7 +57,7 @@ class SettingScreen extends StatelessWidget {
                     ),
                     onTap: () => _showComingSoon(context),
                   ),
-                  SettingCard(
+                  OtherCard(
                     icon: Icons.account_balance_wallet_outlined,
                     text: "Kelola Aset",
                     iconColor: colors.secondary,
@@ -68,7 +66,7 @@ class SettingScreen extends StatelessWidget {
                     ),
                     onTap: () => context.goToAsset(),
                   ),
-                  SettingCard(
+                  OtherCard(
                     icon: Icons.category_outlined,
                     text: "Kelola Kategori",
                     iconColor: colors.secondary,
@@ -77,7 +75,7 @@ class SettingScreen extends StatelessWidget {
                     ),
                     onTap: () => context.pushToCategory(),
                   ),
-                  SettingCard(
+                  OtherCard(
                     icon: Icons.lock_outline,
                     text: "Kata Sandi",
                     iconColor: colors.secondary,
@@ -86,7 +84,7 @@ class SettingScreen extends StatelessWidget {
                     ),
                     onTap: () => _showComingSoon(context),
                   ),
-                  SettingCard(
+                  OtherCard(
                     icon: Icons.cloud_upload_outlined,
                     text: "Cadangan",
                     iconColor: colors.secondary,
@@ -95,7 +93,7 @@ class SettingScreen extends StatelessWidget {
                     ),
                     onTap: () => _showComingSoon(context),
                   ),
-                  SettingCard(
+                  OtherCard(
                     icon: Icons.help_outline,
                     text: "Bantuan",
                     iconColor: colors.secondary,

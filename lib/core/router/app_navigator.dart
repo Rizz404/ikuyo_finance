@@ -18,7 +18,7 @@ extension AppNavigator on BuildContext {
   void goToTransaction() => go(AppRoutes.transactionPath);
   void goToStatistic() => go(AppRoutes.statisticPath);
   void goToAsset() => go(AppRoutes.assetPath);
-  void goToSetting() => go(AppRoutes.settingPath);
+  void goToOther() => go(AppRoutes.otherPath);
 
   // * Transaction Child Routes (push - add to stack)
   void pushToAddTransaction() => push('/${AppRoutes.transactionAddPath}');
