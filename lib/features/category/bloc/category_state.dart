@@ -28,6 +28,13 @@ final class CategoryState extends Equatable {
   final String? writeErrorMessage;
   final Category? lastCreatedCategory;
 
+  // * Valid parent categories for nesting
+  final List<Category> validParentCategories;
+  final bool isLoadingParentCategories;
+
+  // * Check if editing category has children
+  final bool? editingCategoryHasChildren;
+
   const CategoryState({
     this.status = CategoryStatus.initial,
     this.categories = const [],
@@ -44,6 +51,9 @@ final class CategoryState extends Equatable {
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedCategory,
+    this.validParentCategories = const [],
+    this.isLoadingParentCategories = false,
+    this.editingCategoryHasChildren,
   });
 
   // * Factory constructors for cleaner state creation
@@ -88,6 +98,9 @@ final class CategoryState extends Equatable {
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
     Category? Function()? lastCreatedCategory,
+    List<Category>? validParentCategories,
+    bool? isLoadingParentCategories,
+    bool? Function()? editingCategoryHasChildren,
   }) {
     return CategoryState(
       status: status ?? this.status,
@@ -119,6 +132,13 @@ final class CategoryState extends Equatable {
       lastCreatedCategory: lastCreatedCategory != null
           ? lastCreatedCategory()
           : this.lastCreatedCategory,
+      validParentCategories:
+          validParentCategories ?? this.validParentCategories,
+      isLoadingParentCategories:
+          isLoadingParentCategories ?? this.isLoadingParentCategories,
+      editingCategoryHasChildren: editingCategoryHasChildren != null
+          ? editingCategoryHasChildren()
+          : this.editingCategoryHasChildren,
     );
   }
 
@@ -139,5 +159,8 @@ final class CategoryState extends Equatable {
     writeSuccessMessage,
     writeErrorMessage,
     lastCreatedCategory,
+    validParentCategories,
+    isLoadingParentCategories,
+    editingCategoryHasChildren,
   ];
 }

@@ -86,3 +86,18 @@ final class CategoryDeleted extends CategoryEvent {
 final class CategoryWriteStatusReset extends CategoryEvent {
   const CategoryWriteStatusReset();
 }
+
+// * Fetch valid parent categories for nesting
+final class ValidParentCategoriesFetched extends CategoryEvent {
+  const ValidParentCategoriesFetched({required this.type, this.excludeUlid});
+
+  final CategoryType type;
+  final String? excludeUlid;
+}
+
+// * Check if category has children
+final class CategoryHasChildrenChecked extends CategoryEvent {
+  const CategoryHasChildrenChecked({required this.ulid});
+
+  final String ulid;
+}

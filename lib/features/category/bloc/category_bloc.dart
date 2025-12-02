@@ -36,6 +36,10 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<CategoryUpdated>(_onCategoryUpdated);
     on<CategoryDeleted>(_onCategoryDeleted);
     on<CategoryWriteStatusReset>(_onWriteStatusReset);
+
+    // * Parent categories event
+    on<ValidParentCategoriesFetched>(_onValidParentCategoriesFetched);
+    on<CategoryHasChildrenChecked>(_onCategoryHasChildrenChecked);
   }
 
   final CategoryRepository _categoryRepository;
@@ -460,6 +464,53 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         writeSuccessMessage: () => null,
         writeErrorMessage: () => null,
         lastCreatedCategory: () => null,
+      ),
+    );
+  }
+
+  // * Fetch valid parent categories for nesting
+  Future<void> _onValidParentCategoriesFetched(
+    ValidParentCategoriesFetched event,
+    Emitter<CategoryState> emit,
+  ) async {
+    emit(state.copyWith(isLoadingParentCategories: true));
+
+    final result = await _categoryRepository
+        .getValidParentCategories(
+          type: event.type,
+          excludeUlid: event.excludeUlid,
+        )
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          isLoadingParentCategories: false,
+          validParentCategories: [],
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          isLoadingParentCategories: false,
+          validParentCategories: success.data ?? [],
+        ),
+      ),
+    );
+  }
+
+  // * Check if editing category has children
+  Future<void> _onCategoryHasChildrenChecked(
+    CategoryHasChildrenChecked event,
+    Emitter<CategoryState> emit,
+  ) async {
+    final result = await _categoryRepository
+        .hasChildren(ulid: event.ulid)
+        .run();
+
+    result.fold(
+      (failure) => emit(state.copyWith(editingCategoryHasChildren: () => null)),
+      (success) => emit(
+        state.copyWith(editingCategoryHasChildren: () => success.data ?? false),
       ),
     );
   }

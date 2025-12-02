@@ -20,4 +20,14 @@ abstract class CategoryRepository {
     UpdateCategoryParams params,
   );
   TaskEither<Failure, ActionSuccess> deleteCategory({required String ulid});
+
+  /// * Get categories that can be valid parents (root categories without children)
+  /// * Excludes the category itself and categories that already have a parent
+  TaskEither<Failure, Success<List<Category>>> getValidParentCategories({
+    required CategoryType type,
+    String? excludeUlid,
+  });
+
+  /// * Check if a category has children
+  TaskEither<Failure, Success<bool>> hasChildren({required String ulid});
 }

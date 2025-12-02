@@ -36,13 +36,162 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   final _filePickerKey = GlobalKey<AppFilePickerState>();
   String? _selectedColor;
+  late CategoryType _selectedType;
+  String? _selectedParentUlid;
 
   @override
   void initState() {
     super.initState();
+    _selectedType = widget.category?.categoryType ?? CategoryType.expense;
+    _selectedParentUlid = widget.category?.parent.target?.ulid;
+
     if (widget.isEdit) {
       _selectedColor = widget.category!.color;
+      // * Check if editing category has children
+      context.read<CategoryBloc>().add(
+        CategoryHasChildrenChecked(ulid: widget.category!.ulid),
+      );
     }
+
+    // * Fetch valid parent categories
+    _fetchValidParentCategories();
+  }
+
+  void _fetchValidParentCategories() {
+    context.read<CategoryBloc>().add(
+      ValidParentCategoriesFetched(
+        type: _selectedType,
+        excludeUlid: widget.category?.ulid,
+      ),
+    );
+  }
+
+  void _onTypeChanged(int? typeIndex) {
+    if (typeIndex != null) {
+      setState(() {
+        _selectedType = CategoryType.values[typeIndex];
+        _selectedParentUlid = null; // * Reset parent when type changes
+      });
+      _fetchValidParentCategories();
+    }
+  }
+
+  /// * Check if parent dropdown should be shown
+  /// * Hide if: category already has parent (is a child) OR has children (is a parent)
+  bool _shouldShowParentDropdown(CategoryState state) {
+    // * For new categories, always show
+    if (!widget.isEdit) return true;
+
+    // * If still loading children check, don't show yet
+    if (state.editingCategoryHasChildren == null) return false;
+
+    // * If category has children, it's a parent - can't become child
+    if (state.editingCategoryHasChildren == true) return false;
+
+    // * If category already has a parent, it's a child - can't nest deeper
+    if (widget.category?.parent.target != null) return false;
+
+    return true;
+  }
+
+  Widget _buildParentCategoryDropdown() {
+    return BlocBuilder<CategoryBloc, CategoryState>(
+      buildWhen: (prev, curr) =>
+          prev.validParentCategories != curr.validParentCategories ||
+          prev.isLoadingParentCategories != curr.isLoadingParentCategories ||
+          prev.editingCategoryHasChildren != curr.editingCategoryHasChildren,
+      builder: (context, state) {
+        // * Don't show if shouldn't
+        if (!_shouldShowParentDropdown(state)) {
+          // * Show info if category is a parent (has children)
+          if (widget.isEdit && state.editingCategoryHasChildren == true) {
+            return _buildInfoCard(
+              icon: Icons.folder_outlined,
+              message: 'Kategori induk tidak dapat menjadi sub-kategori',
+            );
+          }
+          // * Show info if category is already a child
+          if (widget.isEdit && widget.category?.parent.target != null) {
+            return _buildInfoCard(
+              icon: Icons.subdirectory_arrow_right,
+              message:
+                  'Sub-kategori dari: ${widget.category!.parent.target!.name}',
+            );
+          }
+          return const SizedBox.shrink();
+        }
+
+        // * Loading state
+        if (state.isLoadingParentCategories) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+
+        // * Build dropdown items - include "None" option
+        final items = <AppDropdownItem<String?>>[
+          AppDropdownItem(
+            value: null,
+            label: 'Tidak ada (Kategori Utama)',
+            icon: Icon(
+              Icons.folder_outlined,
+              size: 20,
+              color: context.colorScheme.outline,
+            ),
+          ),
+          ...state.validParentCategories.map(
+            (cat) => AppDropdownItem(
+              value: cat.ulid,
+              label: cat.name,
+              icon: cat.icon != null
+                  ? _buildIconPreview(cat.icon!, size: 20)
+                  : Icon(
+                      Icons.category_outlined,
+                      size: 20,
+                      color: context.colorScheme.primary,
+                    ),
+            ),
+          ),
+        ];
+
+        return AppDropdown<String?>(
+          name: 'parentUlid',
+          label: 'Kategori Induk (Opsional)',
+          hintText: 'Pilih kategori induk',
+          initialValue: _selectedParentUlid,
+          prefixIcon: const Icon(Icons.account_tree_outlined),
+          items: items,
+          onChanged: (value) => setState(() => _selectedParentUlid = value),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoCard({required IconData icon, required String message}) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: context.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.colorScheme.outline.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: context.colorScheme.outline),
+          const SizedBox(width: 12),
+          Expanded(
+            child: AppText(
+              message,
+              style: AppTextStyle.bodySmall,
+              color: context.colorScheme.outline,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _handleWriteStatus(BuildContext context, CategoryState state) {
@@ -71,6 +220,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       final name = values['name'] as String;
       final type = CategoryType.values[values['type'] as int];
       final color = values['color'] as String?;
+      final parentUlid = values['parentUlid'] as String?;
 
       // * Get icon path from file picker
       String? iconPath;
@@ -88,6 +238,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
               type: type,
               icon: iconPath ?? widget.category!.icon,
               color: color,
+              parentUlid: parentUlid,
             ),
           ),
         );
@@ -99,6 +250,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
               type: type,
               icon: iconPath,
               color: color,
+              parentUlid: parentUlid,
             ),
           ),
         );
@@ -176,6 +328,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                     initialValue:
                         widget.category?.type ?? CategoryType.expense.index,
                     prefixIcon: const Icon(Icons.category_outlined),
+                    onChanged: _onTypeChanged,
                     items: [
                       AppDropdownItem(
                         value: CategoryType.expense.index,
@@ -200,6 +353,10 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                         ? UpdateCategoryValidator.type
                         : CreateCategoryValidator.type,
                   ),
+                  const SizedBox(height: 24),
+
+                  // * Parent Category Dropdown
+                  _buildParentCategoryDropdown(),
                   const SizedBox(height: 24),
 
                   // * Name Field
