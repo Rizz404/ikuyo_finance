@@ -91,7 +91,7 @@ class OtherScreen extends StatelessWidget {
                     iconBackgroundColor: colors.secondaryContainer.withValues(
                       alpha: 0.5,
                     ),
-                    onTap: () => _showComingSoon(context),
+                    onTap: () => context.pushToBackup(),
                   ),
                   OtherCard(
                     icon: Icons.help_outline,

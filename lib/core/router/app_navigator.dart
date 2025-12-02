@@ -22,6 +22,7 @@ extension AppNavigator on BuildContext {
 
   // * Other Child Routes (push - add to stack)
   void pushToSetting() => push(AppRoutes.settingPath);
+  void pushToBackup() => push(AppRoutes.backupPath);
 
   // * Transaction Child Routes (push - add to stack)
   void pushToAddTransaction() => push('/${AppRoutes.transactionAddPath}');

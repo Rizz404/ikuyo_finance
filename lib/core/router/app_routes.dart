@@ -72,4 +72,8 @@ final class AppRoutes {
 
   static const String budgetEditName = 'budget-edit';
   static const String budgetEditPath = 'edit';
+
+  // * Backup Routes
+  static const String backupName = 'backup';
+  static const String backupPath = '/backup';
 }

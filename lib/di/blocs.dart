@@ -1,6 +1,8 @@
 import 'package:ikuyo_finance/di/service_locator.dart';
 import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
 import 'package:ikuyo_finance/features/auth/repositories/auth_repository.dart';
+import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
+import 'package:ikuyo_finance/features/backup/repositories/backup_repository.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/budget/repositories/budget_repository.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -24,5 +26,6 @@ void setupBlocs() {
     )
     ..registerFactory<StatisticBloc>(
       () => StatisticBloc(getIt<TransactionRepository>()),
-    );
+    )
+    ..registerFactory<BackupBloc>(() => BackupBloc(getIt<BackupRepository>()));
 }
