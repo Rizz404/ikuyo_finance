@@ -65,6 +65,18 @@ class MyApp extends StatelessWidget {
               context.read<AssetBloc>().add(const AssetRefreshed());
             },
           ),
+          BlocListener<BackupBloc, BackupState>(
+            listenWhen: (previous, current) =>
+                previous.status != current.status &&
+                current.status == BackupStatus.success,
+            listener: (context, state) {
+              // * Refetch all data blocs after successful backup import
+              context.read<CategoryBloc>().add(const CategoryFetched());
+              context.read<AssetBloc>().add(const AssetFetched());
+              context.read<BudgetBloc>().add(const BudgetFetched());
+              context.read<TransactionBloc>().add(const TransactionFetched());
+            },
+          ),
         ],
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, themeState) {
