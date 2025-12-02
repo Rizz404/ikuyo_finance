@@ -4,7 +4,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -341,44 +340,20 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
     );
   }
 
-  /// * Adaptive icon preview - handles SVG, asset images, and file images
-  Widget _buildIconPreview(String path, {double size = 48}) {
-    final isSvg = path.toLowerCase().endsWith('.svg');
-    final isAsset = path.startsWith('assets/');
-
-    if (isAsset) {
-      // * Asset file (from assets/ folder)
-      if (isSvg) {
-        return SvgPicture.asset(
-          path,
-          width: size,
-          height: size,
-          fit: BoxFit.contain,
-        );
-      }
-      return Image.asset(
-        path,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-        errorBuilder: (_, __, ___) => Icon(
-          Icons.broken_image_outlined,
-          size: size,
-          color: context.colorScheme.error,
-        ),
+  /// * Adaptive icon preview - handles Flutter Icon codePoint or file images
+  Widget _buildIconPreview(String iconData, {double size = 48}) {
+    // * Try parsing as Flutter Icon codePoint
+    final codePoint = int.tryParse(iconData);
+    if (codePoint != null) {
+      return Icon(
+        IconData(codePoint, fontFamily: 'MaterialIcons'),
+        size: size,
+        color: context.colorScheme.primary,
       );
     }
 
-    // * File from device storage
-    final file = File(path);
-    if (isSvg) {
-      return SvgPicture.file(
-        file,
-        width: size,
-        height: size,
-        fit: BoxFit.contain,
-      );
-    }
+    // * Otherwise treat as file path (user uploaded image)
+    final file = File(iconData);
     return Image.file(
       file,
       width: size,

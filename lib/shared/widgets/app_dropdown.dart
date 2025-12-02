@@ -131,7 +131,7 @@ class AppDropdown<T> extends StatelessWidget {
     // * Prioritas: imagePath > icon > empty
     if (item.imagePath != null && item.imagePath!.isNotEmpty) {
       return AppImage.icon(
-        path: item.imagePath!,
+        iconData: item.imagePath!,
         size: imageSize,
         color: imageColor,
       );

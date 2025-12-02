@@ -157,10 +157,11 @@ class _CategorySummaryTile extends StatelessWidget {
   }
 
   Widget _buildIcon(BuildContext context, Color color) {
-    final iconPath = summary.categoryIcon;
+    final iconData = summary.categoryIcon;
 
-    if (iconPath != null && iconPath.startsWith('assets/')) {
-      return AppImage.icon(path: iconPath, size: 24, color: color);
+    // * Jika ada icon data (codePoint atau file path)
+    if (iconData != null && iconData.isNotEmpty) {
+      return AppImage.icon(iconData: iconData, size: 24, color: color);
     }
 
     return Icon(

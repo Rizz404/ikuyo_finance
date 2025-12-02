@@ -131,14 +131,14 @@ class TransactionTile extends StatelessWidget {
         : context.semantic.success;
   }
 
-  /// * Build icon widget dari path image atau fallback ke icon
+  /// * Build icon widget dari codePoint atau file path
   Widget _buildCategoryIcon(Category? category, BuildContext context) {
-    final iconPath = category?.icon;
+    final iconData = category?.icon;
     final color = _getCategoryColor(category, context);
 
-    // * Jika ada path icon dan berupa asset path
-    if (iconPath != null && iconPath.startsWith('assets/')) {
-      return AppImage.icon(path: iconPath, size: 24, color: color);
+    // * Jika ada icon data (codePoint atau file path)
+    if (iconData != null && iconData.isNotEmpty) {
+      return AppImage.icon(iconData: iconData, size: 24, color: color);
     }
 
     // * Fallback ke icon default

@@ -90,11 +90,11 @@ class CategoryCard extends StatelessWidget {
   }
 
   Widget _buildCategoryIcon(BuildContext context, Color color) {
-    final iconPath = category.icon;
+    final iconData = category.icon;
 
-    // * Jika ada path icon dan berupa asset path
-    if (iconPath != null && iconPath.startsWith('assets/')) {
-      return AppImage.icon(path: iconPath, size: 28, color: color);
+    // * Jika ada icon data (codePoint atau file path)
+    if (iconData != null && iconData.isNotEmpty) {
+      return AppImage.icon(iconData: iconData, size: 28, color: color);
     }
 
     // * Fallback ke icon default

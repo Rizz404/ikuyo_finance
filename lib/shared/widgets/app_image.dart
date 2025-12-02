@@ -1,6 +1,7 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
@@ -149,34 +150,31 @@ class AppImage extends StatelessWidget {
     return container;
   }
 
-  /// * Factory untuk icon dari asset (SVG/PNG)
+  /// * Factory untuk icon dari Flutter Icon codePoint atau file path
   /// * Cocok untuk small icons di dropdown, list tile, dll
   static Widget icon({
-    required String path,
+    required String iconData,
     double size = 24,
     Color? color,
     BoxFit fit = BoxFit.contain,
   }) {
-    if (path.isEmpty) {
+    if (iconData.isEmpty) {
       return SizedBox(width: size, height: size);
     }
 
-    // * SVG support
-    if (path.toLowerCase().endsWith('.svg')) {
-      return SvgPicture.asset(
-        path,
-        width: size,
-        height: size,
-        fit: fit,
-        colorFilter: color != null
-            ? ColorFilter.mode(color, BlendMode.srcIn)
-            : null,
+    // * Try parsing as Flutter Icon codePoint
+    final codePoint = int.tryParse(iconData);
+    if (codePoint != null) {
+      return Icon(
+        IconData(codePoint, fontFamily: 'MaterialIcons'),
+        size: size,
+        color: color,
       );
     }
 
-    // * PNG/JPG/other raster images
-    return Image.asset(
-      path,
+    // * Otherwise treat as file path (user uploaded image)
+    return Image.file(
+      File(iconData),
       width: size,
       height: size,
       fit: fit,

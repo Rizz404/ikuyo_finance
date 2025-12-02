@@ -130,11 +130,11 @@ class AssetCard extends StatelessWidget {
   }
 
   Widget _buildAssetIcon(BuildContext context, Color color) {
-    final iconPath = asset.icon;
+    final iconData = asset.icon;
 
-    // * Jika ada path icon dan berupa asset path
-    if (iconPath != null && iconPath.startsWith('assets/')) {
-      return AppImage.icon(path: iconPath, size: 24, color: color);
+    // * Jika ada icon data (codePoint atau file path)
+    if (iconData != null && iconData.isNotEmpty) {
+      return AppImage.icon(iconData: iconData, size: 24, color: color);
     }
 
     // * Fallback ke icon default berdasarkan tipe
