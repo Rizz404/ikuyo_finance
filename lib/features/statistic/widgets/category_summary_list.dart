@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
+import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:intl/intl.dart';
@@ -163,18 +164,18 @@ class _CategorySummaryTile extends StatelessWidget {
     );
   }
 
-  /// * Check if icon is a Flutter Icon codePoint
-  bool _isFlutterIcon(String? iconData) {
+  /// * Check if icon is from registry (not a file path)
+  bool _isRegistryIcon(String? iconData) {
     if (iconData == null || iconData.isEmpty) return true;
-    return int.tryParse(iconData) != null;
+    return IconRegistry.isIconKey(iconData);
   }
 
   Widget _buildIconContainer(BuildContext context, Color color) {
     final iconData = summary.categoryIcon;
-    final isFlutterIcon = _isFlutterIcon(iconData);
+    final isRegistryIcon = _isRegistryIcon(iconData);
 
     // * User uploaded image - show without colored background
-    if (!isFlutterIcon && iconData != null && iconData.isNotEmpty) {
+    if (!isRegistryIcon && iconData != null && iconData.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(

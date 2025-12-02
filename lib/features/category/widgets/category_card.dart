@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
+import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -81,18 +82,18 @@ class CategoryCard extends StatelessWidget {
         : context.semantic.success;
   }
 
-  /// * Check if icon is a Flutter Icon codePoint
-  bool _isFlutterIcon(String? iconData) {
+  /// * Check if icon is from registry (not a file path)
+  bool _isRegistryIcon(String? iconData) {
     if (iconData == null || iconData.isEmpty) return true;
-    return int.tryParse(iconData) != null;
+    return IconRegistry.isIconKey(iconData);
   }
 
   Widget _buildCategoryIconContainer(BuildContext context, Color color) {
     final iconData = category.icon;
-    final isFlutterIcon = _isFlutterIcon(iconData);
+    final isRegistryIcon = _isRegistryIcon(iconData);
 
     // * User uploaded image - show without colored background
-    if (!isFlutterIcon && iconData != null && iconData.isNotEmpty) {
+    if (!isRegistryIcon && iconData != null && iconData.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(16),
         child: SizedBox(
@@ -118,15 +119,11 @@ class CategoryCard extends StatelessWidget {
   Widget _buildCategoryIcon(BuildContext context, Color color) {
     final iconData = category.icon;
 
-    // * Jika ada icon data (codePoint)
+    // * Jika ada icon data (registry key)
     if (iconData != null && iconData.isNotEmpty) {
-      final codePoint = int.tryParse(iconData);
-      if (codePoint != null) {
-        return Icon(
-          IconData(codePoint, fontFamily: 'MaterialIcons'),
-          size: 28,
-          color: color,
-        );
+      final icon = IconRegistry.getIcon(iconData);
+      if (icon != null) {
+        return Icon(icon, size: 28, color: color);
       }
     }
 

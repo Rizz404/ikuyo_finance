@@ -13,6 +13,7 @@ import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/models/update_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/validators/create_asset_validator.dart';
 import 'package:ikuyo_finance/features/asset/validators/update_asset_validator.dart';
+import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';
 import 'package:ikuyo_finance/shared/widgets/app_file_picker.dart';
@@ -337,16 +338,12 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
     );
   }
 
-  /// * Adaptive icon preview - handles Flutter Icon codePoint or file images
+  /// * Adaptive icon preview - handles icon key or file images
   Widget _buildIconPreview(String iconData, {double size = 48}) {
-    // * Try parsing as Flutter Icon codePoint
-    final codePoint = int.tryParse(iconData);
-    if (codePoint != null) {
-      return Icon(
-        IconData(codePoint, fontFamily: 'MaterialIcons'),
-        size: size,
-        color: context.colorScheme.primary,
-      );
+    // * Try getting icon from registry
+    final icon = IconRegistry.getIcon(iconData);
+    if (icon != null) {
+      return Icon(icon, size: size, color: context.colorScheme.primary);
     }
 
     // * Skip old asset paths (no longer supported)

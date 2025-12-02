@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 
 enum ImageSize {
@@ -150,7 +151,7 @@ class AppImage extends StatelessWidget {
     return container;
   }
 
-  /// * Factory untuk icon dari Flutter Icon codePoint atau file path
+  /// * Factory untuk icon dari icon key atau file path
   /// * Cocok untuk small icons di dropdown, list tile, dll
   static Widget icon({
     required String iconData,
@@ -162,14 +163,10 @@ class AppImage extends StatelessWidget {
       return SizedBox(width: size, height: size);
     }
 
-    // * Try parsing as Flutter Icon codePoint
-    final codePoint = int.tryParse(iconData);
-    if (codePoint != null) {
-      return Icon(
-        IconData(codePoint, fontFamily: 'MaterialIcons'),
-        size: size,
-        color: color,
-      );
+    // * Try getting icon from registry (new format: icon key)
+    final registryIcon = IconRegistry.getIcon(iconData);
+    if (registryIcon != null) {
+      return Icon(registryIcon, size: size, color: color);
     }
 
     // * Skip old asset paths (no longer supported)

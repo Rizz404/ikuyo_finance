@@ -3,6 +3,7 @@ import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:intl/intl.dart';
@@ -120,19 +121,19 @@ class TransactionTile extends StatelessWidget {
         : context.semantic.success;
   }
 
-  /// * Check if icon is a Flutter Icon codePoint
-  bool _isFlutterIcon(String? iconData) {
+  /// * Check if icon is from registry (not a file path)
+  bool _isRegistryIcon(String? iconData) {
     if (iconData == null || iconData.isEmpty) return true;
-    return int.tryParse(iconData) != null;
+    return IconRegistry.isIconKey(iconData);
   }
 
   Widget _buildCategoryIconContainer(Category? category, BuildContext context) {
     final iconData = category?.icon;
     final color = _getCategoryColor(category, context);
-    final isFlutterIcon = _isFlutterIcon(iconData);
+    final isRegistryIcon = _isRegistryIcon(iconData);
 
     // * User uploaded image - show without colored background
-    if (!isFlutterIcon && iconData != null && iconData.isNotEmpty) {
+    if (!isRegistryIcon && iconData != null && iconData.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(12),
         child: SizedBox(
@@ -155,20 +156,16 @@ class TransactionTile extends StatelessWidget {
     );
   }
 
-  /// * Build icon widget dari codePoint atau file path
+  /// * Build icon widget dari registry key atau file path
   Widget _buildCategoryIcon(Category? category, BuildContext context) {
     final iconData = category?.icon;
     final color = _getCategoryColor(category, context);
 
-    // * Jika ada icon data (codePoint)
+    // * Jika ada icon data (registry key)
     if (iconData != null && iconData.isNotEmpty) {
-      final codePoint = int.tryParse(iconData);
-      if (codePoint != null) {
-        return Icon(
-          IconData(codePoint, fontFamily: 'MaterialIcons'),
-          size: 24,
-          color: color,
-        );
+      final icon = IconRegistry.getIcon(iconData);
+      if (icon != null) {
+        return Icon(icon, size: 24, color: color);
       }
     }
 
