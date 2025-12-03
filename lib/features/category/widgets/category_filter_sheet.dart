@@ -79,12 +79,18 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
   bool? _isRootOnly;
   late CategorySortBy _sortBy;
   late CategorySortOrder _sortOrder;
+  // * Key untuk rebuild dropdown saat reset
+  int _rebuildKey = 0;
 
   @override
   void initState() {
     super.initState();
     _selectedType = widget.initialFilter.type;
-    _selectedParentUlid = widget.initialFilter.parentUlid;
+    // * Validate parentUlid exists in items list
+    final parentExists = widget.parentCategories.any(
+      (c) => c.ulid == widget.initialFilter.parentUlid,
+    );
+    _selectedParentUlid = parentExists ? widget.initialFilter.parentUlid : null;
     _isRootOnly = widget.initialFilter.isRootOnly;
     _sortBy = widget.initialFilter.sortBy;
     _sortOrder = widget.initialFilter.sortOrder;
@@ -147,6 +153,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                     children: [
                       // * Type filter
                       AppDropdown<CategoryType>(
+                        key: ValueKey('type_filter_$_rebuildKey'),
                         name: 'type_filter',
                         label: 'Tipe Kategori',
                         hintText: 'Semua tipe',
@@ -168,6 +175,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       const SizedBox(height: 16),
                       // * Parent category filter
                       AppDropdown<String>(
+                        key: ValueKey('parent_filter_$_rebuildKey'),
                         name: 'parent_filter',
                         label: 'Kategori Induk',
                         hintText: 'Semua kategori',
@@ -187,6 +195,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       const SizedBox(height: 16),
                       // * Root only filter
                       FormBuilderCheckbox(
+                        key: ValueKey('is_root_only_$_rebuildKey'),
                         name: 'is_root_only',
                         title: const Text('Hanya kategori utama (tanpa induk)'),
                         initialValue: _isRootOnly ?? false,
@@ -206,6 +215,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                         children: [
                           Expanded(
                             child: AppDropdown<CategorySortBy>(
+                              key: ValueKey('sort_by_$_rebuildKey'),
                               name: 'sort_by',
                               label: 'Berdasarkan',
                               initialValue: _sortBy,
@@ -229,6 +239,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppDropdown<CategorySortOrder>(
+                              key: ValueKey('sort_order_$_rebuildKey'),
                               name: 'sort_order',
                               label: 'Urutan',
                               initialValue: _sortOrder,
@@ -277,8 +288,8 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
       _isRootOnly = null;
       _sortBy = CategorySortBy.createdAt;
       _sortOrder = CategorySortOrder.descending;
+      _rebuildKey++;
     });
-    _formKey.currentState?.reset();
   }
 
   void _applyFilters() {
