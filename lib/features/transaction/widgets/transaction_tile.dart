@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -86,7 +88,7 @@ class TransactionTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 AppText(
-                  '${isExpense ? '-' : '+'}${_formatCurrency(transaction.amount)}',
+                  '${isExpense ? '-' : '+'}${_formatCurrency(context, transaction.amount)}',
                   style: AppTextStyle.bodyMedium,
                   fontWeight: FontWeight.bold,
                   color: isExpense
@@ -173,11 +175,7 @@ class TransactionTile extends StatelessWidget {
     return Icon(Icons.category_outlined, color: color, size: 24);
   }
 
-  String _formatCurrency(double amount) {
-    return NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp',
-      decimalDigits: 0,
-    ).format(amount);
+  String _formatCurrency(BuildContext context, double amount) {
+    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
 import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 /// * Widget untuk menampilkan list kategori dengan total transaksi
 class CategorySummaryList extends StatelessWidget {
@@ -95,7 +96,7 @@ class _CategorySummaryTile extends StatelessWidget {
                       ),
                     ),
                     AppText(
-                      _formatCurrency(summary.totalAmount),
+                      _formatCurrency(context, summary.totalAmount),
                       style: AppTextStyle.bodyMedium,
                       fontWeight: FontWeight.bold,
                       color: color,
@@ -230,11 +231,7 @@ class _CategorySummaryTile extends StatelessWidget {
     return colors[index % colors.length];
   }
 
-  String _formatCurrency(double amount) {
-    return NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp',
-      decimalDigits: 0,
-    ).format(amount);
+  String _formatCurrency(BuildContext context, double amount) {
+    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }

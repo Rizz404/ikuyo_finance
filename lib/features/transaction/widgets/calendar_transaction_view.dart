@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
@@ -376,7 +377,7 @@ class _TransactionDayModal extends StatelessWidget {
                       children: [
                         if (totalIncome > 0) ...[
                           AppText(
-                            '+${_formatCurrency(totalIncome)}',
+                            '+${_formatCurrency(context, totalIncome)}',
                             style: AppTextStyle.labelMedium,
                             color: context.semantic.success,
                             fontWeight: FontWeight.w600,
@@ -385,7 +386,7 @@ class _TransactionDayModal extends StatelessWidget {
                         ],
                         if (totalExpense > 0)
                           AppText(
-                            '-${_formatCurrency(totalExpense)}',
+                            '-${_formatCurrency(context, totalExpense)}',
                             style: AppTextStyle.labelMedium,
                             color: context.semantic.error,
                             fontWeight: FontWeight.w600,
@@ -415,12 +416,8 @@ class _TransactionDayModal extends StatelessWidget {
     );
   }
 
-  String _formatCurrency(double amount) {
-    return NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp',
-      decimalDigits: 0,
-    ).format(amount);
+  String _formatCurrency(BuildContext context, double amount) {
+    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }
 

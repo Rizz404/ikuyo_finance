@@ -1,0 +1,71 @@
+{
+  "app": {
+    "title": "Ikuyo Finance"
+  },
+  "common": {
+    "save": "Simpan",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "edit": "Edit",
+    "add": "Tambah",
+    "ok": "OK",
+    "yes": "Ya",
+    "no": "Tidak",
+    "search": "Cari",
+    "loading": "Memuat...",
+    "error": "Error",
+    "success": "Berhasil",
+    "settings": "Pengaturan"
+  },
+  "settings": {
+    "language": "Bahasa",
+    "currency": "Mata Uang",
+    "theme": "Tema",
+    "selectLanguage": "Pilih Bahasa",
+    "selectCurrency": "Pilih Mata Uang"
+  },
+  "currency": {
+    "usd": "Dolar Amerika",
+    "idr": "Rupiah Indonesia",
+    "eur": "Euro",
+    "gbp": "Poundsterling Inggris",
+    "jpy": "Yen Jepang",
+    "sgd": "Dolar Singapura",
+    "myr": "Ringgit Malaysia",
+    "aud": "Dolar Australia",
+    "cny": "Yuan Tiongkok",
+    "krw": "Won Korea Selatan"
+  },
+  "asset": {
+    "title": "Aset",
+    "cash": "Tunai",
+    "bank": "Bank",
+    "eWallet": "Dompet Digital",
+    "stock": "Saham",
+    "crypto": "Kripto",
+    "balance": "Saldo",
+    "totalBalance": "Total Saldo"
+  },
+  "transaction": {
+    "title": "Transaksi",
+    "income": "Pemasukan",
+    "expense": "Pengeluaran",
+    "transfer": "Transfer",
+    "amount": "Jumlah",
+    "date": "Tanggal",
+    "description": "Deskripsi",
+    "category": "Kategori"
+  },
+  "budget": {
+    "title": "Anggaran",
+    "limit": "Batas",
+    "spent": "Terpakai",
+    "remaining": "Sisa",
+    "period": {
+      "monthly": "Bulanan",
+      "weekly": "Mingguan",
+      "yearly": "Tahunan",
+      "custom": "Kustom"
+    }
+  }
+}

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
 import 'package:ikuyo_finance/features/statistic/widgets/category_summary_list.dart';
 import 'package:ikuyo_finance/features/statistic/widgets/statistic_chart_view.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 /// * Widget utama untuk menampilkan konten statistik (chart + list)
 class StatisticContentView extends StatelessWidget {
@@ -109,7 +110,7 @@ class StatisticContentView extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           AppText(
-            _formatCurrency(total),
+            _formatCurrency(context, total),
             style: AppTextStyle.headlineMedium,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -129,11 +130,7 @@ class StatisticContentView extends StatelessWidget {
     return summaries.fold<int>(0, (sum, s) => sum + s.transactionCount);
   }
 
-  String _formatCurrency(double amount) {
-    return NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp',
-      decimalDigits: 0,
-    ).format(amount);
+  String _formatCurrency(BuildContext context, double amount) {
+    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }

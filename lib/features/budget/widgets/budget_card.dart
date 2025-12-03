@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
@@ -13,11 +15,7 @@ class BudgetCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencyFormat = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
+    final currencyCubit = context.read<CurrencyCubit>();
     final color = _getPeriodColor(context);
     final categoryName = budget.category.target?.name ?? 'Tanpa Kategori';
 
@@ -75,7 +73,7 @@ class BudgetCard extends StatelessWidget {
             const SizedBox(height: 12),
             // * Amount Limit
             AppText(
-              currencyFormat.format(budget.amountLimit),
+              currencyCubit.formatAmount(budget.amountLimit),
               style: AppTextStyle.titleMedium,
               fontWeight: FontWeight.bold,
               color: context.colorScheme.primary,

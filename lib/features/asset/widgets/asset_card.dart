@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 class AssetCard extends StatelessWidget {
   final Asset asset;
@@ -16,11 +17,9 @@ class AssetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getAssetColor(context);
-    final currencyFormat = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
+    // * Use realtime currency conversion
+    final currencyCubit = context.watch<CurrencyCubit>();
+    final formattedBalance = currencyCubit.formatAmount(asset.balance);
 
     return GestureDetector(
       onTap: onTap ?? () => context.pushToEditAsset(asset),
@@ -77,9 +76,9 @@ class AssetCard extends StatelessWidget {
                 ],
               ),
             ),
-            // * Balance
+            // * Balance - realtime converted
             AppText(
-              currencyFormat.format(asset.balance),
+              formattedBalance,
               style: AppTextStyle.bodyMedium,
               fontWeight: FontWeight.bold,
               color: asset.balance >= 0

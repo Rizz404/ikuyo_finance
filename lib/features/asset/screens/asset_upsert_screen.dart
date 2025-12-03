@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -59,8 +61,14 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
       final name = values['name'] as String;
       final type = AssetType.values[values['type'] as int];
       final balanceStr = values['balance'] as String?;
-      final balance =
-          double.tryParse(balanceStr?.replaceAll(',', '.') ?? '0') ?? 0;
+
+      // * Parse balance: remove formatting (. or , as thousand separator)
+      // * Values are already in current currency (migrated on currency change)
+      final currencyCubit = context.read<CurrencyCubit>();
+      final balance = _parseFormattedNumber(
+        balanceStr ?? '0',
+        currencyCubit.state.currency.code,
+      );
 
       // * Get icon path from file picker
       String? iconPath;
@@ -93,6 +101,26 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
           ),
         );
       }
+    }
+  }
+
+  /// Parse formatted number string to double
+  /// * IDR format: 12.000 (. is thousand separator)
+  /// * USD format: 12,000.00 (, is thousand separator, . is decimal)
+  double _parseFormattedNumber(String value, CurrencyCode code) {
+    if (value.isEmpty) return 0;
+
+    // * IDR uses . for thousands, , for decimals (if any)
+    // * USD uses , for thousands, . for decimals
+    final isIdFormat = code == CurrencyCode.idr || code == CurrencyCode.myr;
+
+    if (isIdFormat) {
+      // Remove . (thousand separator), replace , with . for decimal
+      return double.tryParse(value.replaceAll('.', '').replaceAll(',', '.')) ??
+          0;
+    } else {
+      // Remove , (thousand separator), keep . for decimal
+      return double.tryParse(value.replaceAll(',', '')) ?? 0;
     }
   }
 
@@ -233,17 +261,30 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // * Balance Field
-                  AppTextField(
-                    name: 'balance',
-                    label: 'Saldo Awal',
-                    initialValue: widget.asset?.balance.toStringAsFixed(0),
-                    placeHolder: '0',
-                    type: AppTextFieldType.number,
-                    validator: widget.isEdit
-                        ? UpdateAssetValidator.balance
-                        : CreateAssetValidator.balance,
-                    prefixIcon: const Icon(Icons.attach_money_outlined),
+                  // * Balance Field - uses dynamic currency
+                  // * Values in DB are already in current currency
+                  Builder(
+                    builder: (context) {
+                      final currencyCubit = context.read<CurrencyCubit>();
+                      String? initialBalance;
+                      if (widget.asset != null) {
+                        // * Display as-is (already in current currency)
+                        initialBalance = widget.asset!.balance.toStringAsFixed(
+                          currencyCubit.state.currency.decimalDigits,
+                        );
+                      }
+                      return AppTextField(
+                        name: 'balance',
+                        label: 'Saldo Awal',
+                        initialValue: initialBalance,
+                        placeHolder: '0',
+                        type: AppTextFieldType.currency,
+                        validator: widget.isEdit
+                            ? UpdateAssetValidator.balance
+                            : CreateAssetValidator.balance,
+                        prefixIcon: const Icon(Icons.attach_money_outlined),
+                      );
+                    },
                   ),
                   const SizedBox(height: 24),
 

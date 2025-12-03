@@ -1,10 +1,11 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 /// * Widget untuk menampilkan chart statistik
 class StatisticChartView extends StatefulWidget {
@@ -125,7 +126,7 @@ class _StatisticChartViewState extends State<StatisticChartView> {
         ),
         const SizedBox(height: 4),
         AppText(
-          _formatCurrency(widget.total),
+          _formatCurrency(context, widget.total),
           style: AppTextStyle.headlineMedium,
           fontWeight: FontWeight.bold,
           color: color,
@@ -237,7 +238,7 @@ class _StatisticChartViewState extends State<StatisticChartView> {
             getTooltipItem: (group, groupIndex, rod, rodIndex) {
               final summary = widget.summaries[groupIndex];
               return BarTooltipItem(
-                '${summary.categoryName}\n${_formatCurrency(summary.totalAmount)}',
+                '${summary.categoryName}\n${_formatCurrency(context, summary.totalAmount)}',
                 TextStyle(
                   color: context.colorScheme.onInverseSurface,
                   fontSize: 12,
@@ -403,7 +404,7 @@ class _StatisticChartViewState extends State<StatisticChartView> {
                 if (index >= widget.summaries.length) return null;
                 final summary = widget.summaries[index];
                 return LineTooltipItem(
-                  '${summary.categoryName}\n${_formatCurrency(summary.totalAmount)}',
+                  '${summary.categoryName}\n${_formatCurrency(context, summary.totalAmount)}',
                   TextStyle(
                     color: context.colorScheme.onInverseSurface,
                     fontSize: 12,
@@ -507,12 +508,8 @@ class _StatisticChartViewState extends State<StatisticChartView> {
     }
   }
 
-  String _formatCurrency(double amount) {
-    return NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp',
-      decimalDigits: 0,
-    ).format(amount);
+  String _formatCurrency(BuildContext context, double amount) {
+    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 
   String _formatShortAmount(double amount) {

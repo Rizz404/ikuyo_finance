@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -260,13 +261,18 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // * Amount Field
+                  // * Amount Field - use currency type for proper formatting
                   AppTextField(
                     name: 'amount',
                     label: 'Jumlah',
-                    type: AppTextFieldType.number,
-                    initialValue: widget.transaction?.amount.toStringAsFixed(0),
-                    prefixText: 'Rp ',
+                    type: AppTextFieldType.currency,
+                    initialValue: widget.transaction?.amount.toStringAsFixed(
+                      context
+                          .read<CurrencyCubit>()
+                          .state
+                          .currency
+                          .decimalDigits,
+                    ),
                     validator: widget.isEdit
                         ? UpdateTransactionValidator.amount
                         : CreateTransactionValidator.amount,

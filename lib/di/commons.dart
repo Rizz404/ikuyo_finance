@@ -1,6 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/currency/service/currency_migration_service.dart';
+import 'package:ikuyo_finance/core/locale/cubit/locale_cubit.dart';
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/database_seeder.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
@@ -90,4 +93,16 @@ Future<void> _setupTheme() async {
   final prefs = await SharedPreferences.getInstance();
   getIt.registerSingleton<SharedPreferences>(prefs);
   getIt.registerLazySingleton<ThemeCubit>(() => ThemeCubit(prefs));
+  getIt.registerLazySingleton<LocaleCubit>(() => LocaleCubit(prefs));
+}
+
+/// Setup currency after ObjectBox is ready
+Future<void> setupCurrency() async {
+  final prefs = getIt<SharedPreferences>();
+  final objectBox = await getIt.getAsync<ObjectBoxStorage>();
+  final migrationService = CurrencyMigrationService(objectBox);
+  getIt.registerSingleton<CurrencyMigrationService>(migrationService);
+  getIt.registerLazySingleton<CurrencyCubit>(
+    () => CurrencyCubit(prefs, migrationService),
+  );
 }

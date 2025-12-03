@@ -1,7 +1,10 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/locale/cubit/locale_cubit.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/injection.dart';
@@ -18,12 +21,20 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load(fileName: '.env');
+  await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
   await setupDependencies();
 
   talker.logInfo('Ikuyo Finance started');
 
-  runApp(const MyApp());
+  runApp(
+    EasyLocalization(
+      supportedLocales: LocaleCubit.supportedLocales,
+      path: 'assets/translations',
+      fallbackLocale: const Locale('en', 'US'),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -52,6 +63,8 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => getIt<StatisticBloc>()),
         BlocProvider(create: (_) => getIt<BackupBloc>()),
         BlocProvider(create: (_) => getIt<ThemeCubit>()),
+        BlocProvider(create: (_) => getIt<CurrencyCubit>()),
+        BlocProvider(create: (_) => getIt<LocaleCubit>()),
       ],
       // * Use BlocListener for loose coupling between blocs (best practice)
       child: MultiBlocListener(
@@ -86,6 +99,10 @@ class MyApp extends StatelessWidget {
               darkTheme: themeState.darkTheme,
               themeMode: themeState.themeMode,
               routerConfig: getIt<GoRouter>(),
+              // * Easy localization setup
+              localizationsDelegates: context.localizationDelegates,
+              supportedLocales: context.supportedLocales,
+              locale: context.locale,
             );
           },
         ),

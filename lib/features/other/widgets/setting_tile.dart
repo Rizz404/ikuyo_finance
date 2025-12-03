@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -186,5 +187,136 @@ class ThemeSettingTile extends StatelessWidget {
       ThemeMode.dark => Icons.dark_mode,
       ThemeMode.system => Icons.brightness_auto,
     };
+  }
+}
+
+/// Widget tile untuk pilihan mata uang dengan dropdown
+class CurrencySettingTile extends StatelessWidget {
+  final CurrencyCode currentCurrency;
+  final List<Currency> availableCurrencies;
+  final ValueChanged<CurrencyCode> onChanged;
+
+  const CurrencySettingTile({
+    super.key,
+    required this.currentCurrency,
+    required this.availableCurrencies,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+    final current = Currency.getByCode(currentCurrency);
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Center(
+                  child: AppText(
+                    current.symbol,
+                    style: AppTextStyle.titleMedium,
+                    color: colors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      'Mata Uang',
+                      style: AppTextStyle.bodyMedium,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    SizedBox(height: 2),
+                    AppText(
+                      'Semua nilai akan dikonversi',
+                      style: AppTextStyle.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // * Currency dropdown
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: colors.border.withValues(alpha: 0.3)),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<CurrencyCode>(
+                value: currentCurrency,
+                isExpanded: true,
+                icon: const Icon(Icons.keyboard_arrow_down),
+                items: availableCurrencies.map((currency) {
+                  return DropdownMenuItem(
+                    value: currency.code,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: colors.surfaceVariant,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Center(
+                            child: AppText(
+                              currency.symbol,
+                              style: AppTextStyle.bodyMedium,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AppText(
+                                currency.name,
+                                style: AppTextStyle.bodyMedium,
+                              ),
+                              AppText(
+                                currency.code.name.toUpperCase(),
+                                style: AppTextStyle.labelSmall,
+                                color: colors.textSecondary,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    onChanged(value);
+                  }
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

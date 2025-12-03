@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 
 enum AppTextFieldType {
@@ -9,6 +12,7 @@ enum AppTextFieldType {
   text,
   phone,
   number,
+  currency, // * Dynamic currency based on user selection
   priceJP,
   priceUS,
   url,
@@ -69,6 +73,7 @@ class _AppTextFieldState extends State<AppTextField> {
         case AppTextFieldType.phone:
           return TextInputType.phone;
         case AppTextFieldType.number:
+        case AppTextFieldType.currency:
         case AppTextFieldType.priceJP:
         case AppTextFieldType.priceUS:
           return TextInputType.number;
@@ -90,6 +95,7 @@ class _AppTextFieldState extends State<AppTextField> {
         case AppTextFieldType.password:
         case AppTextFieldType.phone:
         case AppTextFieldType.number:
+        case AppTextFieldType.currency:
         case AppTextFieldType.priceJP:
         case AppTextFieldType.priceUS:
         case AppTextFieldType.url:
@@ -104,6 +110,11 @@ class _AppTextFieldState extends State<AppTextField> {
       switch (widget.type) {
         case AppTextFieldType.number:
           return [FilteringTextInputFormatter.digitsOnly];
+        case AppTextFieldType.currency:
+          return [
+            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+            _CurrencyFormatter(context),
+          ];
         case AppTextFieldType.priceJP:
           return [FilteringTextInputFormatter.digitsOnly, _JPPriceFormatter()];
         case AppTextFieldType.priceUS:
@@ -123,6 +134,10 @@ class _AppTextFieldState extends State<AppTextField> {
       if (widget.prefixText != null) return widget.prefixText;
 
       switch (widget.type) {
+        case AppTextFieldType.currency:
+          // * Get dynamic currency symbol from CurrencyCubit
+          final currencyState = context.watch<CurrencyCubit>().state;
+          return currencyState.currency.symbol;
         case AppTextFieldType.priceJP:
           return '¥';
         case AppTextFieldType.priceUS:
@@ -288,6 +303,119 @@ class _USPriceFormatter extends TextInputFormatter {
     for (int i = value.length - 1; i >= 0; i--) {
       if (count > 0 && count % 3 == 0) {
         result = ',$result';
+      }
+      result = value[i] + result;
+      count++;
+    }
+
+    return result;
+  }
+}
+
+/// Dynamic currency formatter based on selected currency
+/// * IDR: 12.000 (uses . for thousands, no decimals)
+/// * USD: 12,000.00 (uses , for thousands, . for decimals)
+class _CurrencyFormatter extends TextInputFormatter {
+  final BuildContext context;
+
+  _CurrencyFormatter(this.context);
+
+  @override
+  TextEditingValue formatEditUpdate(
+    TextEditingValue oldValue,
+    TextEditingValue newValue,
+  ) {
+    if (newValue.text.isEmpty) return newValue;
+
+    final currencyState = context.read<CurrencyCubit>().state;
+    final currency = currencyState.currency;
+
+    // * For currencies with no decimals (IDR, JPY, KRW)
+    if (currency.decimalDigits == 0) {
+      return _formatNoDecimals(newValue, currency.code);
+    }
+
+    // * For currencies with decimals (USD, EUR, etc.)
+    return _formatWithDecimals(newValue, currency.code);
+  }
+
+  TextEditingValue _formatNoDecimals(
+    TextEditingValue newValue,
+    CurrencyCode code,
+  ) {
+    // Remove all non-digits
+    String digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digitsOnly.isEmpty) return newValue.copyWith(text: '');
+
+    // * IDR, MYR uses . for thousands (12.000)
+    // * JPY, KRW uses , for thousands (12,000)
+    final separator = (code == CurrencyCode.idr || code == CurrencyCode.myr)
+        ? '.'
+        : ',';
+
+    String formatted = _addSeparators(digitsOnly, separator);
+
+    return TextEditingValue(
+      text: formatted,
+      selection: TextSelection.collapsed(offset: formatted.length),
+    );
+  }
+
+  TextEditingValue _formatWithDecimals(
+    TextEditingValue newValue,
+    CurrencyCode code,
+  ) {
+    // * IDR format: 12.000,00 (. for thousands, , for decimals)
+    // * USD format: 12,000.00 (, for thousands, . for decimals)
+    final isIdFormat = code == CurrencyCode.idr || code == CurrencyCode.myr;
+    final thousandsSep = isIdFormat ? '.' : ',';
+    final decimalSep = isIdFormat ? ',' : '.';
+
+    // Allow only digits and decimal separator
+    String filtered = newValue.text.replaceAll(RegExp('[^0-9$decimalSep]'), '');
+
+    // Ensure only one decimal separator
+    List<String> parts = filtered.split(decimalSep);
+    if (parts.length > 2) {
+      filtered = '${parts[0]}$decimalSep${parts.sublist(1).join('')}';
+      parts = [parts[0], parts.sublist(1).join('')];
+    }
+
+    // Limit decimal places to 2
+    if (parts.length == 2 && parts[1].length > 2) {
+      filtered = '${parts[0]}$decimalSep${parts[1].substring(0, 2)}';
+      parts = [parts[0], parts[1].substring(0, 2)];
+    }
+
+    // Format integer part with thousands separator
+    if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      String integerPart = parts[0].replaceAll(thousandsSep, '');
+      String formattedInteger = _addSeparators(integerPart, thousandsSep);
+
+      if (parts.length > 1) {
+        filtered = '$formattedInteger$decimalSep${parts[1]}';
+      } else if (filtered.endsWith(decimalSep)) {
+        filtered = '$formattedInteger$decimalSep';
+      } else {
+        filtered = formattedInteger;
+      }
+    }
+
+    return TextEditingValue(
+      text: filtered,
+      selection: TextSelection.collapsed(offset: filtered.length),
+    );
+  }
+
+  String _addSeparators(String value, String separator) {
+    if (value.length <= 3) return value;
+
+    String result = '';
+    int count = 0;
+
+    for (int i = value.length - 1; i >= 0; i--) {
+      if (count > 0 && count % 3 == 0) {
+        result = '$separator$result';
       }
       result = value[i] + result;
       count++;

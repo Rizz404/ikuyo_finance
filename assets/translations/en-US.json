@@ -1,0 +1,71 @@
+{
+  "app": {
+    "title": "Ikuyo Finance"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "ok": "OK",
+    "yes": "Yes",
+    "no": "No",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "settings": "Settings"
+  },
+  "settings": {
+    "language": "Language",
+    "currency": "Currency",
+    "theme": "Theme",
+    "selectLanguage": "Select Language",
+    "selectCurrency": "Select Currency"
+  },
+  "currency": {
+    "usd": "US Dollar",
+    "idr": "Indonesian Rupiah",
+    "eur": "Euro",
+    "gbp": "British Pound",
+    "jpy": "Japanese Yen",
+    "sgd": "Singapore Dollar",
+    "myr": "Malaysian Ringgit",
+    "aud": "Australian Dollar",
+    "cny": "Chinese Yuan",
+    "krw": "South Korean Won"
+  },
+  "asset": {
+    "title": "Assets",
+    "cash": "Cash",
+    "bank": "Bank",
+    "eWallet": "E-Wallet",
+    "stock": "Stock",
+    "crypto": "Crypto",
+    "balance": "Balance",
+    "totalBalance": "Total Balance"
+  },
+  "transaction": {
+    "title": "Transactions",
+    "income": "Income",
+    "expense": "Expense",
+    "transfer": "Transfer",
+    "amount": "Amount",
+    "date": "Date",
+    "description": "Description",
+    "category": "Category"
+  },
+  "budget": {
+    "title": "Budgets",
+    "limit": "Limit",
+    "spent": "Spent",
+    "remaining": "Remaining",
+    "period": {
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "yearly": "Yearly",
+      "custom": "Custom"
+    }
+  }
+}

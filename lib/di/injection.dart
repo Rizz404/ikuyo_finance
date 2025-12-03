@@ -13,6 +13,9 @@ Future<void> setupDependencies() async {
   // * Seed database only on first install
   await seedDatabaseIfNeeded();
 
+  // * Setup currency (depends on ObjectBox)
+  await setupCurrency();
+
   // * Setup repositories (depends on supabase client)
   setupRepositories();
 
