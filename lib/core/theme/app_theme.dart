@@ -2,11 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/theme/app_colors.dart';
 
-// * Font family constants - Kita Ikuyo inspired! ⭐🎸
-// Quicksand: Rounded, playful, energetic - like Kita's personality!
-// Nunito: Friendly, readable, soft - perfect for body text
-const String kFontHeading = 'Quicksand';
-const String kFontBody = 'Nunito';
+// * Font family constants
+const String kFontHeading = 'Poppins';
+const String kFontBody = 'Inter';
 
 class AppTheme {
   AppTheme._();
@@ -687,100 +685,85 @@ class AppTheme {
       // * Text Theme
       textTheme: TextTheme(
         displayLarge: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 57,
           fontWeight: FontWeight.w400,
           letterSpacing: -0.25,
           color: colors.textPrimary,
         ),
         displayMedium: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 45,
           fontWeight: FontWeight.w400,
           color: colors.textPrimary,
         ),
         displaySmall: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 36,
           fontWeight: FontWeight.w400,
           color: colors.textPrimary,
         ),
         headlineLarge: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 32,
           fontWeight: FontWeight.w600,
           color: colors.textPrimary,
         ),
         headlineMedium: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 28,
           fontWeight: FontWeight.w500,
           color: colors.textPrimary,
         ),
         headlineSmall: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 24,
           fontWeight: FontWeight.w500,
           color: colors.textPrimary,
         ),
         titleLarge: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 20,
           fontWeight: FontWeight.w600,
           letterSpacing: 0.15,
           color: colors.textPrimary,
         ),
         titleMedium: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 16,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.15,
           color: colors.textPrimary,
         ),
         titleSmall: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 14,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.1,
           color: colors.textSecondary,
         ),
         bodyLarge: TextStyle(
-          fontFamily: kFontBody,
           fontSize: 16,
           fontWeight: FontWeight.w400,
           letterSpacing: 0.5,
           color: colors.textPrimary,
         ),
         bodyMedium: TextStyle(
-          fontFamily: kFontBody,
           fontSize: 14,
           fontWeight: FontWeight.w400,
           letterSpacing: 0.25,
           color: colors.textPrimary,
         ),
         bodySmall: TextStyle(
-          fontFamily: kFontBody,
           fontSize: 12,
           fontWeight: FontWeight.w400,
           letterSpacing: 0.4,
           color: colors.textSecondary,
         ),
         labelLarge: TextStyle(
-          fontFamily: kFontBody,
           fontSize: 14,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.1,
           color: colors.textPrimary,
         ),
         labelMedium: TextStyle(
-          fontFamily: kFontBody,
           fontSize: 12,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.5,
           color: colors.textSecondary,
         ),
         labelSmall: TextStyle(
-          fontFamily: kFontBody,
           fontSize: 11,
           fontWeight: FontWeight.w500,
           letterSpacing: 0.5,
@@ -800,7 +783,6 @@ class AppTheme {
         shadowColor: Colors.black26,
         surfaceTintColor: Colors.transparent,
         titleTextStyle: TextStyle(
-          fontFamily: kFontHeading,
           fontSize: 18,
           fontWeight: FontWeight.w600,
           color: colors.textPrimary,

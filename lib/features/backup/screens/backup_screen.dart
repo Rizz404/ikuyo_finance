@@ -225,8 +225,13 @@ class _BackupScreenState extends State<BackupScreen> {
             );
             // * Refresh summary
             context.read<BackupBloc>().add(BackupSummaryRequested());
-            // * Pop back
-            context.pop();
+            // * Navigate back - check if can pop first
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              // * If can't pop (root route), go to main screen
+              context.go('/');
+            }
           }
         } else if (state.status == BackupStatus.failure) {
           ToastHelper.instance.showError(
