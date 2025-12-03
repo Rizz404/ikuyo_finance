@@ -5,6 +5,7 @@ import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/widgets/category_card.dart';
+import 'package:ikuyo_finance/features/category/widgets/category_filter_sheet.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
@@ -61,6 +62,19 @@ class _CategoryScreenState extends State<CategoryScreen>
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => context.pushToSearchCategory(),
+              ),
+              IconButton(
+                icon: Badge(
+                  isLabelVisible: state.hasActiveFilters,
+                  child: const Icon(Icons.filter_list),
+                ),
+                onPressed: () => _showFilterSheet(context, state),
+              ),
+            ],
             bottom: TabBar(
               controller: _tabController,
               tabs: const [
@@ -154,6 +168,42 @@ class _CategoryScreenState extends State<CategoryScreen>
           return CategoryCard(category: category);
         },
       ),
+    );
+  }
+
+  void _showFilterSheet(BuildContext context, CategoryState state) {
+    // * Get root categories for parent filter options
+    final rootCategories = state.categories
+        .where((c) => c.parent.target == null)
+        .toList();
+
+    CategoryFilterSheet.show(
+      context: context,
+      parentCategories: rootCategories,
+      initialFilter: CategoryFilterData(
+        type: state.currentTypeFilter,
+        parentUlid: state.currentParentUlidFilter,
+        isRootOnly: state.currentIsRootOnlyFilter,
+        sortBy: state.currentSortBy,
+        sortOrder: state.currentSortOrder,
+      ),
+      onApplyFilter: (filterData) {
+        // * Apply filters
+        context.read<CategoryBloc>().add(
+          CategoryFiltered(
+            type: filterData.type,
+            parentUlid: filterData.parentUlid,
+            isRootOnly: filterData.isRootOnly,
+          ),
+        );
+        // * Apply sort
+        context.read<CategoryBloc>().add(
+          CategorySorted(
+            sortBy: filterData.sortBy,
+            sortOrder: filterData.sortOrder,
+          ),
+        );
+      },
     );
   }
 }

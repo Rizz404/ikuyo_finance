@@ -35,6 +35,8 @@ extension AppNavigator on BuildContext {
       push('${AppRoutes.assetPath}/${AppRoutes.assetAddPath}');
   void pushToEditAsset(Asset asset) =>
       push('${AppRoutes.assetPath}/${AppRoutes.assetEditPath}', extra: asset);
+  void pushToSearchAsset() =>
+      push('${AppRoutes.assetPath}/${AppRoutes.assetSearchPath}');
 
   // * Category Navigation
   void pushToCategory() => push(AppRoutes.categoryPath);
@@ -44,6 +46,8 @@ extension AppNavigator on BuildContext {
     '${AppRoutes.categoryPath}/${AppRoutes.categoryEditPath}',
     extra: category,
   );
+  void pushToSearchCategory() =>
+      push('${AppRoutes.categoryPath}/${AppRoutes.categorySearchPath}');
 
   // * Budget Navigation
   void pushToBudget() => push(AppRoutes.budgetPath);
@@ -53,6 +57,8 @@ extension AppNavigator on BuildContext {
     '${AppRoutes.budgetPath}/${AppRoutes.budgetEditPath}',
     extra: budget,
   );
+  void pushToSearchBudget() =>
+      push('${AppRoutes.budgetPath}/${AppRoutes.budgetSearchPath}');
 
   // * Named Navigation (alternative using route names)
   void goToNamed(String name, {Object? extra, Map<String, String>? params}) =>

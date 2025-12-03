@@ -45,6 +45,9 @@ final class AppRoutes {
   static const String assetEditName = 'asset-edit';
   static const String assetEditPath = 'edit';
 
+  static const String assetSearchName = 'asset-search';
+  static const String assetSearchPath = 'search';
+
   // * Other Routes
   static const String otherName = 'other';
   static const String otherPath = '/other';
@@ -63,6 +66,9 @@ final class AppRoutes {
   static const String categoryEditName = 'category-edit';
   static const String categoryEditPath = 'edit';
 
+  static const String categorySearchName = 'category-search';
+  static const String categorySearchPath = 'search';
+
   // * Budget Routes
   static const String budgetName = 'budget';
   static const String budgetPath = '/budget';
@@ -72,6 +78,9 @@ final class AppRoutes {
 
   static const String budgetEditName = 'budget-edit';
   static const String budgetEditPath = 'edit';
+
+  static const String budgetSearchName = 'budget-search';
+  static const String budgetSearchPath = 'search';
 
   // * Backup Routes
   static const String backupName = 'backup';

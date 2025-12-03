@@ -4,14 +4,17 @@ import 'package:ikuyo_finance/core/router/app_routes.dart';
 import 'package:ikuyo_finance/core/router/router_listenables.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/screens/asset_screen.dart';
+import 'package:ikuyo_finance/features/asset/screens/asset_search_screen.dart';
 import 'package:ikuyo_finance/features/asset/screens/asset_upsert_screen.dart';
 import 'package:ikuyo_finance/features/auth/screens/sign_in_screen.dart';
 import 'package:ikuyo_finance/features/auth/screens/sign_up_screen.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/budget/screens/budget_screen.dart';
+import 'package:ikuyo_finance/features/budget/screens/budget_search_screen.dart';
 import 'package:ikuyo_finance/features/budget/screens/budget_upsert_screen.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/screens/category_screen.dart';
+import 'package:ikuyo_finance/features/category/screens/category_search_screen.dart';
 import 'package:ikuyo_finance/features/category/screens/category_upsert_screen.dart';
 import 'package:ikuyo_finance/features/other/screens/other_screen.dart';
 import 'package:ikuyo_finance/features/other/screens/setting_screen.dart';
@@ -160,6 +163,16 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                       );
                     },
                   ),
+                  // * Search asset - slide from right
+                  GoRoute(
+                    name: AppRoutes.assetSearchName,
+                    path: AppRoutes.assetSearchPath,
+                    pageBuilder: (context, state) =>
+                        AppPageTransitions.slideRight(
+                          key: state.pageKey,
+                          child: const AssetSearchScreen(),
+                        ),
+                  ),
                 ],
               ),
             ],
@@ -209,6 +222,15 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
               );
             },
           ),
+          // * Search category - slide from right
+          GoRoute(
+            name: AppRoutes.categorySearchName,
+            path: AppRoutes.categorySearchPath,
+            pageBuilder: (context, state) => AppPageTransitions.slideRight(
+              key: state.pageKey,
+              child: const CategorySearchScreen(),
+            ),
+          ),
         ],
       ),
       // * Budget routes - outside shell (fullscreen)
@@ -240,6 +262,15 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                 child: BudgetUpsertScreen(budget: budget),
               );
             },
+          ),
+          // * Search budget - slide from right
+          GoRoute(
+            name: AppRoutes.budgetSearchName,
+            path: AppRoutes.budgetSearchPath,
+            pageBuilder: (context, state) => AppPageTransitions.slideRight(
+              key: state.pageKey,
+              child: const BudgetSearchScreen(),
+            ),
           ),
         ],
       ),

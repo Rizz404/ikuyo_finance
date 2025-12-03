@@ -55,20 +55,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
           }
 
           // * Validate: parent must not have a parent (only 1 level nesting)
+          // * Parent boleh punya banyak children, tapi children tidak boleh punya children lagi
           if (parent.parent.target != null) {
             throw Exception(
               'Tidak dapat menambahkan sub-kategori ke sub-kategori lain',
-            );
-          }
-
-          // * Validate: parent must not already have children
-          final allCategories = _box.query().build().find();
-          final parentHasChildren = allCategories.any(
-            (cat) => cat.parent.target?.ulid == parent.ulid,
-          );
-          if (parentHasChildren) {
-            throw Exception(
-              'Kategori "${parent.name}" sudah memiliki sub-kategori',
             );
           }
 
@@ -385,23 +375,14 @@ class CategoryRepositoryImpl implements CategoryRepository {
             .build()
             .find();
 
-        // * Get all category ulids that have children
-        final categoriesWithChildren = <String>{};
-        for (final cat in allCategories) {
-          if (cat.parent.target != null) {
-            categoriesWithChildren.add(cat.parent.target!.ulid);
-          }
-        }
-
         // * Filter valid parents:
-        // * 1. Must be root (no parent)
-        // * 2. Must not have children (can't nest deeper than 1 level)
-        // * 3. Must not be the category being edited
+        // * 1. Must be root (no parent) - children tidak boleh punya children lagi
+        // * 2. Must not be the category being edited
+        // * Parent boleh punya banyak children, jadi tidak perlu cek hasNoChildren
         final validParents = allCategories.where((cat) {
           final isRoot = cat.parent.target == null;
-          final hasNoChildren = !categoriesWithChildren.contains(cat.ulid);
           final isNotSelf = excludeUlid == null || cat.ulid != excludeUlid;
-          return isRoot && hasNoChildren && isNotSelf;
+          return isRoot && isNotSelf;
         }).toList();
 
         logInfo('Kategori induk yang valid: ${validParents.length}');

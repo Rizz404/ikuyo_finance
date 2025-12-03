@@ -4,6 +4,7 @@ import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:ikuyo_finance/features/asset/widgets/asset_card.dart';
+import 'package:ikuyo_finance/features/asset/widgets/asset_filter_sheet.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
@@ -41,6 +42,19 @@ class _AssetScreenState extends State<AssetScreen>
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => context.pushToSearchAsset(),
+              ),
+              IconButton(
+                icon: Badge(
+                  isLabelVisible: state.hasActiveFilters,
+                  child: const Icon(Icons.filter_list),
+                ),
+                onPressed: () => _showFilterSheet(context, state),
+              ),
+            ],
             bottom: TabBar(
               controller: _tabController,
               tabs: const [
@@ -179,6 +193,36 @@ class _AssetScreenState extends State<AssetScreen>
           ),
         ],
       ),
+    );
+  }
+
+  void _showFilterSheet(BuildContext context, AssetState state) {
+    AssetFilterSheet.show(
+      context: context,
+      initialFilter: AssetFilterData(
+        type: state.currentTypeFilter,
+        minBalance: state.currentMinBalance,
+        maxBalance: state.currentMaxBalance,
+        sortBy: state.currentSortBy,
+        sortOrder: state.currentSortOrder,
+      ),
+      onApplyFilter: (filterData) {
+        // * Apply filters
+        context.read<AssetBloc>().add(
+          AssetFiltered(
+            type: filterData.type,
+            minBalance: filterData.minBalance,
+            maxBalance: filterData.maxBalance,
+          ),
+        );
+        // * Apply sort
+        context.read<AssetBloc>().add(
+          AssetSorted(
+            sortBy: filterData.sortBy,
+            sortOrder: filterData.sortOrder,
+          ),
+        );
+      },
     );
   }
 }

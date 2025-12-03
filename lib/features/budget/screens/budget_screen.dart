@@ -5,6 +5,8 @@ import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/budget/widgets/budget_card.dart';
+import 'package:ikuyo_finance/features/budget/widgets/budget_filter_sheet.dart';
+import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
@@ -63,6 +65,19 @@ class _BudgetScreenState extends State<BudgetScreen>
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.search),
+                onPressed: () => context.pushToSearchBudget(),
+              ),
+              IconButton(
+                icon: Badge(
+                  isLabelVisible: state.hasActiveFilters,
+                  child: const Icon(Icons.filter_list),
+                ),
+                onPressed: () => _showFilterSheet(context, state),
+              ),
+            ],
             bottom: TabBar(
               controller: _tabController,
               isScrollable: true,
@@ -156,6 +171,45 @@ class _BudgetScreenState extends State<BudgetScreen>
           return BudgetCard(budget: budget);
         },
       ),
+    );
+  }
+
+  void _showFilterSheet(BuildContext context, BudgetState state) {
+    final categoryState = context.read<CategoryBloc>().state;
+
+    BudgetFilterSheet.show(
+      context: context,
+      categories: categoryState.categories,
+      initialFilter: BudgetFilterData(
+        period: state.currentPeriodFilter,
+        categoryUlid: state.currentCategoryFilter,
+        minAmountLimit: state.currentMinAmountLimit,
+        maxAmountLimit: state.currentMaxAmountLimit,
+        startDateFrom: state.currentStartDateFrom,
+        startDateTo: state.currentStartDateTo,
+        sortBy: state.currentSortBy,
+        sortOrder: state.currentSortOrder,
+      ),
+      onApplyFilter: (filterData) {
+        // * Apply filters
+        context.read<BudgetBloc>().add(
+          BudgetFiltered(
+            period: filterData.period,
+            categoryUlid: filterData.categoryUlid,
+            minAmountLimit: filterData.minAmountLimit,
+            maxAmountLimit: filterData.maxAmountLimit,
+            startDateFrom: filterData.startDateFrom,
+            startDateTo: filterData.startDateTo,
+          ),
+        );
+        // * Apply sort
+        context.read<BudgetBloc>().add(
+          BudgetSorted(
+            sortBy: filterData.sortBy,
+            sortOrder: filterData.sortOrder,
+          ),
+        );
+      },
     );
   }
 }
