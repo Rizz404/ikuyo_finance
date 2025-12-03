@@ -42,11 +42,13 @@ class AssetFilterData {
 class AssetFilterSheet extends StatefulWidget {
   final AssetFilterData initialFilter;
   final ValueChanged<AssetFilterData> onApplyFilter;
+  final VoidCallback? onReset;
 
   const AssetFilterSheet({
     super.key,
     required this.initialFilter,
     required this.onApplyFilter,
+    this.onReset,
   });
 
   /// * Static method to show the filter sheet
@@ -54,6 +56,7 @@ class AssetFilterSheet extends StatefulWidget {
     required BuildContext context,
     required AssetFilterData initialFilter,
     required ValueChanged<AssetFilterData> onApplyFilter,
+    VoidCallback? onReset,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -62,6 +65,7 @@ class AssetFilterSheet extends StatefulWidget {
       builder: (_) => AssetFilterSheet(
         initialFilter: initialFilter,
         onApplyFilter: onApplyFilter,
+        onReset: onReset,
       ),
     );
   }
@@ -77,8 +81,6 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
   double? _maxBalance;
   late AssetSortBy _sortBy;
   late AssetSortOrder _sortOrder;
-  // * Key untuk rebuild fields saat reset
-  int _rebuildKey = 0;
 
   @override
   void initState() {
@@ -147,7 +149,6 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                     children: [
                       // * Type filter
                       AppDropdown<AssetType>(
-                        key: ValueKey('type_filter_$_rebuildKey'),
                         name: 'type_filter',
                         label: 'Tipe Aset',
                         hintText: 'Semua tipe',
@@ -184,7 +185,6 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                         children: [
                           Expanded(
                             child: AppTextField(
-                              key: ValueKey('min_balance_$_rebuildKey'),
                               name: 'min_balance',
                               label: 'Min',
                               type: AppTextFieldType.number,
@@ -194,7 +194,6 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppTextField(
-                              key: ValueKey('max_balance_$_rebuildKey'),
                               name: 'max_balance',
                               label: 'Max',
                               type: AppTextFieldType.number,
@@ -215,7 +214,6 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                         children: [
                           Expanded(
                             child: AppDropdown<AssetSortBy>(
-                              key: ValueKey('sort_by_$_rebuildKey'),
                               name: 'sort_by',
                               label: 'Berdasarkan',
                               initialValue: _sortBy,
@@ -243,7 +241,6 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppDropdown<AssetSortOrder>(
-                              key: ValueKey('sort_order_$_rebuildKey'),
                               name: 'sort_order',
                               label: 'Urutan',
                               initialValue: _sortOrder,
@@ -286,14 +283,9 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
   }
 
   void _clearAllFilters() {
-    setState(() {
-      _selectedType = null;
-      _minBalance = null;
-      _maxBalance = null;
-      _sortBy = AssetSortBy.createdAt;
-      _sortOrder = AssetSortOrder.descending;
-      _rebuildKey++;
-    });
+    // * Call onReset callback to trigger bloc event
+    widget.onReset?.call();
+    Navigator.pop(context);
   }
 
   void _applyFilters() {

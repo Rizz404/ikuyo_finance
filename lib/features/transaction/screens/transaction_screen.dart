@@ -198,6 +198,10 @@ class _TransactionScreenState extends State<TransactionScreen>
           ),
         );
       },
+      onReset: () {
+        // * Clear all filters via bloc event
+        context.read<TransactionBloc>().add(const TransactionFilterCleared());
+      },
     );
   }
 

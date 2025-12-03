@@ -223,6 +223,10 @@ class _AssetScreenState extends State<AssetScreen>
           ),
         );
       },
+      onReset: () {
+        // * Clear all filters via bloc event
+        context.read<AssetBloc>().add(const AssetFilterCleared());
+      },
     );
   }
 }

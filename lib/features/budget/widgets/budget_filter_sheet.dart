@@ -52,12 +52,14 @@ class BudgetFilterSheet extends StatefulWidget {
   final List<Category> categories;
   final BudgetFilterData initialFilter;
   final ValueChanged<BudgetFilterData> onApplyFilter;
+  final VoidCallback? onReset;
 
   const BudgetFilterSheet({
     super.key,
     required this.categories,
     required this.initialFilter,
     required this.onApplyFilter,
+    this.onReset,
   });
 
   /// * Static method to show the filter sheet
@@ -66,6 +68,7 @@ class BudgetFilterSheet extends StatefulWidget {
     required List<Category> categories,
     required BudgetFilterData initialFilter,
     required ValueChanged<BudgetFilterData> onApplyFilter,
+    VoidCallback? onReset,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -75,6 +78,7 @@ class BudgetFilterSheet extends StatefulWidget {
         categories: categories,
         initialFilter: initialFilter,
         onApplyFilter: onApplyFilter,
+        onReset: onReset,
       ),
     );
   }
@@ -98,7 +102,13 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
   void initState() {
     super.initState();
     _selectedPeriod = widget.initialFilter.period;
-    _selectedCategoryUlid = widget.initialFilter.categoryUlid;
+    // * Validate categoryUlid exists in items list
+    final categoryExists = widget.categories.any(
+      (c) => c.ulid == widget.initialFilter.categoryUlid,
+    );
+    _selectedCategoryUlid = categoryExists
+        ? widget.initialFilter.categoryUlid
+        : null;
     _minAmountLimit = widget.initialFilter.minAmountLimit;
     _maxAmountLimit = widget.initialFilter.maxAmountLimit;
     _startDateFrom = widget.initialFilter.startDateFrom;
@@ -350,17 +360,9 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
   }
 
   void _clearAllFilters() {
-    setState(() {
-      _selectedPeriod = null;
-      _selectedCategoryUlid = null;
-      _minAmountLimit = null;
-      _maxAmountLimit = null;
-      _startDateFrom = null;
-      _startDateTo = null;
-      _sortBy = BudgetSortBy.createdAt;
-      _sortOrder = BudgetSortOrder.descending;
-    });
-    _formKey.currentState?.reset();
+    // * Call onReset callback to trigger bloc event
+    widget.onReset?.call();
+    Navigator.pop(context);
   }
 
   void _applyFilters() {

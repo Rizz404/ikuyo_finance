@@ -52,6 +52,7 @@ class TransactionFilterSheet extends StatefulWidget {
   final List<Category> categories;
   final TransactionFilterData initialFilter;
   final ValueChanged<TransactionFilterData> onApplyFilter;
+  final VoidCallback? onReset;
 
   const TransactionFilterSheet({
     super.key,
@@ -59,6 +60,7 @@ class TransactionFilterSheet extends StatefulWidget {
     required this.categories,
     required this.initialFilter,
     required this.onApplyFilter,
+    this.onReset,
   });
 
   /// * Static method to show the filter sheet
@@ -68,6 +70,7 @@ class TransactionFilterSheet extends StatefulWidget {
     required List<Category> categories,
     required TransactionFilterData initialFilter,
     required ValueChanged<TransactionFilterData> onApplyFilter,
+    VoidCallback? onReset,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -78,6 +81,7 @@ class TransactionFilterSheet extends StatefulWidget {
         categories: categories,
         initialFilter: initialFilter,
         onApplyFilter: onApplyFilter,
+        onReset: onReset,
       ),
     );
   }
@@ -100,8 +104,18 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
   @override
   void initState() {
     super.initState();
-    _selectedAssetUlid = widget.initialFilter.assetUlid;
-    _selectedCategoryUlid = widget.initialFilter.categoryUlid;
+    // * Validate assetUlid exists in items list
+    final assetExists = widget.assets.any(
+      (a) => a.ulid == widget.initialFilter.assetUlid,
+    );
+    _selectedAssetUlid = assetExists ? widget.initialFilter.assetUlid : null;
+    // * Validate categoryUlid exists in items list
+    final categoryExists = widget.categories.any(
+      (c) => c.ulid == widget.initialFilter.categoryUlid,
+    );
+    _selectedCategoryUlid = categoryExists
+        ? widget.initialFilter.categoryUlid
+        : null;
     _startDate = widget.initialFilter.startDate;
     _endDate = widget.initialFilter.endDate;
     _minAmount = widget.initialFilter.minAmount;
@@ -339,17 +353,9 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
   }
 
   void _clearAllFilters() {
-    setState(() {
-      _selectedAssetUlid = null;
-      _selectedCategoryUlid = null;
-      _startDate = null;
-      _endDate = null;
-      _minAmount = null;
-      _maxAmount = null;
-      _sortBy = TransactionSortBy.transactionDate;
-      _sortOrder = SortOrder.descending;
-    });
-    _formKey.currentState?.reset();
+    // * Call onReset callback to trigger bloc event
+    widget.onReset?.call();
+    Navigator.pop(context);
   }
 
   void _applyFilters() {

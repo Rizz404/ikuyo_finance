@@ -41,12 +41,14 @@ class CategoryFilterSheet extends StatefulWidget {
   final List<Category> parentCategories;
   final CategoryFilterData initialFilter;
   final ValueChanged<CategoryFilterData> onApplyFilter;
+  final VoidCallback? onReset;
 
   const CategoryFilterSheet({
     super.key,
     required this.parentCategories,
     required this.initialFilter,
     required this.onApplyFilter,
+    this.onReset,
   });
 
   /// * Static method to show the filter sheet
@@ -55,6 +57,7 @@ class CategoryFilterSheet extends StatefulWidget {
     required List<Category> parentCategories,
     required CategoryFilterData initialFilter,
     required ValueChanged<CategoryFilterData> onApplyFilter,
+    VoidCallback? onReset,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -64,6 +67,7 @@ class CategoryFilterSheet extends StatefulWidget {
         parentCategories: parentCategories,
         initialFilter: initialFilter,
         onApplyFilter: onApplyFilter,
+        onReset: onReset,
       ),
     );
   }
@@ -79,8 +83,6 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
   bool? _isRootOnly;
   late CategorySortBy _sortBy;
   late CategorySortOrder _sortOrder;
-  // * Key untuk rebuild dropdown saat reset
-  int _rebuildKey = 0;
 
   @override
   void initState() {
@@ -153,7 +155,6 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                     children: [
                       // * Type filter
                       AppDropdown<CategoryType>(
-                        key: ValueKey('type_filter_$_rebuildKey'),
                         name: 'type_filter',
                         label: 'Tipe Kategori',
                         hintText: 'Semua tipe',
@@ -175,7 +176,6 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       const SizedBox(height: 16),
                       // * Parent category filter
                       AppDropdown<String>(
-                        key: ValueKey('parent_filter_$_rebuildKey'),
                         name: 'parent_filter',
                         label: 'Kategori Induk',
                         hintText: 'Semua kategori',
@@ -195,7 +195,6 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       const SizedBox(height: 16),
                       // * Root only filter
                       FormBuilderCheckbox(
-                        key: ValueKey('is_root_only_$_rebuildKey'),
                         name: 'is_root_only',
                         title: const Text('Hanya kategori utama (tanpa induk)'),
                         initialValue: _isRootOnly ?? false,
@@ -215,7 +214,6 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                         children: [
                           Expanded(
                             child: AppDropdown<CategorySortBy>(
-                              key: ValueKey('sort_by_$_rebuildKey'),
                               name: 'sort_by',
                               label: 'Berdasarkan',
                               initialValue: _sortBy,
@@ -239,7 +237,6 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: AppDropdown<CategorySortOrder>(
-                              key: ValueKey('sort_order_$_rebuildKey'),
                               name: 'sort_order',
                               label: 'Urutan',
                               initialValue: _sortOrder,
@@ -282,14 +279,9 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
   }
 
   void _clearAllFilters() {
-    setState(() {
-      _selectedType = null;
-      _selectedParentUlid = null;
-      _isRootOnly = null;
-      _sortBy = CategorySortBy.createdAt;
-      _sortOrder = CategorySortOrder.descending;
-      _rebuildKey++;
-    });
+    // * Call onReset callback to trigger bloc event
+    widget.onReset?.call();
+    Navigator.pop(context);
   }
 
   void _applyFilters() {

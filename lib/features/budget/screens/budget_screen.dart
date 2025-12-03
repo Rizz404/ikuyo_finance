@@ -210,6 +210,10 @@ class _BudgetScreenState extends State<BudgetScreen>
           ),
         );
       },
+      onReset: () {
+        // * Clear all filters via bloc event
+        context.read<BudgetBloc>().add(const BudgetFilterCleared());
+      },
     );
   }
 }

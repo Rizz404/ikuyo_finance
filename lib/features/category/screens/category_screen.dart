@@ -204,6 +204,10 @@ class _CategoryScreenState extends State<CategoryScreen>
           ),
         );
       },
+      onReset: () {
+        // * Clear all filters via bloc event
+        context.read<CategoryBloc>().add(const CategoryFilterCleared());
+      },
     );
   }
 }
