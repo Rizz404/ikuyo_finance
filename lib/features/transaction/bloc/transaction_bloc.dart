@@ -638,4 +638,23 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       ),
     );
   }
+
+  // * Public method for searchable dropdown - returns Future directly
+  // * Does NOT affect bloc state, purely for dropdown search
+  Future<List<Transaction>> searchTransactionsForDropdown({
+    String? query,
+  }) async {
+    final result = await _transactionRepository
+        .getTransactions(
+          GetTransactionsParams(
+            searchQuery: query?.isEmpty == true ? null : query,
+            limit: 50,
+            sortBy: TransactionSortBy.transactionDate,
+            sortOrder: SortOrder.descending,
+          ),
+        )
+        .run();
+
+    return result.fold((failure) => [], (success) => success.data ?? []);
+  }
 }

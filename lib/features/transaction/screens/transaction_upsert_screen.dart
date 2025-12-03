@@ -39,6 +39,12 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   CategoryType _selectedType = CategoryType.expense;
 
+  // * State untuk copy transaction
+  String? _copiedAssetUlid;
+  String? _copiedAssetName;
+  String? _copiedCategoryUlid;
+  String? _copiedCategoryName;
+
   @override
   void initState() {
     super.initState();
@@ -107,6 +113,75 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
           ),
         )
         .toList();
+  }
+
+  // * Search transactions for copy feature
+  Future<List<AppSearchableDropdownItem<Transaction>>> _searchTransactions(
+    String query,
+  ) async {
+    final bloc = context.read<TransactionBloc>();
+    final transactions = await bloc.searchTransactionsForDropdown(
+      query: query.isEmpty ? null : query,
+    );
+
+    if (!mounted) return [];
+
+    return transactions
+        .map(
+          (trx) => AppSearchableDropdownItem(
+            value: trx,
+            label: trx.description ?? 'Tanpa deskripsi',
+            subtitle:
+                '${trx.category.target?.name ?? 'Tanpa kategori'} • ${trx.asset.target?.name ?? '-'}',
+            leading: Icon(
+              trx.category.target?.categoryType == CategoryType.expense
+                  ? Icons.arrow_downward
+                  : Icons.arrow_upward,
+              size: 24,
+              color: trx.category.target?.categoryType == CategoryType.expense
+                  ? context.semantic.error
+                  : context.semantic.success,
+            ),
+          ),
+        )
+        .toList();
+  }
+
+  // * Handle copy transaction selection
+  void _onCopyTransaction(Transaction? transaction) {
+    if (transaction == null) return;
+
+    final category = transaction.category.target;
+    final asset = transaction.asset.target;
+
+    setState(() {
+      // * Update category type based on copied transaction
+      if (category != null) {
+        _selectedType = category.categoryType;
+        _copiedCategoryUlid = category.ulid;
+        _copiedCategoryName = category.name;
+      }
+
+      // * Store asset info for rebuilding dropdown
+      if (asset != null) {
+        _copiedAssetUlid = asset.ulid;
+        _copiedAssetName = asset.name;
+      }
+    });
+
+    // * Update form fields
+    final formState = _formKey.currentState;
+    if (formState != null) {
+      // * Set amount
+      formState.fields['amount']?.didChange(
+        transaction.amount.toStringAsFixed(
+          context.read<CurrencyCubit>().state.currency.decimalDigits,
+        ),
+      );
+
+      // * Set description
+      formState.fields['description']?.didChange(transaction.description);
+    }
   }
 
   void _handleWriteStatus(BuildContext context, TransactionState state) {
@@ -248,6 +323,22 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // * Copy Transaction Dropdown (only for create mode)
+                  if (!widget.isEdit) ...[
+                    AppSearchableDropdown<Transaction>(
+                      name: 'copyTransaction',
+                      label: 'Copy dari Transaksi',
+                      hintText: 'Pilih transaksi untuk dicopy',
+                      searchHintText: 'Cari transaksi...',
+                      prefixIcon: const Icon(Icons.copy_outlined),
+                      onSearch: _searchTransactions,
+                      onLoadInitial: () => _searchTransactions(''),
+                      onChanged: _onCopyTransaction,
+                      emptyMessage: 'Tidak ada transaksi ditemukan',
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+
                   // * Transaction Type Selector
                   _TransactionTypeSelector(
                     selectedType: _selectedType,
@@ -285,12 +376,16 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                     children: [
                       Expanded(
                         child: AppSearchableDropdown<String>(
+                          key: ValueKey('asset_${_copiedAssetUlid ?? ''}'),
                           name: 'assetUlid',
                           label: 'Asset',
                           hintText: 'Pilih asset',
                           searchHintText: 'Cari asset...',
-                          initialValue: widget.transaction?.asset.target?.ulid,
+                          initialValue:
+                              _copiedAssetUlid ??
+                              widget.transaction?.asset.target?.ulid,
                           initialDisplayText:
+                              _copiedAssetName ??
                               widget.transaction?.asset.target?.name,
                           prefixIcon: const Icon(
                             Icons.account_balance_wallet_outlined,
@@ -324,15 +419,17 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                       Expanded(
                         child: AppSearchableDropdown<String>(
                           key: ValueKey(
-                            _selectedType,
-                          ), // * Reset when type changes
+                            '${_selectedType}_${_copiedCategoryUlid ?? ''}',
+                          ), // * Reset when type changes or copied
                           name: 'categoryUlid',
                           label: 'Kategori',
                           hintText: 'Pilih kategori',
                           searchHintText: 'Cari kategori...',
                           initialValue:
+                              _copiedCategoryUlid ??
                               widget.transaction?.category.target?.ulid,
                           initialDisplayText:
+                              _copiedCategoryName ??
                               widget.transaction?.category.target?.name,
                           prefixIcon: const Icon(Icons.category_outlined),
                           onSearch: _searchCategories,
