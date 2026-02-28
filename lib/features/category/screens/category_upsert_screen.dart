@@ -1,10 +1,12 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -119,15 +121,16 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
           if (widget.isEdit && state.editingCategoryHasChildren == true) {
             return _buildInfoCard(
               icon: Icons.folder_outlined,
-              message: 'Kategori induk tidak dapat menjadi sub-kategori',
+              message: LocaleKeys.categoryUpsertParentCantBeChild.tr(),
             );
           }
           // * Show info if category is already a child
           if (widget.isEdit && widget.category?.parent.target != null) {
             return _buildInfoCard(
               icon: Icons.subdirectory_arrow_right,
-              message:
-                  'Sub-kategori dari: ${widget.category!.parent.target!.name}',
+              message: LocaleKeys.categoryUpsertSubCategoryOf.tr(
+                namedArgs: {'name': widget.category!.parent.target!.name},
+              ),
             );
           }
           return const SizedBox.shrink();
@@ -136,16 +139,17 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
         return AppSearchableDropdown<Category?>(
           key: ValueKey(_selectedType), // * Reset when type changes
           name: 'parentUlid',
-          label: 'Kategori Induk (Opsional)',
-          hintText: 'Tidak ada (Kategori Utama)',
+          label: LocaleKeys.categoryUpsertParentLabel.tr(),
+          hintText: LocaleKeys.categoryUpsertParentHint.tr(),
           items: _parentCategories,
           isLoading: _isSearchingParents,
           onSearch: _fetchValidParentCategories,
-          itemDisplayMapper: (cat) => cat?.name ?? 'Tidak ada (Kategori Utama)',
+          itemDisplayMapper: (cat) =>
+              cat?.name ?? LocaleKeys.categoryUpsertParentHint.tr(),
           itemValueMapper: (cat) => cat?.ulid ?? '',
           itemSubtitleMapper: (cat) => cat != null
-              ? 'Kategori Induk'
-              : 'Jadikan kategori utama tanpa induk',
+              ? LocaleKeys.categoryUpsertParentCategoryLabel.tr()
+              : LocaleKeys.categoryUpsertMainCategoryDesc.tr(),
           itemLeadingMapper: (cat) => cat?.icon != null
               ? _buildIconPreview(cat!.icon!, size: 24)
               : Icon(
@@ -190,14 +194,17 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
     if (state.writeStatus == CategoryWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: state.writeSuccessMessage ?? 'Berhasil',
+        title:
+            state.writeSuccessMessage ?? LocaleKeys.categoryUpsertSuccess.tr(),
       );
       context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == CategoryWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
+        title:
+            state.writeErrorMessage ??
+            LocaleKeys.categoryUpsertErrorOccurred.tr(),
       );
       context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
     }
@@ -251,20 +258,22 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const AppText(
-          'Hapus Kategori',
+        title: AppText(
+          LocaleKeys.categoryUpsertDeleteTitle.tr(),
           style: AppTextStyle.titleMedium,
           fontWeight: FontWeight.bold,
         ),
-        content: const AppText(
-          'Apakah Anda yakin ingin menghapus kategori ini? '
-          'Transaksi yang menggunakan kategori ini akan kehilangan kategorinya.',
+        content: AppText(
+          LocaleKeys.categoryUpsertDeleteConfirm.tr(),
           style: AppTextStyle.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: AppText('Batal', color: context.colorScheme.outline),
+            child: AppText(
+              LocaleKeys.categoryUpsertCancel.tr(),
+              color: context.colorScheme.outline,
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -274,7 +283,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
               );
             },
             child: AppText(
-              'Hapus',
+              LocaleKeys.categoryUpsertDelete.tr(),
               color: context.semantic.error,
               fontWeight: FontWeight.bold,
             ),
@@ -292,7 +301,9 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: AppText(
-            widget.isEdit ? 'Edit Kategori' : 'Tambah Kategori',
+            widget.isEdit
+                ? LocaleKeys.categoryUpsertEditTitle.tr()
+                : LocaleKeys.categoryUpsertAddTitle.tr(),
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -312,8 +323,8 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                   // * Category Type Dropdown
                   AppDropdown<int>(
                     name: 'type',
-                    label: 'Tipe Kategori',
-                    hintText: 'Pilih tipe kategori',
+                    label: LocaleKeys.categoryUpsertTypeLabel.tr(),
+                    hintText: LocaleKeys.categoryUpsertTypeHint.tr(),
                     initialValue:
                         widget.category?.type ?? CategoryType.expense.index,
                     prefixIcon: const Icon(Icons.category_outlined),
@@ -321,7 +332,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                     items: [
                       AppDropdownItem(
                         value: CategoryType.expense.index,
-                        label: 'Pengeluaran',
+                        label: LocaleKeys.categoryUpsertTypeExpense.tr(),
                         icon: Icon(
                           Icons.arrow_downward,
                           size: 20,
@@ -330,7 +341,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: CategoryType.income.index,
-                        label: 'Pemasukan',
+                        label: LocaleKeys.categoryUpsertTypeIncome.tr(),
                         icon: Icon(
                           Icons.arrow_upward,
                           size: 20,
@@ -351,9 +362,9 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                   // * Name Field
                   AppTextField(
                     name: 'name',
-                    label: 'Nama Kategori',
+                    label: LocaleKeys.categoryUpsertNameLabel.tr(),
                     initialValue: widget.category?.name,
-                    placeHolder: 'Contoh: Makan & Minum',
+                    placeHolder: LocaleKeys.categoryUpsertNamePlaceholder.tr(),
                     validator: widget.isEdit
                         ? UpdateCategoryValidator.name
                         : CreateCategoryValidator.name,
@@ -363,8 +374,8 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
 
                   // * Icon File Picker with current preview
                   if (widget.isEdit && widget.category?.icon != null) ...[
-                    const AppText(
-                      'Ikon Saat Ini',
+                    AppText(
+                      LocaleKeys.categoryUpsertCurrentIconLabel.tr(),
                       style: AppTextStyle.labelMedium,
                     ),
                     const SizedBox(height: 8),
@@ -398,8 +409,10 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                   AppFilePicker(
                     key: _filePickerKey,
                     name: 'icon',
-                    label: widget.isEdit ? 'Ganti Ikon' : 'Ikon Kategori',
-                    hintText: 'Pilih gambar ikon (opsional)',
+                    label: widget.isEdit
+                        ? LocaleKeys.categoryUpsertChangeIcon.tr()
+                        : LocaleKeys.categoryUpsertIconLabel.tr(),
+                    hintText: LocaleKeys.categoryUpsertIconHint.tr(),
                     fileType: FileType.image,
                     allowMultiple: false,
                     maxFiles: 1,
@@ -410,7 +423,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                   // * Color Picker
                   AppColorPicker(
                     name: 'color',
-                    label: 'Warna Kategori',
+                    label: LocaleKeys.categoryUpsertColorLabel.tr(),
                     initialValue: _selectedColor,
                     onChanged: (color) =>
                         setState(() => _selectedColor = color),
@@ -424,8 +437,8 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                     builder: (context, state) {
                       return AppButton(
                         text: widget.isEdit
-                            ? 'Simpan Perubahan'
-                            : 'Tambah Kategori',
+                            ? LocaleKeys.categoryUpsertSaveChanges.tr()
+                            : LocaleKeys.categoryUpsertAddCategory.tr(),
                         isLoading: state.isWriting,
                         onPressed: state.isWriting ? null : _onSubmit,
                         leadingIcon: Icon(
@@ -443,7 +456,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                           prev.writeStatus != curr.writeStatus,
                       builder: (context, state) {
                         return AppButton(
-                          text: 'Hapus Kategori',
+                          text: LocaleKeys.categoryUpsertDeleteCategory.tr(),
                           variant: AppButtonVariant.outlined,
                           color: AppButtonColor.error,
                           isLoading: state.isWriting,

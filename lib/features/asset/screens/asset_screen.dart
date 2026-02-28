@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -37,8 +39,8 @@ class _AssetScreenState extends State<AssetScreen>
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            title: const AppText(
-              'Aset',
+            title: AppText(
+              LocaleKeys.assetScreenTitle.tr(),
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
@@ -57,9 +59,9 @@ class _AssetScreenState extends State<AssetScreen>
             ],
             bottom: TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Daftar'),
-                Tab(text: 'Statistik'),
+              tabs: [
+                Tab(text: LocaleKeys.assetScreenTabList.tr()),
+                Tab(text: LocaleKeys.assetScreenTabStatistic.tr()),
               ],
             ),
           ),
@@ -101,7 +103,7 @@ class _AssetScreenState extends State<AssetScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              state.errorMessage ?? 'Terjadi kesalahan',
+              state.errorMessage ?? LocaleKeys.assetScreenErrorOccurred.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.error,
             ),
@@ -123,13 +125,13 @@ class _AssetScreenState extends State<AssetScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              'Belum ada aset',
+              LocaleKeys.assetScreenEmptyTitle.tr(),
               style: AppTextStyle.bodyLarge,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Tekan + untuk menambah aset baru',
+              LocaleKeys.assetScreenEmptySubtitle.tr(),
               style: AppTextStyle.bodySmall,
               color: context.colorScheme.outline,
             ),
@@ -165,14 +167,14 @@ class _AssetScreenState extends State<AssetScreen>
           ),
           const SizedBox(height: 24),
           AppText(
-            'Statistik',
+            LocaleKeys.assetScreenStatisticTitle.tr(),
             style: AppTextStyle.headlineSmall,
             fontWeight: FontWeight.bold,
             color: context.colorScheme.outline,
           ),
           const SizedBox(height: 8),
           AppText(
-            'Coming Soon',
+            LocaleKeys.assetScreenComingSoon.tr(),
             style: AppTextStyle.bodyLarge,
             color: context.colorScheme.outline.withValues(alpha: 0.7),
           ),
@@ -186,7 +188,7 @@ class _AssetScreenState extends State<AssetScreen>
               borderRadius: BorderRadius.circular(20),
             ),
             child: AppText(
-              'Fitur ini sedang dalam pengembangan',
+              LocaleKeys.assetScreenFeatureInDevelopment.tr(),
               style: AppTextStyle.bodySmall,
               color: context.colorScheme.primary,
             ),

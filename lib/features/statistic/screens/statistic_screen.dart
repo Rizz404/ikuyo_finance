@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/statistic/widgets/custom_period_dialog.dart';
@@ -57,9 +59,9 @@ class _StatisticScreenState extends State<StatisticScreen>
             ),
             bottom: TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Pengeluaran'),
-                Tab(text: 'Pendapatan'),
+              tabs: [
+                Tab(text: LocaleKeys.statisticScreenTabExpense.tr()),
+                Tab(text: LocaleKeys.statisticScreenTabIncome.tr()),
               ],
             ),
           ),
@@ -88,7 +90,8 @@ class _StatisticScreenState extends State<StatisticScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              state.errorMessage ?? 'Terjadi kesalahan',
+              state.errorMessage ??
+                  LocaleKeys.statisticScreenErrorOccurred.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.error,
             ),
@@ -97,7 +100,7 @@ class _StatisticScreenState extends State<StatisticScreen>
               onPressed: () =>
                   context.read<StatisticBloc>().add(const StatisticRefreshed()),
               icon: const Icon(Icons.refresh),
-              label: const Text('Coba Lagi'),
+              label: Text(LocaleKeys.statisticScreenTryAgain.tr()),
             ),
           ],
         ),

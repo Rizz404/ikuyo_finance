@@ -1,5 +1,13 @@
 {
   "budget": {
+    "validator": {
+      "categoryRequired": "Category is required",
+      "amountLimitRequired": "Budget limit is required",
+      "amountLimitInvalid": "Budget limit is not valid",
+      "amountLimitPositive": "Budget limit must be greater than 0",
+      "periodRequired": "Period is required",
+      "ulidRequired": "ULID is required"
+    },
     "screen": {
       "title": "Budget",
       "tabAll": "All",

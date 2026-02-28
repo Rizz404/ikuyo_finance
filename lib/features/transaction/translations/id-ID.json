@@ -1,5 +1,12 @@
 {
   "transaction": {
+    "validator": {
+      "amountRequired": "Jumlah wajib diisi",
+      "amountPositive": "Jumlah harus lebih dari 0",
+      "assetRequired": "Asset wajib dipilih",
+      "descriptionMaxLength": "Deskripsi maksimal 500 karakter",
+      "ulidRequired": "ULID wajib diisi"
+    },
     "screen": {
       "tabDaily": "Harian",
       "tabMonthly": "Bulanan",

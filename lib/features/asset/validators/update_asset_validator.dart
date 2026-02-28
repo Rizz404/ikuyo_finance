@@ -1,9 +1,12 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+
 class UpdateAssetValidator {
   const UpdateAssetValidator._();
 
   static String? ulid(String? value) {
     if (value == null || value.isEmpty) {
-      return 'ULID wajib diisi';
+      return LocaleKeys.assetValidatorUlidRequired.tr();
     }
     return null;
   }
@@ -13,10 +16,10 @@ class UpdateAssetValidator {
       return null; // * Optional for update
     }
     if (value.length < 2) {
-      return 'Nama minimal 2 karakter';
+      return LocaleKeys.assetValidatorNameMinLength.tr();
     }
     if (value.length > 50) {
-      return 'Nama maksimal 50 karakter';
+      return LocaleKeys.assetValidatorNameMaxLength.tr();
     }
     return null;
   }
@@ -32,10 +35,10 @@ class UpdateAssetValidator {
     }
     final parsed = double.tryParse(value.replaceAll(',', '.'));
     if (parsed == null) {
-      return 'Saldo tidak valid';
+      return LocaleKeys.assetValidatorBalanceInvalid.tr();
     }
     if (parsed < 0) {
-      return 'Saldo tidak boleh negatif';
+      return LocaleKeys.assetValidatorBalanceNegative.tr();
     }
     return null;
   }

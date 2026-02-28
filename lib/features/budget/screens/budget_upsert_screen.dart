@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
@@ -50,14 +52,16 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
     if (state.writeStatus == BudgetWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: state.writeSuccessMessage ?? 'Berhasil',
+        title: state.writeSuccessMessage ?? LocaleKeys.budgetUpsertSuccess.tr(),
       );
       context.read<BudgetBloc>().add(const BudgetWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == BudgetWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
+        title:
+            state.writeErrorMessage ??
+            LocaleKeys.budgetUpsertErrorOccurred.tr(),
       );
       context.read<BudgetBloc>().add(const BudgetWriteStatusReset());
     }
@@ -108,19 +112,22 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const AppText(
-          'Hapus Anggaran',
+        title: AppText(
+          LocaleKeys.budgetUpsertDeleteTitle.tr(),
           style: AppTextStyle.titleMedium,
           fontWeight: FontWeight.bold,
         ),
-        content: const AppText(
-          'Apakah Anda yakin ingin menghapus anggaran ini?',
+        content: AppText(
+          LocaleKeys.budgetUpsertDeleteConfirm.tr(),
           style: AppTextStyle.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: AppText('Batal', color: context.colorScheme.outline),
+            child: AppText(
+              LocaleKeys.budgetUpsertCancel.tr(),
+              color: context.colorScheme.outline,
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -130,7 +137,7 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
               );
             },
             child: AppText(
-              'Hapus',
+              LocaleKeys.budgetUpsertDelete.tr(),
               color: context.semantic.error,
               fontWeight: FontWeight.bold,
             ),
@@ -148,7 +155,9 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: AppText(
-            widget.isEdit ? 'Edit Anggaran' : 'Tambah Anggaran',
+            widget.isEdit
+                ? LocaleKeys.budgetUpsertEditTitle.tr()
+                : LocaleKeys.budgetUpsertAddTitle.tr(),
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -171,8 +180,8 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                       final categories = state.categories;
                       return AppDropdown<String>(
                         name: 'categoryUlid',
-                        label: 'Kategori',
-                        hintText: 'Pilih kategori',
+                        label: LocaleKeys.budgetUpsertCategoryLabel.tr(),
+                        hintText: LocaleKeys.budgetUpsertCategoryHint.tr(),
                         initialValue: widget.budget?.category.target?.ulid,
                         prefixIcon: const Icon(Icons.category_outlined),
                         items: categories
@@ -205,9 +214,10 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                   // * Amount Limit Field
                   AppTextField(
                     name: 'amountLimit',
-                    label: 'Batas Anggaran',
+                    label: LocaleKeys.budgetUpsertAmountLimitLabel.tr(),
                     initialValue: widget.budget?.amountLimit.toStringAsFixed(0),
-                    placeHolder: 'Contoh: 1000000',
+                    placeHolder: LocaleKeys.budgetUpsertAmountLimitPlaceholder
+                        .tr(),
                     type: AppTextFieldType.number,
                     validator: widget.isEdit
                         ? UpdateBudgetValidator.amountLimit
@@ -219,8 +229,8 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                   // * Period Dropdown
                   AppDropdown<int>(
                     name: 'period',
-                    label: 'Periode',
-                    hintText: 'Pilih periode anggaran',
+                    label: LocaleKeys.budgetUpsertPeriodLabel.tr(),
+                    hintText: LocaleKeys.budgetUpsertPeriodHint.tr(),
                     initialValue:
                         widget.budget?.period ?? BudgetPeriod.monthly.index,
                     prefixIcon: const Icon(Icons.calendar_month_outlined),
@@ -234,7 +244,7 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                     items: [
                       AppDropdownItem(
                         value: BudgetPeriod.monthly.index,
-                        label: 'Bulanan',
+                        label: LocaleKeys.budgetUpsertPeriodMonthly.tr(),
                         icon: Icon(
                           Icons.calendar_view_month,
                           size: 20,
@@ -243,7 +253,7 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: BudgetPeriod.weekly.index,
-                        label: 'Mingguan',
+                        label: LocaleKeys.budgetUpsertPeriodWeekly.tr(),
                         icon: Icon(
                           Icons.calendar_view_week,
                           size: 20,
@@ -252,7 +262,7 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: BudgetPeriod.yearly.index,
-                        label: 'Tahunan',
+                        label: LocaleKeys.budgetUpsertPeriodYearly.tr(),
                         icon: Icon(
                           Icons.calendar_today,
                           size: 20,
@@ -261,7 +271,7 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: BudgetPeriod.custom.index,
-                        label: 'Kustom',
+                        label: LocaleKeys.budgetUpsertPeriodCustom.tr(),
                         icon: Icon(
                           Icons.date_range,
                           size: 20,
@@ -279,18 +289,18 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                   if (_selectedPeriod == BudgetPeriod.custom) ...[
                     AppDateTimePicker(
                       name: 'startDate',
-                      label: 'Tanggal Mulai',
+                      label: LocaleKeys.budgetUpsertStartDateLabel.tr(),
                       initialValue: widget.budget?.startDate,
-                      hintText: 'Pilih tanggal mulai',
+                      hintText: LocaleKeys.budgetUpsertStartDateHint.tr(),
                       inputType: InputType.date,
                       prefixIcon: const Icon(Icons.event_outlined),
                     ),
                     const SizedBox(height: 24),
                     AppDateTimePicker(
                       name: 'endDate',
-                      label: 'Tanggal Selesai',
+                      label: LocaleKeys.budgetUpsertEndDateLabel.tr(),
                       initialValue: widget.budget?.endDate,
-                      hintText: 'Pilih tanggal selesai',
+                      hintText: LocaleKeys.budgetUpsertEndDateHint.tr(),
                       inputType: InputType.date,
                       prefixIcon: const Icon(Icons.event_outlined),
                     ),
@@ -306,8 +316,8 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                     builder: (context, state) {
                       return AppButton(
                         text: widget.isEdit
-                            ? 'Simpan Perubahan'
-                            : 'Tambah Anggaran',
+                            ? LocaleKeys.budgetUpsertSaveChanges.tr()
+                            : LocaleKeys.budgetUpsertAddBudget.tr(),
                         isLoading: state.isWriting,
                         onPressed: state.isWriting ? null : _onSubmit,
                         leadingIcon: Icon(
@@ -325,7 +335,7 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                           prev.writeStatus != curr.writeStatus,
                       builder: (context, state) {
                         return AppButton(
-                          text: 'Hapus Anggaran',
+                          text: LocaleKeys.budgetUpsertDeleteBudget.tr(),
                           variant: AppButtonVariant.outlined,
                           color: AppButtonColor.error,
                           isLoading: state.isWriting,

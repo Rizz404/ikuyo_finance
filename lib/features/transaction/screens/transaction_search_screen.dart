@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/transaction_tile.dart';
@@ -86,7 +88,7 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
       focusNode: _focusNode,
       onChanged: _onSearch,
       decoration: InputDecoration(
-        hintText: 'Cari transaksi...',
+        hintText: LocaleKeys.transactionSearchHint.tr(),
         hintStyle: TextStyle(color: context.colorScheme.outline),
         border: InputBorder.none,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -110,13 +112,13 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
             ),
             const SizedBox(height: 16),
             AppText(
-              'Cari Transaksi',
+              LocaleKeys.transactionSearchTitle.tr(),
               style: AppTextStyle.titleMedium,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Ketik untuk mencari berdasarkan deskripsi transaksi',
+              LocaleKeys.transactionSearchSubtitle.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.outline,
               textAlign: TextAlign.center,
@@ -141,13 +143,15 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
             ),
             const SizedBox(height: 16),
             AppText(
-              'Tidak ada hasil',
+              LocaleKeys.transactionSearchNoResults.tr(),
               style: AppTextStyle.titleMedium,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Tidak ditemukan transaksi dengan "$query"',
+              LocaleKeys.transactionSearchNoResultsFor.tr(
+                namedArgs: {'query': query},
+              ),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.outline,
               textAlign: TextAlign.center,

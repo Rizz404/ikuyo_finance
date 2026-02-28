@@ -1,5 +1,13 @@
 {
   "budget": {
+    "validator": {
+      "categoryRequired": "Kategori wajib dipilih",
+      "amountLimitRequired": "Batas anggaran wajib diisi",
+      "amountLimitInvalid": "Batas anggaran tidak valid",
+      "amountLimitPositive": "Batas anggaran harus lebih dari 0",
+      "periodRequired": "Periode wajib dipilih",
+      "ulidRequired": "ULID wajib diisi"
+    },
     "screen": {
       "title": "Anggaran",
       "tabAll": "Semua",

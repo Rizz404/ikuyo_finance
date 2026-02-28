@@ -1,22 +1,25 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+
 class CreateCategoryValidator {
   const CreateCategoryValidator._();
 
   static String? name(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Nama kategori wajib diisi';
+      return LocaleKeys.categoryValidatorNameRequired.tr();
     }
     if (value.length < 2) {
-      return 'Nama minimal 2 karakter';
+      return LocaleKeys.categoryValidatorNameMinLength.tr();
     }
     if (value.length > 50) {
-      return 'Nama maksimal 50 karakter';
+      return LocaleKeys.categoryValidatorNameMaxLength.tr();
     }
     return null;
   }
 
   static String? type(dynamic value) {
     if (value == null) {
-      return 'Tipe kategori wajib dipilih';
+      return LocaleKeys.categoryValidatorTypeRequired.tr();
     }
     return null;
   }

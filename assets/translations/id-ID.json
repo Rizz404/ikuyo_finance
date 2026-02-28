@@ -44,6 +44,15 @@
       "typeHint": "Pilih tipe aset",
       "typeLabel": "Tipe Aset",
       "typeStock": "Saham"
+    },
+    "validator": {
+      "balanceInvalid": "Saldo tidak valid",
+      "balanceNegative": "Saldo tidak boleh negatif",
+      "nameMaxLength": "Nama maksimal 50 karakter",
+      "nameMinLength": "Nama minimal 2 karakter",
+      "nameRequired": "Nama aset wajib diisi",
+      "typeRequired": "Tipe aset wajib dipilih",
+      "ulidRequired": "ULID wajib diisi"
     }
   },
   "auth": {
@@ -133,6 +142,14 @@
       "startDateHint": "Pilih tanggal mulai",
       "startDateLabel": "Tanggal Mulai",
       "success": "Berhasil"
+    },
+    "validator": {
+      "amountLimitInvalid": "Batas anggaran tidak valid",
+      "amountLimitPositive": "Batas anggaran harus lebih dari 0",
+      "amountLimitRequired": "Batas anggaran wajib diisi",
+      "categoryRequired": "Kategori wajib dipilih",
+      "periodRequired": "Periode wajib dipilih",
+      "ulidRequired": "ULID wajib diisi"
     }
   },
   "category": {
@@ -181,6 +198,13 @@
       "typeHint": "Pilih tipe kategori",
       "typeIncome": "Pemasukan",
       "typeLabel": "Tipe Kategori"
+    },
+    "validator": {
+      "nameMaxLength": "Nama maksimal 50 karakter",
+      "nameMinLength": "Nama minimal 2 karakter",
+      "nameRequired": "Nama kategori wajib diisi",
+      "typeRequired": "Tipe kategori wajib dipilih",
+      "ulidRequired": "ULID wajib diisi"
     }
   },
   "other": {
@@ -373,6 +397,13 @@
       "success": "Berhasil",
       "typeExpense": "Pengeluaran",
       "typeIncome": "Pemasukan"
+    },
+    "validator": {
+      "amountPositive": "Jumlah harus lebih dari 0",
+      "amountRequired": "Jumlah wajib diisi",
+      "assetRequired": "Asset wajib dipilih",
+      "descriptionMaxLength": "Deskripsi maksimal 500 karakter",
+      "ulidRequired": "ULID wajib diisi"
     }
   }
 }

@@ -1,9 +1,12 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+
 class UpdateCategoryValidator {
   const UpdateCategoryValidator._();
 
   static String? ulid(String? value) {
     if (value == null || value.isEmpty) {
-      return 'ULID wajib diisi';
+      return LocaleKeys.categoryValidatorUlidRequired.tr();
     }
     return null;
   }
@@ -13,10 +16,10 @@ class UpdateCategoryValidator {
       return null; // * Optional for update
     }
     if (value.length < 2) {
-      return 'Nama minimal 2 karakter';
+      return LocaleKeys.categoryValidatorNameMinLength.tr();
     }
     if (value.length > 50) {
-      return 'Nama maksimal 50 karakter';
+      return LocaleKeys.categoryValidatorNameMaxLength.tr();
     }
     return null;
   }

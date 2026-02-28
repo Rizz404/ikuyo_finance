@@ -1,5 +1,12 @@
 {
   "category": {
+    "validator": {
+      "nameRequired": "Nama kategori wajib diisi",
+      "nameMinLength": "Nama minimal 2 karakter",
+      "nameMaxLength": "Nama maksimal 50 karakter",
+      "typeRequired": "Tipe kategori wajib dipilih",
+      "ulidRequired": "ULID wajib diisi"
+    },
     "screen": {
       "title": "Kategori",
       "tabAll": "Semua",

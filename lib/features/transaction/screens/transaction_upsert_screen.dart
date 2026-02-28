@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -99,14 +101,18 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
     if (state.writeStatus == TransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: state.writeSuccessMessage ?? 'Berhasil',
+        title:
+            state.writeSuccessMessage ??
+            LocaleKeys.transactionUpsertSuccess.tr(),
       );
       context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == TransactionWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
+        title:
+            state.writeErrorMessage ??
+            LocaleKeys.transactionUpsertErrorOccurred.tr(),
       );
       context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
     }
@@ -151,19 +157,22 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const AppText(
-          'Hapus Transaksi',
+        title: AppText(
+          LocaleKeys.transactionUpsertDeleteTitle.tr(),
           style: AppTextStyle.titleMedium,
           fontWeight: FontWeight.bold,
         ),
-        content: const AppText(
-          'Apakah Anda yakin ingin menghapus transaksi ini?',
+        content: AppText(
+          LocaleKeys.transactionUpsertDeleteConfirm.tr(),
           style: AppTextStyle.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: AppText('Batal', color: context.colorScheme.outline),
+            child: AppText(
+              LocaleKeys.transactionUpsertCancel.tr(),
+              color: context.colorScheme.outline,
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -173,7 +182,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               );
             },
             child: AppText(
-              'Hapus',
+              LocaleKeys.transactionUpsertDelete.tr(),
               color: context.semantic.error,
               fontWeight: FontWeight.bold,
             ),
@@ -217,7 +226,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: AppText(
-            widget.isEdit ? 'Edit Transaksi' : 'Tambah Transaksi',
+            widget.isEdit
+                ? LocaleKeys.transactionUpsertEditTitle.tr()
+                : LocaleKeys.transactionUpsertAddTitle.tr(),
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -252,15 +263,16 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
             // * Amount Field - use currency type for proper formatting
             AppTextField(
               name: 'amount',
-              label: 'Jumlah',
+              label: LocaleKeys.transactionUpsertAmountLabel.tr(),
               type: AppTextFieldType.currency,
               initialValue: widget.transaction?.amount.toString(),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Jumlah harus diisi';
+                  return LocaleKeys.transactionUpsertAmountRequired.tr();
                 }
                 final amount = double.tryParse(value.replaceAll('.', '')) ?? 0;
-                if (amount <= 0) return 'Jumlah harus lebih dari 0';
+                if (amount <= 0)
+                  return LocaleKeys.transactionUpsertAmountMustBePositive.tr();
                 return null;
               },
             ),
@@ -273,8 +285,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                 Expanded(
                   child: AppSearchableDropdown<Asset>(
                     name: 'assetUlid',
-                    label: 'Asset',
-                    hintText: 'Pilih asset',
+                    label: LocaleKeys.transactionUpsertAssetLabel.tr(),
+                    hintText: LocaleKeys.transactionUpsertAssetHint.tr(),
                     initialValue: widget.transaction?.asset.target,
                     prefixIcon: const Icon(
                       Icons.account_balance_wallet_outlined,
@@ -290,15 +302,16 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                       size: 24,
                       color: context.colorScheme.primary,
                     ),
-                    validator: (value) =>
-                        value == null ? 'Asset harus dipilih' : null,
+                    validator: (value) => value == null
+                        ? LocaleKeys.transactionUpsertAssetRequired.tr()
+                        : null,
                   ),
                 ),
                 const SizedBox(width: 8),
                 IconButton.filled(
                   onPressed: () => context.pushToAddAsset(),
                   icon: const Icon(Icons.add),
-                  tooltip: 'Tambah Asset',
+                  tooltip: LocaleKeys.transactionUpsertAddAsset.tr(),
                   style: IconButton.styleFrom(
                     backgroundColor: context.colorScheme.primary,
                     foregroundColor: context.colorScheme.onPrimary,
@@ -316,8 +329,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                   child: AppSearchableDropdown<Category>(
                     key: ValueKey(_selectedType),
                     name: 'categoryUlid',
-                    label: 'Kategori',
-                    hintText: 'Pilih kategori',
+                    label: LocaleKeys.transactionUpsertCategoryLabel.tr(),
+                    hintText: LocaleKeys.transactionUpsertCategoryHint.tr(),
                     initialValue: widget.transaction?.category.target,
                     prefixIcon: const Icon(Icons.category_outlined),
                     items: _categories,
@@ -327,8 +340,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                     itemValueMapper: (category) => category.ulid,
                     itemSubtitleMapper: (category) =>
                         category.parent.target != null
-                        ? '↳ Sub dari: ${category.parent.target!.name}'
-                        : 'Kategori Utama',
+                        ? '↳ ${LocaleKeys.transactionUpsertSubCategoryOf.tr(namedArgs: {'name': category.parent.target!.name})}'
+                        : LocaleKeys.transactionUpsertMainCategory.tr(),
                     itemLeadingMapper: (category) => Icon(
                       category.parent.target != null
                           ? Icons.subdirectory_arrow_right
@@ -342,7 +355,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                 IconButton.filled(
                   onPressed: () => context.pushToAddCategory(),
                   icon: const Icon(Icons.add),
-                  tooltip: 'Tambah Kategori',
+                  tooltip: LocaleKeys.transactionUpsertAddCategory.tr(),
                   style: IconButton.styleFrom(
                     backgroundColor: _selectedType == CategoryType.expense
                         ? context.semantic.error
@@ -357,7 +370,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
             // * Date Time Picker
             AppDateTimePicker(
               name: 'transactionDate',
-              label: 'Tanggal & Waktu',
+              label: LocaleKeys.transactionUpsertDateTimeLabel.tr(),
               inputType: InputType.both,
               initialValue:
                   widget.transaction?.transactionDate ?? DateTime.now(),
@@ -369,11 +382,12 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
             // * Description Field
             AppTextField(
               name: 'description',
-              label: 'Deskripsi',
+              label: LocaleKeys.transactionUpsertDescriptionLabel.tr(),
               type: AppTextFieldType.multiline,
               maxLines: 3,
               initialValue: widget.transaction?.description,
-              placeHolder: 'Tambahkan catatan (opsional)',
+              placeHolder: LocaleKeys.transactionUpsertDescriptionPlaceholder
+                  .tr(),
             ),
             const SizedBox(height: 32),
 
@@ -382,7 +396,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               buildWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
               builder: (context, state) {
                 return AppButton(
-                  text: widget.isEdit ? 'Simpan Perubahan' : 'Tambah Transaksi',
+                  text: widget.isEdit
+                      ? LocaleKeys.transactionUpsertSaveChanges.tr()
+                      : LocaleKeys.transactionUpsertAddTransaction.tr(),
                   isLoading: state.isWriting,
                   onPressed: state.isWriting ? null : _onSubmit,
                   leadingIcon: Icon(
@@ -399,7 +415,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                 buildWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
                 builder: (context, state) {
                   return AppButton(
-                    text: 'Hapus Transaksi',
+                    text: LocaleKeys.transactionUpsertDeleteTransaction.tr(),
                     variant: AppButtonVariant.outlined,
                     color: AppButtonColor.error,
                     isLoading: state.isWriting,
@@ -439,7 +455,7 @@ class _TransactionTypeSelector extends StatelessWidget {
         children: [
           Expanded(
             child: _TypeButton(
-              label: 'Pengeluaran',
+              label: LocaleKeys.transactionUpsertTypeExpense.tr(),
               icon: Icons.arrow_downward,
               isSelected: selectedType == CategoryType.expense,
               color: context.semantic.error,
@@ -448,7 +464,7 @@ class _TransactionTypeSelector extends StatelessWidget {
           ),
           Expanded(
             child: _TypeButton(
-              label: 'Pemasukan',
+              label: LocaleKeys.transactionUpsertTypeIncome.tr(),
               icon: Icons.arrow_upward,
               isSelected: selectedType == CategoryType.income,
               color: context.semantic.success,

@@ -1,9 +1,12 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+
 class UpdateBudgetValidator {
   const UpdateBudgetValidator._();
 
   static String? ulid(String? value) {
     if (value == null || value.isEmpty) {
-      return 'ULID wajib diisi';
+      return LocaleKeys.budgetValidatorUlidRequired.tr();
     }
     return null;
   }
@@ -19,10 +22,10 @@ class UpdateBudgetValidator {
     }
     final parsed = double.tryParse(value.replaceAll(',', '.'));
     if (parsed == null) {
-      return 'Batas anggaran tidak valid';
+      return LocaleKeys.budgetValidatorAmountLimitInvalid.tr();
     }
     if (parsed <= 0) {
-      return 'Batas anggaran harus lebih dari 0';
+      return LocaleKeys.budgetValidatorAmountLimitPositive.tr();
     }
     return null;
   }

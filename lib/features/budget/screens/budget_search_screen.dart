@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/budget/widgets/budget_card.dart';
@@ -85,7 +87,7 @@ class _BudgetSearchScreenState extends State<BudgetSearchScreen> {
       focusNode: _focusNode,
       onChanged: _onSearch,
       decoration: InputDecoration(
-        hintText: 'Cari anggaran...',
+        hintText: LocaleKeys.budgetSearchHint.tr(),
         hintStyle: TextStyle(color: context.colorScheme.outline),
         border: InputBorder.none,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -109,13 +111,13 @@ class _BudgetSearchScreenState extends State<BudgetSearchScreen> {
             ),
             const SizedBox(height: 16),
             AppText(
-              'Cari Anggaran',
+              LocaleKeys.budgetSearchTitle.tr(),
               style: AppTextStyle.titleMedium,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Ketik untuk mencari berdasarkan nama kategori anggaran',
+              LocaleKeys.budgetSearchSubtitle.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.outline,
               textAlign: TextAlign.center,
@@ -140,13 +142,15 @@ class _BudgetSearchScreenState extends State<BudgetSearchScreen> {
             ),
             const SizedBox(height: 16),
             AppText(
-              'Tidak ada hasil',
+              LocaleKeys.budgetSearchNoResults.tr(),
               style: AppTextStyle.titleMedium,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Tidak ditemukan anggaran dengan "$query"',
+              LocaleKeys.budgetSearchNoResultsFor.tr(
+                namedArgs: {'query': query},
+              ),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.outline,
               textAlign: TextAlign.center,

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/currency/models/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -42,14 +44,15 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
     if (state.writeStatus == AssetWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
-        title: state.writeSuccessMessage ?? 'Berhasil',
+        title: state.writeSuccessMessage ?? LocaleKeys.assetUpsertSuccess.tr(),
       );
       context.read<AssetBloc>().add(const AssetWriteStatusReset());
       context.pop(true);
     } else if (state.writeStatus == AssetWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
+        title:
+            state.writeErrorMessage ?? LocaleKeys.assetUpsertErrorOccurred.tr(),
       );
       context.read<AssetBloc>().add(const AssetWriteStatusReset());
     }
@@ -128,20 +131,22 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const AppText(
-          'Hapus Aset',
+        title: AppText(
+          LocaleKeys.assetUpsertDeleteTitle.tr(),
           style: AppTextStyle.titleMedium,
           fontWeight: FontWeight.bold,
         ),
-        content: const AppText(
-          'Apakah Anda yakin ingin menghapus aset ini? '
-          'Transaksi yang terkait dengan aset ini akan terpengaruh.',
+        content: AppText(
+          LocaleKeys.assetUpsertDeleteConfirm.tr(),
           style: AppTextStyle.bodyMedium,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: AppText('Batal', color: context.colorScheme.outline),
+            child: AppText(
+              LocaleKeys.assetUpsertCancel.tr(),
+              color: context.colorScheme.outline,
+            ),
           ),
           TextButton(
             onPressed: () {
@@ -151,7 +156,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
               );
             },
             child: AppText(
-              'Hapus',
+              LocaleKeys.assetUpsertDelete.tr(),
               color: context.semantic.error,
               fontWeight: FontWeight.bold,
             ),
@@ -169,7 +174,9 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: AppText(
-            widget.isEdit ? 'Edit Aset' : 'Tambah Aset',
+            widget.isEdit
+                ? LocaleKeys.assetUpsertEditTitle.tr()
+                : LocaleKeys.assetUpsertAddTitle.tr(),
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -189,8 +196,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                   // * Asset Type Dropdown
                   AppDropdown<int>(
                     name: 'type',
-                    label: 'Tipe Aset',
-                    hintText: 'Pilih tipe aset',
+                    label: LocaleKeys.assetUpsertTypeLabel.tr(),
+                    hintText: LocaleKeys.assetUpsertTypeHint.tr(),
                     initialValue: widget.asset?.type ?? AssetType.cash.index,
                     prefixIcon: const Icon(
                       Icons.account_balance_wallet_outlined,
@@ -198,7 +205,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                     items: [
                       AppDropdownItem(
                         value: AssetType.cash.index,
-                        label: 'Kas',
+                        label: LocaleKeys.assetUpsertTypeCash.tr(),
                         icon: Icon(
                           Icons.wallet_outlined,
                           size: 20,
@@ -207,7 +214,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.bank.index,
-                        label: 'Bank',
+                        label: LocaleKeys.assetUpsertTypeBank.tr(),
                         icon: Icon(
                           Icons.account_balance_outlined,
                           size: 20,
@@ -216,7 +223,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.eWallet.index,
-                        label: 'E-Wallet',
+                        label: LocaleKeys.assetUpsertTypeEWallet.tr(),
                         icon: Icon(
                           Icons.phone_android_outlined,
                           size: 20,
@@ -225,7 +232,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.stock.index,
-                        label: 'Saham',
+                        label: LocaleKeys.assetUpsertTypeStock.tr(),
                         icon: Icon(
                           Icons.trending_up_outlined,
                           size: 20,
@@ -234,7 +241,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.crypto.index,
-                        label: 'Crypto',
+                        label: LocaleKeys.assetUpsertTypeCrypto.tr(),
                         icon: Icon(
                           Icons.currency_bitcoin_outlined,
                           size: 20,
@@ -251,9 +258,9 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                   // * Name Field
                   AppTextField(
                     name: 'name',
-                    label: 'Nama Aset',
+                    label: LocaleKeys.assetUpsertNameLabel.tr(),
                     initialValue: widget.asset?.name,
-                    placeHolder: 'Contoh: BCA, GoPay, Dompet',
+                    placeHolder: LocaleKeys.assetUpsertNamePlaceholder.tr(),
                     validator: widget.isEdit
                         ? UpdateAssetValidator.name
                         : CreateAssetValidator.name,
@@ -275,7 +282,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       }
                       return AppTextField(
                         name: 'balance',
-                        label: 'Saldo Awal',
+                        label: LocaleKeys.assetUpsertBalanceLabel.tr(),
                         initialValue: initialBalance,
                         placeHolder: '0',
                         type: AppTextFieldType.currency,
@@ -290,8 +297,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
 
                   // * Icon File Picker with current preview
                   if (widget.isEdit && widget.asset?.icon != null) ...[
-                    const AppText(
-                      'Ikon Saat Ini',
+                    AppText(
+                      LocaleKeys.assetUpsertCurrentIconLabel.tr(),
                       style: AppTextStyle.labelMedium,
                     ),
                     const SizedBox(height: 8),
@@ -325,8 +332,10 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                   AppFilePicker(
                     key: _filePickerKey,
                     name: 'icon',
-                    label: widget.isEdit ? 'Ganti Ikon' : 'Ikon Aset',
-                    hintText: 'Pilih gambar ikon (opsional)',
+                    label: widget.isEdit
+                        ? LocaleKeys.assetUpsertChangeIcon.tr()
+                        : LocaleKeys.assetUpsertIconLabel.tr(),
+                    hintText: LocaleKeys.assetUpsertIconHint.tr(),
                     fileType: FileType.image,
                     allowMultiple: false,
                     maxFiles: 1,
@@ -341,8 +350,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                     builder: (context, state) {
                       return AppButton(
                         text: widget.isEdit
-                            ? 'Simpan Perubahan'
-                            : 'Tambah Aset',
+                            ? LocaleKeys.assetUpsertSaveChanges.tr()
+                            : LocaleKeys.assetUpsertAddAsset.tr(),
                         isLoading: state.isWriting,
                         onPressed: state.isWriting ? null : _onSubmit,
                         leadingIcon: Icon(
@@ -360,7 +369,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                           prev.writeStatus != curr.writeStatus,
                       builder: (context, state) {
                         return AppButton(
-                          text: 'Hapus Aset',
+                          text: LocaleKeys.assetUpsertDeleteAsset.tr(),
                           variant: AppButtonVariant.outlined,
                           color: AppButtonColor.error,
                           isLoading: state.isWriting,

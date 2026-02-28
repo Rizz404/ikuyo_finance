@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
@@ -60,8 +62,8 @@ class _BudgetScreenState extends State<BudgetScreen>
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            title: const AppText(
-              'Anggaran',
+            title: AppText(
+              LocaleKeys.budgetScreenTitle.tr(),
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
@@ -82,12 +84,12 @@ class _BudgetScreenState extends State<BudgetScreen>
               controller: _tabController,
               isScrollable: true,
               tabAlignment: TabAlignment.start,
-              tabs: const [
-                Tab(text: 'Semua'),
-                Tab(text: 'Bulanan'),
-                Tab(text: 'Mingguan'),
-                Tab(text: 'Tahunan'),
-                Tab(text: 'Kustom'),
+              tabs: [
+                Tab(text: LocaleKeys.budgetScreenTabAll.tr()),
+                Tab(text: LocaleKeys.budgetScreenTabMonthly.tr()),
+                Tab(text: LocaleKeys.budgetScreenTabWeekly.tr()),
+                Tab(text: LocaleKeys.budgetScreenTabYearly.tr()),
+                Tab(text: LocaleKeys.budgetScreenTabCustom.tr()),
               ],
             ),
           ),
@@ -121,7 +123,7 @@ class _BudgetScreenState extends State<BudgetScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              state.errorMessage ?? 'Terjadi kesalahan',
+              state.errorMessage ?? LocaleKeys.budgetScreenErrorOccurred.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.error,
             ),
@@ -143,13 +145,13 @@ class _BudgetScreenState extends State<BudgetScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              'Belum ada anggaran',
+              LocaleKeys.budgetScreenEmptyTitle.tr(),
               style: AppTextStyle.bodyLarge,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Tekan + untuk menambah anggaran baru',
+              LocaleKeys.budgetScreenEmptySubtitle.tr(),
               style: AppTextStyle.bodySmall,
               color: context.colorScheme.outline,
             ),

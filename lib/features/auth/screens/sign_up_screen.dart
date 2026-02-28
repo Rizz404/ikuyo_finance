@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
 class SignUpScreen extends StatelessWidget {
@@ -6,6 +8,8 @@ class SignUpScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body: ScreenWrapper(child: Text('SignUpScreen')));
+    return Scaffold(
+      body: ScreenWrapper(child: Text(LocaleKeys.authSignUpTitle.tr())),
+    );
   }
 }

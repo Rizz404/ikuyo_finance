@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
@@ -61,8 +63,10 @@ class _BackupScreenState extends State<BackupScreen> {
       if (!mounted) return;
       ToastHelper.instance.showError(
         context: context,
-        title: 'Error',
-        description: 'Gagal membaca file backup: ${e.toString()}',
+        title: LocaleKeys.backupScreenError.tr(),
+        description: LocaleKeys.backupScreenReadBackupFailed.tr(
+          namedArgs: {'error': e.toString()},
+        ),
       );
     }
   }
@@ -71,8 +75,8 @@ class _BackupScreenState extends State<BackupScreen> {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const AppText(
-          'Konfirmasi Import',
+        title: AppText(
+          LocaleKeys.backupScreenImportConfirmTitle.tr(),
           style: AppTextStyle.titleLarge,
           fontWeight: FontWeight.bold,
         ),
@@ -80,23 +84,31 @@ class _BackupScreenState extends State<BackupScreen> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AppText(
-              'Data yang akan diimport:',
+            AppText(
+              LocaleKeys.backupScreenImportDataLabel.tr(),
               style: AppTextStyle.bodyMedium,
             ),
             const SizedBox(height: 12),
             _buildSummaryItem(
-              'Kategori',
+              LocaleKeys.backupScreenCategories.tr(),
               backupData.categories.length,
               context,
             ),
-            _buildSummaryItem('Aset', backupData.assets.length, context),
             _buildSummaryItem(
-              'Transaksi',
+              LocaleKeys.backupScreenAssets.tr(),
+              backupData.assets.length,
+              context,
+            ),
+            _buildSummaryItem(
+              LocaleKeys.backupScreenTransactions.tr(),
               backupData.transactions.length,
               context,
             ),
-            _buildSummaryItem('Budget', backupData.budgets.length, context),
+            _buildSummaryItem(
+              LocaleKeys.backupScreenBudgets.tr(),
+              backupData.budgets.length,
+              context,
+            ),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -114,7 +126,7 @@ class _BackupScreenState extends State<BackupScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: AppText(
-                      'Semua data yang ada saat ini akan dihapus dan diganti dengan data backup!',
+                      LocaleKeys.backupScreenImportWarning.tr(),
                       style: AppTextStyle.bodySmall,
                       color: context.semantic.warning,
                     ),
@@ -127,14 +139,14 @@ class _BackupScreenState extends State<BackupScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
+            child: Text(LocaleKeys.backupScreenImportCancel.tr()),
           ),
           FilledButton(
             onPressed: () => Navigator.pop(context, true),
             style: FilledButton.styleFrom(
               backgroundColor: context.semantic.error,
             ),
-            child: const Text('Import & Ganti Data'),
+            child: Text(LocaleKeys.backupScreenImportConfirmButton.tr()),
           ),
         ],
       ),
@@ -157,7 +169,7 @@ class _BackupScreenState extends State<BackupScreen> {
 
       // * Let user choose where to save using file_picker
       final result = await FilePicker.platform.saveFile(
-        dialogTitle: 'Simpan File Backup',
+        dialogTitle: LocaleKeys.backupScreenSaveDialogTitle.tr(),
         fileName: fileName,
         type: FileType.custom,
         allowedExtensions: ['json'],
@@ -169,8 +181,10 @@ class _BackupScreenState extends State<BackupScreen> {
       if (result != null) {
         ToastHelper.instance.showSuccess(
           context: context,
-          title: 'Berhasil',
-          description: 'Backup disimpan ke: $result',
+          title: LocaleKeys.backupScreenSuccess.tr(),
+          description: LocaleKeys.backupScreenBackupSavedTo.tr(
+            namedArgs: {'path': result},
+          ),
         );
       }
 
@@ -182,8 +196,10 @@ class _BackupScreenState extends State<BackupScreen> {
       if (!mounted) return;
       ToastHelper.instance.showError(
         context: context,
-        title: 'Error',
-        description: 'Gagal menyimpan file: ${e.toString()}',
+        title: LocaleKeys.backupScreenError.tr(),
+        description: LocaleKeys.backupScreenSaveFileFailed.tr(
+          namedArgs: {'error': e.toString()},
+        ),
       );
     }
   }
@@ -220,8 +236,9 @@ class _BackupScreenState extends State<BackupScreen> {
             // * Import success
             ToastHelper.instance.showSuccess(
               context: context,
-              title: 'Berhasil',
-              description: state.message ?? 'Data berhasil diimpor',
+              title: LocaleKeys.backupScreenSuccess.tr(),
+              description:
+                  state.message ?? LocaleKeys.backupScreenImportSuccess.tr(),
             );
             // * Refresh summary
             context.read<BackupBloc>().add(BackupSummaryRequested());
@@ -236,15 +253,16 @@ class _BackupScreenState extends State<BackupScreen> {
         } else if (state.status == BackupStatus.failure) {
           ToastHelper.instance.showError(
             context: context,
-            title: 'Error',
-            description: state.message ?? 'Terjadi kesalahan',
+            title: LocaleKeys.backupScreenError.tr(),
+            description:
+                state.message ?? LocaleKeys.backupScreenErrorOccurred.tr(),
           );
         }
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const AppText(
-            'Cadangan Data',
+          title: AppText(
+            LocaleKeys.backupScreenTitle.tr(),
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -275,7 +293,7 @@ class _BackupScreenState extends State<BackupScreen> {
                       const SizedBox(width: 12),
                       Expanded(
                         child: AppText(
-                          'Backup data disimpan dalam format JSON yang bisa diimpor kembali kapan saja.',
+                          LocaleKeys.backupScreenInfoDescription.tr(),
                           style: AppTextStyle.bodySmall,
                           color: colors.textSecondary,
                         ),
@@ -287,7 +305,7 @@ class _BackupScreenState extends State<BackupScreen> {
 
                 // * Current Data Summary
                 AppText(
-                  'Data Saat Ini',
+                  LocaleKeys.backupScreenCurrentData.tr(),
                   style: AppTextStyle.titleMedium,
                   fontWeight: FontWeight.bold,
                 ),
@@ -307,25 +325,25 @@ class _BackupScreenState extends State<BackupScreen> {
                       child: Column(
                         children: [
                           _buildDataRow(
-                            'Kategori',
+                            LocaleKeys.backupScreenCategories.tr(),
                             summary?['categories'] ?? 0,
                             Icons.category_outlined,
                           ),
                           const Divider(height: 24),
                           _buildDataRow(
-                            'Aset',
+                            LocaleKeys.backupScreenAssets.tr(),
                             summary?['assets'] ?? 0,
                             Icons.account_balance_wallet_outlined,
                           ),
                           const Divider(height: 24),
                           _buildDataRow(
-                            'Transaksi',
+                            LocaleKeys.backupScreenTransactions.tr(),
                             summary?['transactions'] ?? 0,
                             Icons.receipt_long_outlined,
                           ),
                           const Divider(height: 24),
                           _buildDataRow(
-                            'Budget',
+                            LocaleKeys.backupScreenBudgets.tr(),
                             summary?['budgets'] ?? 0,
                             Icons.savings_outlined,
                           ),
@@ -334,12 +352,14 @@ class _BackupScreenState extends State<BackupScreen> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               AppText(
-                                'Total',
+                                LocaleKeys.backupScreenTotal.tr(),
                                 style: AppTextStyle.titleSmall,
                                 fontWeight: FontWeight.bold,
                               ),
                               AppText(
-                                '${state.totalItems} item',
+                                LocaleKeys.backupScreenTotalItems.tr(
+                                  namedArgs: {'count': '${state.totalItems}'},
+                                ),
                                 style: AppTextStyle.titleSmall,
                                 fontWeight: FontWeight.bold,
                                 color: colors.primary,
@@ -356,10 +376,9 @@ class _BackupScreenState extends State<BackupScreen> {
                 // * Export Section
                 _buildActionCard(
                   icon: Icons.cloud_upload_outlined,
-                  title: 'Export Data',
-                  description:
-                      'Simpan semua data ke file JSON yang bisa disimpan di penyimpanan perangkat.',
-                  buttonText: 'Export Sekarang',
+                  title: LocaleKeys.backupScreenExportTitle.tr(),
+                  description: LocaleKeys.backupScreenExportDescription.tr(),
+                  buttonText: LocaleKeys.backupScreenExportButton.tr(),
                   buttonColor: AppButtonColor.primary,
                   onPressed: _handleExport,
                 ),
@@ -368,10 +387,9 @@ class _BackupScreenState extends State<BackupScreen> {
                 // * Import Section
                 _buildActionCard(
                   icon: Icons.cloud_download_outlined,
-                  title: 'Import Data',
-                  description:
-                      'Pulihkan data dari file backup JSON. Data yang ada saat ini akan diganti.',
-                  buttonText: 'Pilih File Backup',
+                  title: LocaleKeys.backupScreenImportTitle.tr(),
+                  description: LocaleKeys.backupScreenImportDescription.tr(),
+                  buttonText: LocaleKeys.backupScreenImportButton.tr(),
                   buttonColor: AppButtonColor.secondary,
                   onPressed: _handleImport,
                   isWarning: true,

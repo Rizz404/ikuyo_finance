@@ -44,6 +44,15 @@
       "typeHint": "Select asset type",
       "typeLabel": "Asset Type",
       "typeStock": "Stock"
+    },
+    "validator": {
+      "balanceInvalid": "Balance is not valid",
+      "balanceNegative": "Balance cannot be negative",
+      "nameMaxLength": "Name must be at most 50 characters",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameRequired": "Asset name is required",
+      "typeRequired": "Asset type is required",
+      "ulidRequired": "ULID is required"
     }
   },
   "auth": {
@@ -133,6 +142,14 @@
       "startDateHint": "Select start date",
       "startDateLabel": "Start Date",
       "success": "Success"
+    },
+    "validator": {
+      "amountLimitInvalid": "Budget limit is not valid",
+      "amountLimitPositive": "Budget limit must be greater than 0",
+      "amountLimitRequired": "Budget limit is required",
+      "categoryRequired": "Category is required",
+      "periodRequired": "Period is required",
+      "ulidRequired": "ULID is required"
     }
   },
   "category": {
@@ -181,6 +198,13 @@
       "typeHint": "Select category type",
       "typeIncome": "Income",
       "typeLabel": "Category Type"
+    },
+    "validator": {
+      "nameMaxLength": "Name must be at most 50 characters",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameRequired": "Category name is required",
+      "typeRequired": "Category type is required",
+      "ulidRequired": "ULID is required"
     }
   },
   "other": {
@@ -373,6 +397,13 @@
       "success": "Success",
       "typeExpense": "Expense",
       "typeIncome": "Income"
+    },
+    "validator": {
+      "amountPositive": "Amount must be greater than 0",
+      "amountRequired": "Amount is required",
+      "assetRequired": "Asset is required",
+      "descriptionMaxLength": "Description must be at most 500 characters",
+      "ulidRequired": "ULID is required"
     }
   }
 }

@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -12,8 +14,8 @@ class OtherScreen extends StatelessWidget {
   void _showComingSoon(BuildContext context) {
     ToastHelper.instance.showInfo(
       context: context,
-      title: "Coming Soon",
-      description: "Fitur ini sedang dalam pengembangan",
+      title: LocaleKeys.otherScreenComingSoon.tr(),
+      description: LocaleKeys.otherScreenFeatureInDevelopment.tr(),
     );
   }
 
@@ -22,7 +24,10 @@ class OtherScreen extends StatelessWidget {
     final colors = context.colors;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Pengaturan'), centerTitle: true),
+      appBar: AppBar(
+        title: Text(LocaleKeys.otherScreenTitle.tr()),
+        centerTitle: true,
+      ),
       body: ScreenWrapper(
         child: SingleChildScrollView(
           child: Column(
@@ -50,7 +55,7 @@ class OtherScreen extends StatelessWidget {
                 children: [
                   OtherCard(
                     icon: Icons.settings_outlined,
-                    text: "Pengaturan",
+                    text: LocaleKeys.otherScreenSettings.tr(),
                     iconColor: colors.secondary,
                     iconBackgroundColor: colors.secondaryContainer.withValues(
                       alpha: 0.5,
@@ -59,7 +64,7 @@ class OtherScreen extends StatelessWidget {
                   ),
                   OtherCard(
                     icon: Icons.account_balance_wallet_outlined,
-                    text: "Kelola Aset",
+                    text: LocaleKeys.otherScreenManageAssets.tr(),
                     iconColor: colors.secondary,
                     iconBackgroundColor: colors.secondaryContainer.withValues(
                       alpha: 0.5,
@@ -68,7 +73,7 @@ class OtherScreen extends StatelessWidget {
                   ),
                   OtherCard(
                     icon: Icons.category_outlined,
-                    text: "Kelola Kategori",
+                    text: LocaleKeys.otherScreenManageCategories.tr(),
                     iconColor: colors.secondary,
                     iconBackgroundColor: colors.secondaryContainer.withValues(
                       alpha: 0.5,
@@ -77,7 +82,7 @@ class OtherScreen extends StatelessWidget {
                   ),
                   OtherCard(
                     icon: Icons.lock_outline,
-                    text: "Kata Sandi",
+                    text: LocaleKeys.otherScreenPassword.tr(),
                     iconColor: colors.secondary,
                     iconBackgroundColor: colors.secondaryContainer.withValues(
                       alpha: 0.5,
@@ -86,7 +91,7 @@ class OtherScreen extends StatelessWidget {
                   ),
                   OtherCard(
                     icon: Icons.cloud_upload_outlined,
-                    text: "Cadangan",
+                    text: LocaleKeys.otherScreenBackup.tr(),
                     iconColor: colors.secondary,
                     iconBackgroundColor: colors.secondaryContainer.withValues(
                       alpha: 0.5,
@@ -95,7 +100,7 @@ class OtherScreen extends StatelessWidget {
                   ),
                   OtherCard(
                     icon: Icons.help_outline,
-                    text: "Bantuan",
+                    text: LocaleKeys.otherScreenHelp.tr(),
                     iconColor: colors.secondary,
                     iconBackgroundColor: colors.secondaryContainer.withValues(
                       alpha: 0.5,

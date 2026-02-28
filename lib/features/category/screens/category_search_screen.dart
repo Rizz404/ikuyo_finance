@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/features/category/widgets/category_card.dart';
@@ -85,7 +87,7 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
       focusNode: _focusNode,
       onChanged: _onSearch,
       decoration: InputDecoration(
-        hintText: 'Cari kategori...',
+        hintText: LocaleKeys.categorySearchHint.tr(),
         hintStyle: TextStyle(color: context.colorScheme.outline),
         border: InputBorder.none,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -109,13 +111,13 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
             ),
             const SizedBox(height: 16),
             AppText(
-              'Cari Kategori',
+              LocaleKeys.categorySearchTitle.tr(),
               style: AppTextStyle.titleMedium,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Ketik untuk mencari berdasarkan nama kategori',
+              LocaleKeys.categorySearchSubtitle.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.outline,
               textAlign: TextAlign.center,
@@ -140,13 +142,15 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
             ),
             const SizedBox(height: 16),
             AppText(
-              'Tidak ada hasil',
+              LocaleKeys.categorySearchNoResults.tr(),
               style: AppTextStyle.titleMedium,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Tidak ditemukan kategori dengan "$query"',
+              LocaleKeys.categorySearchNoResultsFor.tr(
+                namedArgs: {'query': query},
+              ),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.outline,
               textAlign: TextAlign.center,

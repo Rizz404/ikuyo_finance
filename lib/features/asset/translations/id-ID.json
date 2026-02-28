@@ -1,5 +1,14 @@
 {
   "asset": {
+    "validator": {
+      "nameRequired": "Nama aset wajib diisi",
+      "nameMinLength": "Nama minimal 2 karakter",
+      "nameMaxLength": "Nama maksimal 50 karakter",
+      "typeRequired": "Tipe aset wajib dipilih",
+      "balanceInvalid": "Saldo tidak valid",
+      "balanceNegative": "Saldo tidak boleh negatif",
+      "ulidRequired": "ULID wajib diisi"
+    },
     "screen": {
       "title": "Aset",
       "tabList": "Daftar",

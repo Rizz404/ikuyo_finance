@@ -1,7 +1,9 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -159,20 +161,28 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
         if (bulkResult.hasFailures) {
           ToastHelper.instance.showWarning(
             context: context,
-            title:
-                '${bulkResult.successCount} berhasil, ${bulkResult.failureCount} gagal',
+            title: LocaleKeys.transactionBulkCopyPartialSuccess.tr(
+              namedArgs: {
+                'success': '${bulkResult.successCount}',
+                'failure': '${bulkResult.failureCount}',
+              },
+            ),
             description: bulkResult.failedReasons.take(3).join('\n'),
           );
         } else {
           ToastHelper.instance.showSuccess(
             context: context,
-            title: '${bulkResult.successCount} transaksi berhasil dibuat',
+            title: LocaleKeys.transactionBulkCopySuccessCount.tr(
+              namedArgs: {'count': '${bulkResult.successCount}'},
+            ),
           );
         }
       } else {
         ToastHelper.instance.showSuccess(
           context: context,
-          title: state.writeSuccessMessage ?? 'Berhasil',
+          title:
+              state.writeSuccessMessage ??
+              LocaleKeys.transactionUpsertSuccess.tr(),
         );
       }
       context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
@@ -180,7 +190,9 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
     } else if (state.writeStatus == TransactionWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
-        title: state.writeErrorMessage ?? 'Terjadi kesalahan',
+        title:
+            state.writeErrorMessage ??
+            LocaleKeys.transactionUpsertErrorOccurred.tr(),
       );
       context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
     }
@@ -217,7 +229,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
     } else if (!allValid) {
       ToastHelper.instance.showError(
         context: context,
-        title: 'Periksa kembali data yang belum valid',
+        title: LocaleKeys.transactionBulkCopyCheckInvalidData.tr(),
       );
     }
   }
@@ -255,8 +267,8 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
       listener: _handleWriteStatus,
       child: Scaffold(
         appBar: AppBar(
-          title: const AppText(
-            'Copy Banyak Transaksi',
+          title: AppText(
+            LocaleKeys.transactionBulkCopyTitle.tr(),
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -272,17 +284,18 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
             children: [
               AppMultiSelectDropdown<Transaction>(
                 name: 'copyTransactions',
-                label: 'Copy dari Transaksi',
-                hintText: 'Pilih satu atau banyak transaksi',
-                searchHintText: 'Cari transaksi...',
+                label: LocaleKeys.transactionBulkCopyCopyFromLabel.tr(),
+                hintText: LocaleKeys.transactionBulkCopyCopyFromHint.tr(),
+                searchHintText: LocaleKeys.transactionBulkCopySearchHint.tr(),
                 prefixIcon: const Icon(Icons.copy_outlined),
                 onSearch: _searchTransactions,
                 onLoadInitial: () => _searchTransactions(''),
                 itemDisplayMapper: (trx) =>
-                    trx.description ?? 'Tanpa deskripsi',
+                    trx.description ??
+                    LocaleKeys.transactionBulkCopyNoDescription.tr(),
                 itemValueMapper: (trx) => trx.ulid,
                 itemSubtitleMapper: (trx) =>
-                    '${trx.category.target?.name ?? 'Tanpa kategori'} • ${trx.asset.target?.name ?? '-'}',
+                    '${trx.category.target?.name ?? LocaleKeys.transactionBulkCopyNoCategory.tr()} • ${trx.asset.target?.name ?? '-'}',
                 itemLeadingMapper: (trx) => Icon(
                   trx.category.target?.categoryType == CategoryType.expense
                       ? Icons.arrow_downward
@@ -294,7 +307,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                       : context.semantic.success,
                 ),
                 onChanged: _onTransactionsSelected,
-                emptyMessage: 'Tidak ada transaksi ditemukan',
+                emptyMessage: LocaleKeys.transactionBulkCopyNoTransactions.tr(),
                 initialValue: _copyForms
                     .map((f) => f.sourceTransaction)
                     .toList(),
@@ -322,7 +335,9 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: AppText(
-                          '${_copyForms.length} transaksi dipilih',
+                          LocaleKeys.transactionBulkCopyTransactionsSelected.tr(
+                            namedArgs: {'count': '${_copyForms.length}'},
+                          ),
                           style: AppTextStyle.bodyMedium,
                           color: context.colorScheme.onPrimaryContainer,
                         ),
@@ -336,7 +351,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                             color: context.colorScheme.error,
                           ),
                           label: AppText(
-                            'Hapus Semua',
+                            LocaleKeys.transactionBulkCopyClearAll.tr(),
                             style: AppTextStyle.labelMedium,
                             color: context.colorScheme.error,
                           ),
@@ -358,7 +373,9 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                       prev.writeStatus != curr.writeStatus,
                   builder: (context, state) {
                     return AppButton(
-                      text: 'Simpan ${_copyForms.length} Transaksi',
+                      text: LocaleKeys.transactionBulkCopySaveCount.tr(
+                        namedArgs: {'count': '${_copyForms.length}'},
+                      ),
                       onPressed: _onSubmit,
                       isLoading:
                           state.writeStatus == TransactionWriteStatus.loading,
@@ -379,7 +396,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                         ),
                         const SizedBox(height: 16),
                         AppText(
-                          'Pilih transaksi untuk di-copy',
+                          LocaleKeys.transactionBulkCopySelectToCopy.tr(),
                           style: AppTextStyle.bodyLarge,
                           color: context.colorScheme.outline,
                         ),
@@ -459,12 +476,13 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        sourceTransaction.description ?? 'Tanpa deskripsi',
+                        sourceTransaction.description ??
+                            LocaleKeys.transactionBulkCopyNoDescription.tr(),
                         style: AppTextStyle.titleSmall,
                         fontWeight: FontWeight.bold,
                       ),
                       AppText(
-                        'Original: ${sourceTransaction.category.target?.name ?? '-'}',
+                        '${LocaleKeys.transactionBulkCopyOriginal.tr()}: ${sourceTransaction.category.target?.name ?? '-'}',
                         style: AppTextStyle.bodySmall,
                         color: context.colorScheme.outline,
                       ),
@@ -478,13 +496,13 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                     size: 20,
                     color: context.colorScheme.error,
                   ),
-                  tooltip: 'Hapus',
+                  tooltip: LocaleKeys.transactionBulkCopyRemove.tr(),
                 ),
               ],
             ),
             const SizedBox(height: 16),
-            const AppText(
-              'Tipe Transaksi',
+            AppText(
+              LocaleKeys.transactionBulkCopyTransactionType.tr(),
               style: AppTextStyle.labelMedium,
               fontWeight: FontWeight.bold,
             ),
@@ -504,15 +522,17 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
             AppTextField(
               key: Key('${uniqueFormKey}_amount'),
               name: 'amount',
-              label: 'Jumlah',
+              label: LocaleKeys.transactionBulkCopyAmountLabel.tr(),
               type: AppTextFieldType.currency,
               initialValue: formData.amount?.toStringAsFixed(decimalDigits),
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Jumlah harus diisi';
+                  return LocaleKeys.transactionBulkCopyAmountRequired.tr();
                 }
                 final amount = double.tryParse(value.replaceAll('.', '')) ?? 0;
-                if (amount <= 0) return 'Jumlah harus lebih dari 0';
+                if (amount <= 0)
+                  return LocaleKeys.transactionBulkCopyAmountMustBePositive
+                      .tr();
                 return null;
               },
             ),
@@ -523,8 +543,8 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                   child: AppSearchableDropdown<Asset>(
                     key: Key('${uniqueFormKey}_asset'),
                     name: 'assetUlid',
-                    label: 'Aset',
-                    hintText: 'Pilih aset',
+                    label: LocaleKeys.transactionBulkCopyAssetLabel.tr(),
+                    hintText: LocaleKeys.transactionBulkCopyAssetHint.tr(),
                     prefixIcon: const Icon(Icons.account_balance_wallet),
                     items: _assets,
                     isLoading: _isSearchingAssets,
@@ -543,8 +563,9 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                       formData.assetUlid = asset?.ulid;
                       formData.assetName = asset?.name;
                     },
-                    validator: (value) =>
-                        value == null ? 'Aset harus dipilih' : null,
+                    validator: (value) => value == null
+                        ? LocaleKeys.transactionBulkCopyAssetRequired.tr()
+                        : null,
                   ),
                 ),
               ],
@@ -556,8 +577,8 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                   child: AppSearchableDropdown<Category>(
                     key: Key('${uniqueFormKey}_category'),
                     name: 'categoryUlid',
-                    label: 'Kategori',
-                    hintText: 'Pilih kategori',
+                    label: LocaleKeys.transactionBulkCopyCategoryLabel.tr(),
+                    hintText: LocaleKeys.transactionBulkCopyCategoryHint.tr(),
                     prefixIcon: const Icon(Icons.category_outlined),
                     items: _categories,
                     isLoading: _isSearchingCategories,
@@ -567,8 +588,8 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                     itemValueMapper: (category) => category.ulid,
                     itemSubtitleMapper: (category) =>
                         category.parent.target != null
-                        ? '↳ Sub dari: ${category.parent.target!.name}'
-                        : 'Kategori Utama',
+                        ? '↳ ${LocaleKeys.transactionBulkCopySubCategoryOf.tr(namedArgs: {'name': category.parent.target!.name})}'
+                        : LocaleKeys.transactionBulkCopyMainCategory.tr(),
                     itemLeadingMapper: (category) => Icon(
                       category.parent.target != null
                           ? Icons.subdirectory_arrow_right
@@ -590,7 +611,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
             AppDateTimePicker(
               key: Key('${uniqueFormKey}_date'),
               name: 'transactionDate',
-              label: 'Tanggal',
+              label: LocaleKeys.transactionBulkCopyDateLabel.tr(),
               prefixIcon: const Icon(Icons.calendar_today_outlined),
               initialValue: formData.transactionDate ?? DateTime.now(),
               firstDate: DateTime(2000),
@@ -600,10 +621,11 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
             AppTextField(
               key: Key('${uniqueFormKey}_description'),
               name: 'description',
-              label: 'Deskripsi',
+              label: LocaleKeys.transactionBulkCopyDescriptionLabel.tr(),
               prefixIcon: const Icon(Icons.notes_outlined),
               initialValue: formData.description,
-              placeHolder: 'Tambahkan catatan (opsional)',
+              placeHolder: LocaleKeys.transactionBulkCopyDescriptionPlaceholder
+                  .tr(),
             ),
           ],
         ),
@@ -632,7 +654,7 @@ class _TypeToggle extends StatelessWidget {
         children: [
           Expanded(
             child: _TypeButton(
-              label: 'Pengeluaran',
+              label: LocaleKeys.transactionBulkCopyTypeExpense.tr(),
               icon: Icons.arrow_downward,
               isSelected: selectedType == CategoryType.expense,
               color: context.semantic.error,
@@ -641,7 +663,7 @@ class _TypeToggle extends StatelessWidget {
           ),
           Expanded(
             child: _TypeButton(
-              label: 'Pemasukan',
+              label: LocaleKeys.transactionBulkCopyTypeIncome.tr(),
               icon: Icons.arrow_upward,
               isSelected: selectedType == CategoryType.income,
               color: context.semantic.success,

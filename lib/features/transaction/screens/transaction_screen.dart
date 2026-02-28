@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -85,10 +87,10 @@ class _TransactionScreenState extends State<TransactionScreen>
               preferredSize: const Size.fromHeight(48),
               child: TabBar(
                 controller: _tabController,
-                tabs: const [
-                  Tab(text: 'Harian'),
-                  Tab(text: 'Bulanan'),
-                  Tab(text: 'Kalender'),
+                tabs: [
+                  Tab(text: LocaleKeys.transactionScreenTabDaily.tr()),
+                  Tab(text: LocaleKeys.transactionScreenTabMonthly.tr()),
+                  Tab(text: LocaleKeys.transactionScreenTabCalendar.tr()),
                 ],
               ),
             ),
@@ -237,7 +239,8 @@ class _TransactionScreenState extends State<TransactionScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              state.errorMessage ?? 'Terjadi kesalahan',
+              state.errorMessage ??
+                  LocaleKeys.transactionScreenErrorOccurred.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.error,
             ),

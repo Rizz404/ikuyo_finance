@@ -1,5 +1,14 @@
 {
   "asset": {
+    "validator": {
+      "nameRequired": "Asset name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must be at most 50 characters",
+      "typeRequired": "Asset type is required",
+      "balanceInvalid": "Balance is not valid",
+      "balanceNegative": "Balance cannot be negative",
+      "ulidRequired": "ULID is required"
+    },
     "screen": {
       "title": "Assets",
       "tabList": "List",

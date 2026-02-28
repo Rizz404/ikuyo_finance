@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -19,8 +21,8 @@ class SettingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const AppText(
-          'Pengaturan',
+        title: AppText(
+          LocaleKeys.otherSettingTitle.tr(),
           style: AppTextStyle.titleLarge,
           fontWeight: FontWeight.bold,
         ),
@@ -33,7 +35,7 @@ class SettingScreen extends StatelessWidget {
             children: [
               // * Tampilan Settings Group
               SettingGroup(
-                title: 'TAMPILAN',
+                title: LocaleKeys.otherSettingAppearance.tr(),
                 children: [
                   BlocBuilder<ThemeCubit, ThemeState>(
                     builder: (context, state) {
@@ -51,7 +53,7 @@ class SettingScreen extends StatelessWidget {
 
               // * Mata Uang Settings Group
               SettingGroup(
-                title: 'MATA UANG',
+                title: LocaleKeys.otherSettingCurrency.tr(),
                 children: [
                   BlocBuilder<CurrencyCubit, CurrencyState>(
                     builder: (context, state) {
@@ -99,7 +101,7 @@ class SettingScreen extends StatelessWidget {
 
       ToastHelper.instance.showSuccess(
         context: context,
-        title: 'Mata uang berhasil diubah',
+        title: LocaleKeys.otherSettingCurrencyChangeSuccess.tr(),
       );
     }
   }

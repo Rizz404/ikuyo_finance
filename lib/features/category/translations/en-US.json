@@ -1,5 +1,12 @@
 {
   "category": {
+    "validator": {
+      "nameRequired": "Category name is required",
+      "nameMinLength": "Name must be at least 2 characters",
+      "nameMaxLength": "Name must be at most 50 characters",
+      "typeRequired": "Category type is required",
+      "ulidRequired": "ULID is required"
+    },
     "screen": {
       "title": "Category",
       "tabAll": "All",

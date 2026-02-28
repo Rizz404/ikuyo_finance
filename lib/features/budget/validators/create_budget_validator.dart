@@ -1,30 +1,33 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+
 class CreateBudgetValidator {
   const CreateBudgetValidator._();
 
   static String? categoryUlid(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Kategori wajib dipilih';
+      return LocaleKeys.budgetValidatorCategoryRequired.tr();
     }
     return null;
   }
 
   static String? amountLimit(String? value) {
     if (value == null || value.isEmpty) {
-      return 'Batas anggaran wajib diisi';
+      return LocaleKeys.budgetValidatorAmountLimitRequired.tr();
     }
     final parsed = double.tryParse(value.replaceAll(',', '.'));
     if (parsed == null) {
-      return 'Batas anggaran tidak valid';
+      return LocaleKeys.budgetValidatorAmountLimitInvalid.tr();
     }
     if (parsed <= 0) {
-      return 'Batas anggaran harus lebih dari 0';
+      return LocaleKeys.budgetValidatorAmountLimitPositive.tr();
     }
     return null;
   }
 
   static String? period(dynamic value) {
     if (value == null) {
-      return 'Periode wajib dipilih';
+      return LocaleKeys.budgetValidatorPeriodRequired.tr();
     }
     return null;
   }

@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -57,8 +59,8 @@ class _CategoryScreenState extends State<CategoryScreen>
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
-            title: const AppText(
-              'Kategori',
+            title: AppText(
+              LocaleKeys.categoryScreenTitle.tr(),
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
@@ -77,10 +79,10 @@ class _CategoryScreenState extends State<CategoryScreen>
             ],
             bottom: TabBar(
               controller: _tabController,
-              tabs: const [
-                Tab(text: 'Semua'),
-                Tab(text: 'Pengeluaran'),
-                Tab(text: 'Pemasukan'),
+              tabs: [
+                Tab(text: LocaleKeys.categoryScreenTabAll.tr()),
+                Tab(text: LocaleKeys.categoryScreenTabExpense.tr()),
+                Tab(text: LocaleKeys.categoryScreenTabIncome.tr()),
               ],
             ),
           ),
@@ -114,7 +116,7 @@ class _CategoryScreenState extends State<CategoryScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              state.errorMessage ?? 'Terjadi kesalahan',
+              state.errorMessage ?? LocaleKeys.categoryScreenErrorOccurred.tr(),
               style: AppTextStyle.bodyMedium,
               color: context.colorScheme.error,
             ),
@@ -136,13 +138,13 @@ class _CategoryScreenState extends State<CategoryScreen>
             ),
             const SizedBox(height: 16),
             AppText(
-              'Belum ada kategori',
+              LocaleKeys.categoryScreenEmptyTitle.tr(),
               style: AppTextStyle.bodyLarge,
               color: context.colorScheme.outline,
             ),
             const SizedBox(height: 8),
             AppText(
-              'Tekan + untuk menambah kategori baru',
+              LocaleKeys.categoryScreenEmptySubtitle.tr(),
               style: AppTextStyle.bodySmall,
               color: context.colorScheme.outline,
             ),
