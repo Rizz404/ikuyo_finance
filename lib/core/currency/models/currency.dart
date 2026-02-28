@@ -10,6 +10,8 @@ class Currency extends Equatable {
   final String name;
   final double rateToUsd; // * How many of this currency = 1 USD
   final int decimalDigits;
+  final String thousandSeparator;
+  final String decimalSeparator;
 
   const Currency({
     required this.code,
@@ -17,13 +19,34 @@ class Currency extends Equatable {
     required this.name,
     required this.rateToUsd,
     this.decimalDigits = 2,
+    this.thousandSeparator = ',',
+    this.decimalSeparator = '.',
   });
 
+  /// Create a copy with updated rate
+  Currency copyWithRate(double newRate) => Currency(
+    code: code,
+    symbol: symbol,
+    name: name,
+    rateToUsd: newRate,
+    decimalDigits: decimalDigits,
+    thousandSeparator: thousandSeparator,
+    decimalSeparator: decimalSeparator,
+  );
+
   @override
-  List<Object?> get props => [code, symbol, name, rateToUsd, decimalDigits];
+  List<Object?> get props => [
+    code,
+    symbol,
+    name,
+    rateToUsd,
+    decimalDigits,
+    thousandSeparator,
+    decimalSeparator,
+  ];
 
   /// All supported currencies with default exchange rates
-  /// ! Exchange rates are static defaults, can be updated dynamically via API
+  /// ! Exchange rates are static defaults, updated dynamically via ExchangeRateService
   static const Map<CurrencyCode, Currency> currencies = {
     CurrencyCode.usd: Currency(
       code: CurrencyCode.usd,
@@ -35,64 +58,81 @@ class Currency extends Equatable {
       code: CurrencyCode.idr,
       symbol: 'Rp',
       name: 'IDR',
-      rateToUsd: 16000.0, // * ~16k IDR = 1 USD
+      rateToUsd: 16800.0,
       decimalDigits: 0,
+      thousandSeparator: '.',
+      decimalSeparator: ',',
     ),
     CurrencyCode.eur: Currency(
       code: CurrencyCode.eur,
       symbol: '€',
       name: 'EUR',
-      rateToUsd: 0.92,
+      rateToUsd: 0.85,
+      thousandSeparator: '.',
+      decimalSeparator: ',',
     ),
     CurrencyCode.gbp: Currency(
       code: CurrencyCode.gbp,
       symbol: '£',
       name: 'GBP',
-      rateToUsd: 0.79,
+      rateToUsd: 0.74,
     ),
     CurrencyCode.jpy: Currency(
       code: CurrencyCode.jpy,
       symbol: '¥',
       name: 'JPY',
-      rateToUsd: 149.0,
+      rateToUsd: 156.0,
       decimalDigits: 0,
     ),
     CurrencyCode.sgd: Currency(
       code: CurrencyCode.sgd,
       symbol: 'S\$',
       name: 'SGD',
-      rateToUsd: 1.34,
+      rateToUsd: 1.26,
     ),
     CurrencyCode.myr: Currency(
       code: CurrencyCode.myr,
       symbol: 'RM',
       name: 'MYR',
-      rateToUsd: 4.47,
+      rateToUsd: 3.89,
     ),
     CurrencyCode.aud: Currency(
       code: CurrencyCode.aud,
       symbol: 'A\$',
       name: 'AUD',
-      rateToUsd: 1.54,
+      rateToUsd: 1.41,
     ),
     CurrencyCode.cny: Currency(
       code: CurrencyCode.cny,
       symbol: '¥',
       name: 'CNY',
-      rateToUsd: 7.24,
+      rateToUsd: 6.87,
     ),
     CurrencyCode.krw: Currency(
       code: CurrencyCode.krw,
       symbol: '₩',
       name: 'KRW',
-      rateToUsd: 1320.0,
+      rateToUsd: 1440.0,
       decimalDigits: 0,
     ),
   };
 
-  /// Get currency by code
+  /// Get currency by code (uses live rates if available)
   static Currency getByCode(CurrencyCode code) =>
-      currencies[code] ?? currencies[CurrencyCode.usd]!;
+      _liveRates[code] ?? currencies[code] ?? currencies[CurrencyCode.usd]!;
+
+  /// Live rates storage (updated by ExchangeRateService)
+  static final Map<CurrencyCode, Currency> _liveRates = {};
+
+  /// Update live rates from API data
+  static void updateRates(Map<CurrencyCode, double> rates) {
+    for (final entry in rates.entries) {
+      final base = currencies[entry.key];
+      if (base != null) {
+        _liveRates[entry.key] = base.copyWithRate(entry.value);
+      }
+    }
+  }
 
   /// Get currency by name string
   static Currency? getByName(String name) {
@@ -100,7 +140,7 @@ class Currency extends Equatable {
       final code = CurrencyCode.values.firstWhere(
         (c) => c.name.toLowerCase() == name.toLowerCase(),
       );
-      return currencies[code];
+      return getByCode(code);
     } catch (_) {
       return null;
     }

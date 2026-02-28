@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 
 enum AppTextFieldType {
@@ -127,7 +130,21 @@ class _AppTextFieldState extends State<AppTextField> {
         case AppTextFieldType.number:
           return [FilteringTextInputFormatter.digitsOnly];
         case AppTextFieldType.currency:
-          return [FilteringTextInputFormatter.digitsOnly, _IDRPriceFormatter()];
+          final currency = context.read<CurrencyCubit>().state.currency;
+          if (currency.decimalDigits > 0) {
+            return [
+              FilteringTextInputFormatter.allow(
+                RegExp(
+                  r'[0-9' + _escapeRegex(currency.decimalSeparator) + r']',
+                ),
+              ),
+              _CurrencyFormatter(currency),
+            ];
+          }
+          return [
+            FilteringTextInputFormatter.digitsOnly,
+            _CurrencyFormatter(currency),
+          ];
         case AppTextFieldType.phone:
           return [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\s\(\)]'))];
         default:
@@ -141,7 +158,8 @@ class _AppTextFieldState extends State<AppTextField> {
 
       switch (widget.type) {
         case AppTextFieldType.currency:
-          return 'Rp';
+          final currency = context.read<CurrencyCubit>().state.currency;
+          return currency.symbol;
         default:
           return null;
       }
@@ -151,8 +169,10 @@ class _AppTextFieldState extends State<AppTextField> {
     String? formattedInitialValue = widget.initialValue;
     if (widget.type == AppTextFieldType.currency &&
         widget.initialValue != null) {
-      formattedInitialValue = _IDRPriceFormatter.formatPrice(
+      final currency = context.read<CurrencyCubit>().state.currency;
+      formattedInitialValue = _CurrencyFormatter.formatValue(
         widget.initialValue!,
+        currency,
       );
     }
 
@@ -220,17 +240,26 @@ class _AppTextFieldState extends State<AppTextField> {
   }
 }
 
-// Custom formatter untuk harga IDR (format: 1.000.000)
-class _IDRPriceFormatter extends TextInputFormatter {
-  // * Static method untuk format initial value
-  static String formatPrice(String value) {
+// * Escape special regex characters in separator string
+String _escapeRegex(String s) =>
+    s.replaceAllMapped(RegExp(r'[.*+?^${}()|[\]\\]'), (m) => '\\${m[0]}');
+
+/// Dynamic currency formatter based on Currency model
+/// Supports different thousand/decimal separators per currency
+class _CurrencyFormatter extends TextInputFormatter {
+  final Currency currency;
+
+  const _CurrencyFormatter(this.currency);
+
+  /// Static method to format initial value
+  static String formatValue(String value, Currency currency) {
     if (value.isEmpty) return value;
 
-    // * Remove semua non-digit characters (termasuk titik dan decimal point)
-    final digitsOnly = value.replaceAll(RegExp(r'[^\d]'), '');
-    if (digitsOnly.isEmpty) return '';
+    // * Remove all non-digit & non-decimal-separator characters
+    final cleanDigits = value.replaceAll(RegExp(r'[^\d]'), '');
+    if (cleanDigits.isEmpty) return '';
 
-    return _addDots(digitsOnly);
+    return _addThousandSeparator(cleanDigits, currency.thousandSeparator);
   }
 
   @override
@@ -238,39 +267,77 @@ class _IDRPriceFormatter extends TextInputFormatter {
     TextEditingValue oldValue,
     TextEditingValue newValue,
   ) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
+    if (newValue.text.isEmpty) return newValue;
 
-    // * Fix cursor jumping issue
-    // 1. Hitung jumlah digit di sebelah kiri cursor pada newValue
+    final separator = currency.thousandSeparator;
+    final decSep = currency.decimalSeparator;
+    final hasDecimals = currency.decimalDigits > 0;
+
     String newText = newValue.text;
     int cursorIndex = newValue.selection.end;
 
+    // * Count digits (and decimal separator) before cursor
     int digitsBeforeCursor = 0;
+    bool passedDecimal = false;
     for (int i = 0; i < cursorIndex && i < newText.length; i++) {
       if (RegExp(r'\d').hasMatch(newText[i])) {
         digitsBeforeCursor++;
+      } else if (hasDecimals && newText[i] == decSep && !passedDecimal) {
+        passedDecimal = true;
+        digitsBeforeCursor++; // * Count decimal separator as a position marker
       }
     }
 
-    // 2. Format ulang text (hanya digit)
-    String digitsOnly = newText.replaceAll(RegExp(r'[^\d]'), '');
-    String formatted = _addDots(digitsOnly);
+    // * Extract only digits and (optionally) one decimal separator
+    String cleaned;
+    if (hasDecimals) {
+      // * Allow one decimal separator
+      final parts = newText.split(decSep);
+      final intPart = parts[0].replaceAll(RegExp(r'[^\d]'), '');
+      if (parts.length > 1) {
+        final decPart = parts
+            .sublist(1)
+            .join()
+            .replaceAll(RegExp(r'[^\d]'), '');
+        final trimmedDec = decPart.length > currency.decimalDigits
+            ? decPart.substring(0, currency.decimalDigits)
+            : decPart;
+        cleaned = intPart.isEmpty ? '0' : intPart;
+        final formatted = _addThousandSeparator(cleaned, separator);
+        final result = '$formatted$decSep$trimmedDec';
 
-    // 3. Cari posisi cursor baru di string formatted
-    int newCursorIndex = 0;
-    int digitsEncountered = 0;
-
-    for (int i = 0; i < formatted.length; i++) {
-      if (digitsEncountered == digitsBeforeCursor) {
-        break;
+        // * Recalculate cursor
+        int newCursorIndex = _recalculateCursor(
+          result,
+          digitsBeforeCursor,
+          separator,
+          decSep,
+        );
+        return TextEditingValue(
+          text: result,
+          selection: TextSelection.collapsed(offset: newCursorIndex),
+        );
       }
-      if (RegExp(r'\d').hasMatch(formatted[i])) {
-        digitsEncountered++;
-      }
-      newCursorIndex++;
+      cleaned = intPart;
+    } else {
+      cleaned = newText.replaceAll(RegExp(r'[^\d]'), '');
     }
+
+    if (cleaned.isEmpty) {
+      return const TextEditingValue(
+        text: '',
+        selection: TextSelection.collapsed(offset: 0),
+      );
+    }
+
+    final formatted = _addThousandSeparator(cleaned, separator);
+
+    int newCursorIndex = _recalculateCursor(
+      formatted,
+      digitsBeforeCursor,
+      separator,
+      decSep,
+    );
 
     return TextEditingValue(
       text: formatted,
@@ -278,7 +345,27 @@ class _IDRPriceFormatter extends TextInputFormatter {
     );
   }
 
-  static String _addDots(String value) {
+  /// Recalculate cursor position in formatted string
+  static int _recalculateCursor(
+    String formatted,
+    int targetDigits,
+    String separator,
+    String decSep,
+  ) {
+    int cursor = 0;
+    int encountered = 0;
+    for (int i = 0; i < formatted.length; i++) {
+      if (encountered == targetDigits) break;
+      if (RegExp(r'\d').hasMatch(formatted[i]) || formatted[i] == decSep) {
+        encountered++;
+      }
+      cursor++;
+    }
+    return cursor;
+  }
+
+  /// Add thousand separators to a digit-only string
+  static String _addThousandSeparator(String value, String separator) {
     if (value.length <= 3) return value;
 
     String result = '';
@@ -286,7 +373,7 @@ class _IDRPriceFormatter extends TextInputFormatter {
 
     for (int i = value.length - 1; i >= 0; i--) {
       if (count > 0 && count % 3 == 0) {
-        result = '.$result';
+        result = '$separator$result';
       }
       result = value[i] + result;
       count++;

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ikuyo_finance/core/currency/models/currency.dart';
 import 'package:ikuyo_finance/core/currency/service/currency_migration_service.dart';
+import 'package:ikuyo_finance/core/currency/service/exchange_rate_service.dart';
 import 'package:ikuyo_finance/core/currency/utils/currency_converter.dart';
 import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
@@ -13,10 +14,13 @@ part 'currency_state.dart';
 class CurrencyCubit extends Cubit<CurrencyState> {
   final SharedPreferences _prefs;
   final CurrencyMigrationService _migrationService;
+  final ExchangeRateService _exchangeRateService;
 
-  CurrencyCubit(this._prefs, this._migrationService)
+  CurrencyCubit(this._prefs, this._migrationService, this._exchangeRateService)
     : super(CurrencyState(currentCurrency: _loadCurrency(_prefs))) {
     this.logInfo('CurrencyCubit initialized with ${state.currentCurrency}');
+    // * Fetch live exchange rates on init
+    refreshExchangeRates();
   }
 
   static CurrencyCode _loadCurrency(SharedPreferences prefs) {
@@ -100,4 +104,20 @@ class CurrencyCubit extends Cubit<CurrencyState> {
 
   /// Get all available currencies
   List<Currency> get availableCurrencies => Currency.currencies.values.toList();
+
+  /// Fetch live exchange rates from API and update Currency model
+  Future<void> refreshExchangeRates() async {
+    try {
+      emit(state.copyWith(isLoadingRates: true));
+      final rates = await _exchangeRateService.fetchRates();
+      Currency.updateRates(rates);
+      emit(
+        state.copyWith(isLoadingRates: false, ratesLastUpdated: DateTime.now()),
+      );
+      this.logInfo('Exchange rates refreshed successfully');
+    } catch (e, s) {
+      this.logError('Failed to refresh exchange rates', e, s);
+      emit(state.copyWith(isLoadingRates: false));
+    }
+  }
 }

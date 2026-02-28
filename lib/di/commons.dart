@@ -3,6 +3,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/currency/service/currency_migration_service.dart';
+import 'package:ikuyo_finance/core/currency/service/exchange_rate_service.dart';
 import 'package:ikuyo_finance/core/locale/cubit/locale_cubit.dart';
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/database_seeder.dart';
@@ -117,8 +118,10 @@ Future<void> setupCurrency() async {
   final prefs = getIt<SharedPreferences>();
   final objectBox = await getIt.getAsync<ObjectBoxStorage>();
   final migrationService = CurrencyMigrationService(objectBox);
+  final exchangeRateService = ExchangeRateService(prefs);
   getIt.registerSingleton<CurrencyMigrationService>(migrationService);
+  getIt.registerSingleton<ExchangeRateService>(exchangeRateService);
   getIt.registerLazySingleton<CurrencyCubit>(
-    () => CurrencyCubit(prefs, migrationService),
+    () => CurrencyCubit(prefs, migrationService, exchangeRateService),
   );
 }
