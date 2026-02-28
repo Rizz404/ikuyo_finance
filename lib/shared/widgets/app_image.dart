@@ -14,7 +14,7 @@ enum ImageSize {
   xLarge(64),
   xxLarge(96),
   xxxLarge(128),
-  fullWidth(250);
+  fullWidth(250); // Ini default height kalau pakai enum fullWidth
 
   const ImageSize(this.value);
   final double value;
@@ -26,9 +26,11 @@ class AppImage extends StatelessWidget {
   final ImageSize size;
   final String? imageUrl;
   final String? assetPath;
+  final File? imageFile;
   final Widget? placeholder;
   final Widget? errorWidget;
   final VoidCallback? onTap;
+  final bool enablePreview;
   final bool showBorder;
   final Color? borderColor;
   final double? borderWidth;
@@ -36,20 +38,28 @@ class AppImage extends StatelessWidget {
   final BoxFit fit;
   final Color? backgroundColor;
 
+  // NEW: Custom overrides biar fleksibel!
+  final double? width;
+  final double? height;
+
   const AppImage({
     super.key,
     this.size = ImageSize.medium,
     this.imageUrl,
     this.assetPath,
+    this.imageFile,
     this.placeholder,
     this.errorWidget,
     this.onTap,
+    this.enablePreview = false,
     this.showBorder = false,
     this.borderColor,
     this.borderWidth,
     this.shape = ImageShape.rectangle,
     this.fit = BoxFit.cover,
     this.backgroundColor,
+    this.width, // Tambahkan ini
+    this.height, // Tambahkan ini
   });
 
   bool get _isNetworkImage =>
@@ -59,14 +69,17 @@ class AppImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.theme;
 
-    final isFullWidth = size == ImageSize.fullWidth;
+    // Logic: Kalau width/height di-isi manual, pakai itu.
+    // Kalau null, baru fallback ke logic Enum.
+    final isFullWidthEnum = size == ImageSize.fullWidth;
 
-    final effectiveWidth = isFullWidth ? null : size.value;
-    final effectiveHeight = size.value;
+    final effectiveWidth =
+        width ?? (isFullWidthEnum ? double.infinity : size.value);
+    final effectiveHeight = height ?? size.value;
 
     final borderRadius = shape == ImageShape.circle
-        ? BorderRadius.circular((effectiveWidth ?? size.value) / 2)
-        : BorderRadius.circular(8);
+        ? BorderRadius.circular(effectiveWidth / 2)
+        : BorderRadius.circular(12);
 
     final effectiveBorderColor = borderColor ?? theme.colorScheme.outline;
     final effectiveBorderWidth = borderWidth ?? 1.0;
@@ -91,7 +104,7 @@ class AppImage extends StatelessWidget {
             errorWidget ??
             Icon(
               Icons.broken_image,
-              size: (effectiveWidth ?? size.value) * 0.5,
+              size: effectiveWidth * 0.5,
               color: theme.colorScheme.error,
             ),
       );
@@ -105,7 +118,21 @@ class AppImage extends StatelessWidget {
             errorWidget ??
             Icon(
               Icons.broken_image,
-              size: (effectiveWidth ?? size.value) * 0.5,
+              size: effectiveWidth * 0.5,
+              color: theme.colorScheme.error,
+            ),
+      );
+    } else if (imageFile != null) {
+      imageWidget = Image.file(
+        imageFile!,
+        width: effectiveWidth,
+        height: effectiveHeight,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) =>
+            errorWidget ??
+            Icon(
+              Icons.broken_image,
+              size: effectiveWidth * 0.5,
               color: theme.colorScheme.error,
             ),
       );
@@ -119,14 +146,18 @@ class AppImage extends StatelessWidget {
           );
     }
 
-    final containerWidth = isFullWidth
+    // Container wrapper
+    // Hati-hati: kalau width infinity, jangan ditambah margin border nanti error overflow
+    final containerWidth = effectiveWidth == double.infinity
         ? double.infinity
-        : size.value + (showBorder ? effectiveBorderWidth * 2 : 0);
+        : effectiveWidth + (showBorder ? effectiveBorderWidth * 2 : 0);
+
     final containerHeight =
-        size.value + (showBorder ? effectiveBorderWidth * 2 : 0);
+        effectiveHeight + (showBorder ? effectiveBorderWidth * 2 : 0);
 
     final container = Container(
       width: containerWidth,
+      // Kalau height null (misal auto), biarkan null. Kalau ada nilainya, pakai containerHeight.
       height: containerHeight,
       decoration: BoxDecoration(
         borderRadius: borderRadius,
@@ -140,9 +171,79 @@ class AppImage extends StatelessWidget {
       child: ClipRRect(borderRadius: borderRadius, child: imageWidget),
     );
 
-    if (onTap != null) {
+    void handleTap() {
+      if (onTap != null) {
+        onTap!();
+      } else if (enablePreview) {
+        Widget? previewImage;
+        if (_isNetworkImage) {
+          previewImage = CachedNetworkImage(
+            imageUrl: imageUrl!,
+            fit: BoxFit.contain,
+            placeholder: (context, url) => const Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
+            errorWidget: (context, url, error) =>
+                const Icon(Icons.broken_image, color: Colors.white, size: 48),
+          );
+        } else if (assetPath != null) {
+          previewImage = Image.asset(assetPath!, fit: BoxFit.contain);
+        } else if (imageFile != null) {
+          previewImage = Image.file(imageFile!, fit: BoxFit.contain);
+        }
+
+        if (previewImage != null) {
+          showDialog(
+            context: context,
+            builder: (context) => Dialog(
+              backgroundColor: Colors.transparent,
+              insetPadding: EdgeInsets.zero,
+              child: Stack(
+                fit: StackFit.loose,
+                alignment: Alignment.center,
+                children: [
+                  InteractiveViewer(
+                    panEnabled: true,
+                    minScale: 1.0,
+                    maxScale: 4.0,
+                    child: GestureDetector(
+                      onTap: () => Navigator.of(context).pop(),
+                      child: Container(
+                        width: double.infinity,
+                        height: double.infinity,
+                        color: Colors.black.withValues(alpha: 0.8),
+                        child: previewImage,
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    top: 16,
+                    right: 16,
+                    child: SafeArea(
+                      child: IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(
+                          Icons.close,
+                          color: Colors.white,
+                          size: 32,
+                        ),
+                        style: IconButton.styleFrom(
+                          backgroundColor: Colors.black.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    if (onTap != null || enablePreview) {
       return InkWell(
-        onTap: onTap,
+        onTap: handleTap,
         borderRadius: borderRadius,
         child: container,
       );

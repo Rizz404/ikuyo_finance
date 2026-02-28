@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -14,8 +13,6 @@ import 'package:ikuyo_finance/features/transaction/models/create_transaction_par
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
-import 'package:ikuyo_finance/features/transaction/validators/create_transaction_validator.dart';
-import 'package:ikuyo_finance/features/transaction/validators/update_transaction_validator.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_date_time_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_searchable_dropdown.dart';
@@ -38,12 +35,6 @@ class TransactionUpsertScreen extends StatefulWidget {
 class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   CategoryType _selectedType = CategoryType.expense;
-
-  // * State untuk copy transaction
-  String? _copiedAssetUlid;
-  String? _copiedAssetName;
-  String? _copiedCategoryUlid;
-  String? _copiedCategoryName;
 
   @override
   void initState() {
@@ -85,12 +76,13 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
 
   // * Search categories using bloc method (filtered by type)
   Future<List<AppSearchableDropdownItem<String>>> _searchCategories(
-    String query,
-  ) async {
+    String query, [
+    CategoryType? type,
+  ]) async {
     final bloc = context.read<CategoryBloc>();
     final categories = await bloc.searchCategoriesForDropdown(
       query: query.isEmpty ? null : query,
-      type: _selectedType,
+      type: type ?? _selectedType,
     );
 
     if (!mounted) return [];
@@ -113,75 +105,6 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
           ),
         )
         .toList();
-  }
-
-  // * Search transactions for copy feature
-  Future<List<AppSearchableDropdownItem<Transaction>>> _searchTransactions(
-    String query,
-  ) async {
-    final bloc = context.read<TransactionBloc>();
-    final transactions = await bloc.searchTransactionsForDropdown(
-      query: query.isEmpty ? null : query,
-    );
-
-    if (!mounted) return [];
-
-    return transactions
-        .map(
-          (trx) => AppSearchableDropdownItem(
-            value: trx,
-            label: trx.description ?? 'Tanpa deskripsi',
-            subtitle:
-                '${trx.category.target?.name ?? 'Tanpa kategori'} • ${trx.asset.target?.name ?? '-'}',
-            leading: Icon(
-              trx.category.target?.categoryType == CategoryType.expense
-                  ? Icons.arrow_downward
-                  : Icons.arrow_upward,
-              size: 24,
-              color: trx.category.target?.categoryType == CategoryType.expense
-                  ? context.semantic.error
-                  : context.semantic.success,
-            ),
-          ),
-        )
-        .toList();
-  }
-
-  // * Handle copy transaction selection
-  void _onCopyTransaction(Transaction? transaction) {
-    if (transaction == null) return;
-
-    final category = transaction.category.target;
-    final asset = transaction.asset.target;
-
-    setState(() {
-      // * Update category type based on copied transaction
-      if (category != null) {
-        _selectedType = category.categoryType;
-        _copiedCategoryUlid = category.ulid;
-        _copiedCategoryName = category.name;
-      }
-
-      // * Store asset info for rebuilding dropdown
-      if (asset != null) {
-        _copiedAssetUlid = asset.ulid;
-        _copiedAssetName = asset.name;
-      }
-    });
-
-    // * Update form fields
-    final formState = _formKey.currentState;
-    if (formState != null) {
-      // * Set amount
-      formState.fields['amount']?.didChange(
-        transaction.amount.toStringAsFixed(
-          context.read<CurrencyCubit>().state.currency.decimalDigits,
-        ),
-      );
-
-      // * Set description
-      formState.fields['description']?.didChange(transaction.description);
-    }
   }
 
   void _handleWriteStatus(BuildContext context, TransactionState state) {
@@ -316,213 +239,179 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
             onPressed: () => context.pop(),
           ),
         ),
-        body: ScreenWrapper(
-          child: FormBuilder(
-            key: _formKey,
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // * Copy Transaction Dropdown (only for create mode)
-                  if (!widget.isEdit) ...[
-                    AppSearchableDropdown<Transaction>(
-                      name: 'copyTransaction',
-                      label: 'Copy dari Transaksi',
-                      hintText: 'Pilih transaksi untuk dicopy',
-                      searchHintText: 'Cari transaksi...',
-                      prefixIcon: const Icon(Icons.copy_outlined),
-                      onSearch: _searchTransactions,
-                      onLoadInitial: () => _searchTransactions(''),
-                      onChanged: _onCopyTransaction,
-                      emptyMessage: 'Tidak ada transaksi ditemukan',
-                    ),
-                    const SizedBox(height: 24),
-                  ],
+        body: ScreenWrapper(child: _buildForm()),
+      ),
+    );
+  }
 
-                  // * Transaction Type Selector
-                  _TransactionTypeSelector(
-                    selectedType: _selectedType,
-                    onTypeChanged: (type) {
-                      setState(() => _selectedType = type);
-                      // * Reset category when type changes
-                      _formKey.currentState?.fields['categoryUlid']?.didChange(
-                        null,
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
-
-                  // * Amount Field - use currency type for proper formatting
-                  AppTextField(
-                    name: 'amount',
-                    label: 'Jumlah',
-                    type: AppTextFieldType.currency,
-                    initialValue: widget.transaction?.amount.toStringAsFixed(
-                      context
-                          .read<CurrencyCubit>()
-                          .state
-                          .currency
-                          .decimalDigits,
-                    ),
-                    validator: widget.isEdit
-                        ? UpdateTransactionValidator.amount
-                        : CreateTransactionValidator.amount,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // * Asset Searchable Dropdown
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: AppSearchableDropdown<String>(
-                          key: ValueKey('asset_${_copiedAssetUlid ?? ''}'),
-                          name: 'assetUlid',
-                          label: 'Asset',
-                          hintText: 'Pilih asset',
-                          searchHintText: 'Cari asset...',
-                          initialValue:
-                              _copiedAssetUlid ??
-                              widget.transaction?.asset.target?.ulid,
-                          initialDisplayText:
-                              _copiedAssetName ??
-                              widget.transaction?.asset.target?.name,
-                          prefixIcon: const Icon(
-                            Icons.account_balance_wallet_outlined,
-                          ),
-                          onSearch: _searchAssets,
-                          onLoadInitial: () => _searchAssets(''),
-                          validator: widget.isEdit
-                              ? UpdateTransactionValidator.assetUlid
-                              : CreateTransactionValidator.assetUlid,
-                          emptyMessage: 'Tidak ada asset ditemukan',
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton.filled(
-                        onPressed: () => context.pushToAddAsset(),
-                        icon: const Icon(Icons.add),
-                        tooltip: 'Tambah Asset',
-                        style: IconButton.styleFrom(
-                          backgroundColor: context.colorScheme.primary,
-                          foregroundColor: context.colorScheme.onPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // * Category Searchable Dropdown
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        child: AppSearchableDropdown<String>(
-                          key: ValueKey(
-                            '${_selectedType}_${_copiedCategoryUlid ?? ''}',
-                          ), // * Reset when type changes or copied
-                          name: 'categoryUlid',
-                          label: 'Kategori',
-                          hintText: 'Pilih kategori',
-                          searchHintText: 'Cari kategori...',
-                          initialValue:
-                              _copiedCategoryUlid ??
-                              widget.transaction?.category.target?.ulid,
-                          initialDisplayText:
-                              _copiedCategoryName ??
-                              widget.transaction?.category.target?.name,
-                          prefixIcon: const Icon(Icons.category_outlined),
-                          onSearch: _searchCategories,
-                          onLoadInitial: () => _searchCategories(''),
-                          emptyMessage: 'Tidak ada kategori ditemukan',
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      IconButton.filled(
-                        onPressed: () => context.pushToAddCategory(),
-                        icon: const Icon(Icons.add),
-                        tooltip: 'Tambah Kategori',
-                        style: IconButton.styleFrom(
-                          backgroundColor: _selectedType == CategoryType.expense
-                              ? context.semantic.error
-                              : context.semantic.success,
-                          foregroundColor: context.colorScheme.onPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-
-                  // * Date Time Picker
-                  AppDateTimePicker(
-                    name: 'transactionDate',
-                    label: 'Tanggal & Waktu',
-                    inputType: InputType.both,
-                    initialValue:
-                        widget.transaction?.transactionDate ?? DateTime.now(),
-                    firstDate: DateTime(2000),
-                    lastDate: DateTime.now().add(const Duration(days: 365)),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // * Description Field
-                  AppTextField(
-                    name: 'description',
-                    label: 'Deskripsi',
-                    type: AppTextFieldType.multiline,
-                    maxLines: 3,
-                    initialValue: widget.transaction?.description,
-                    placeHolder: 'Tambahkan catatan (opsional)',
-                  ),
-                  const SizedBox(height: 32),
-
-                  // * Submit Button
-                  BlocBuilder<TransactionBloc, TransactionState>(
-                    buildWhen: (prev, curr) =>
-                        prev.writeStatus != curr.writeStatus,
-                    builder: (context, state) {
-                      return AppButton(
-                        text: widget.isEdit
-                            ? 'Simpan Perubahan'
-                            : 'Tambah Transaksi',
-                        isLoading: state.isWriting,
-                        onPressed: state.isWriting ? null : _onSubmit,
-                        leadingIcon: Icon(
-                          widget.isEdit ? Icons.save_outlined : Icons.add,
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 16),
-
-                  // * Delete Button (only for edit mode)
-                  if (widget.isEdit) ...[
-                    BlocBuilder<TransactionBloc, TransactionState>(
-                      buildWhen: (prev, curr) =>
-                          prev.writeStatus != curr.writeStatus,
-                      builder: (context, state) {
-                        return AppButton(
-                          text: 'Hapus Transaksi',
-                          variant: AppButtonVariant.outlined,
-                          color: AppButtonColor.error,
-                          isLoading: state.isWriting,
-                          onPressed: state.isWriting ? null : _onDelete,
-                          leadingIcon: const Icon(Icons.delete_outline),
-                        );
-                      },
-                    ),
-                  ],
-                ],
-              ),
+  Widget _buildForm() {
+    return FormBuilder(
+      key: _formKey,
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _TransactionTypeSelector(
+              selectedType: _selectedType,
+              onTypeChanged: (type) {
+                setState(() => _selectedType = type);
+                // * Reset category when type changes
+                _formKey.currentState?.fields['categoryUlid']?.didChange(null);
+              },
             ),
-          ),
+            const SizedBox(height: 24),
+
+            // * Amount Field - use currency type for proper formatting
+            AppTextField(
+              name: 'amount',
+              label: 'Jumlah',
+              type: AppTextFieldType.currency,
+              initialValue: widget.transaction?.amount.toString(),
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return 'Jumlah harus diisi';
+                }
+                final amount = double.tryParse(value.replaceAll('.', '')) ?? 0;
+                if (amount <= 0) return 'Jumlah harus lebih dari 0';
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // * Asset Searchable Dropdown
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: AppSearchableDropdown<String>(
+                    name: 'assetUlid',
+                    label: 'Asset',
+                    hintText: 'Pilih asset',
+                    searchHintText: 'Cari asset...',
+                    initialValue: widget.transaction?.asset.target?.ulid,
+                    initialDisplayText: widget.transaction?.asset.target?.name,
+                    prefixIcon: const Icon(
+                      Icons.account_balance_wallet_outlined,
+                    ),
+                    onSearch: _searchAssets,
+                    onLoadInitial: () => _searchAssets(''),
+                    validator: (value) =>
+                        value == null ? 'Asset harus dipilih' : null,
+                    emptyMessage: 'Tidak ada asset ditemukan',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: () => context.pushToAddAsset(),
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Tambah Asset',
+                  style: IconButton.styleFrom(
+                    backgroundColor: context.colorScheme.primary,
+                    foregroundColor: context.colorScheme.onPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // * Category Searchable Dropdown
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: AppSearchableDropdown<String>(
+                    key: ValueKey(_selectedType),
+                    name: 'categoryUlid',
+                    label: 'Kategori',
+                    hintText: 'Pilih kategori',
+                    searchHintText: 'Cari kategori...',
+                    initialValue: widget.transaction?.category.target?.ulid,
+                    initialDisplayText:
+                        widget.transaction?.category.target?.name,
+                    prefixIcon: const Icon(Icons.category_outlined),
+                    onSearch: _searchCategories,
+                    onLoadInitial: () => _searchCategories(''),
+                    emptyMessage: 'Tidak ada kategori ditemukan',
+                  ),
+                ),
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: () => context.pushToAddCategory(),
+                  icon: const Icon(Icons.add),
+                  tooltip: 'Tambah Kategori',
+                  style: IconButton.styleFrom(
+                    backgroundColor: _selectedType == CategoryType.expense
+                        ? context.semantic.error
+                        : context.semantic.success,
+                    foregroundColor: context.colorScheme.onPrimary,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // * Date Time Picker
+            AppDateTimePicker(
+              name: 'transactionDate',
+              label: 'Tanggal & Waktu',
+              inputType: InputType.both,
+              initialValue:
+                  widget.transaction?.transactionDate ?? DateTime.now(),
+              firstDate: DateTime(2000),
+              lastDate: DateTime.now().add(const Duration(days: 365)),
+            ),
+            const SizedBox(height: 16),
+
+            // * Description Field
+            AppTextField(
+              name: 'description',
+              label: 'Deskripsi',
+              type: AppTextFieldType.multiline,
+              maxLines: 3,
+              initialValue: widget.transaction?.description,
+              placeHolder: 'Tambahkan catatan (opsional)',
+            ),
+            const SizedBox(height: 32),
+
+            // * Submit Button
+            BlocBuilder<TransactionBloc, TransactionState>(
+              buildWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
+              builder: (context, state) {
+                return AppButton(
+                  text: widget.isEdit ? 'Simpan Perubahan' : 'Tambah Transaksi',
+                  isLoading: state.isWriting,
+                  onPressed: state.isWriting ? null : _onSubmit,
+                  leadingIcon: Icon(
+                    widget.isEdit ? Icons.save_outlined : Icons.add,
+                  ),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+
+            // * Delete Button (only for edit mode)
+            if (widget.isEdit) ...[
+              BlocBuilder<TransactionBloc, TransactionState>(
+                buildWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
+                builder: (context, state) {
+                  return AppButton(
+                    text: 'Hapus Transaksi',
+                    variant: AppButtonVariant.outlined,
+                    color: AppButtonColor.error,
+                    isLoading: state.isWriting,
+                    onPressed: state.isWriting ? null : _onDelete,
+                    leadingIcon: const Icon(Icons.delete_outline),
+                  );
+                },
+              ),
+            ],
+          ],
         ),
       ),
     );
   }
 }
 
-// * Transaction Type Selector Widget
 class _TransactionTypeSelector extends StatelessWidget {
   final CategoryType selectedType;
   final ValueChanged<CategoryType> onTypeChanged;

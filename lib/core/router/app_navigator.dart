@@ -26,6 +26,8 @@ extension AppNavigator on BuildContext {
 
   // * Transaction Child Routes (push - add to stack)
   void pushToAddTransaction() => push('/${AppRoutes.transactionAddPath}');
+  void pushToBulkCopyTransaction() =>
+      push('/${AppRoutes.transactionBulkCopyPath}');
   void pushToEditTransaction(Transaction transaction) =>
       push('/${AppRoutes.transactionEditPath}', extra: transaction);
   void pushToSearchTransaction() => push('/${AppRoutes.transactionSearchPath}');

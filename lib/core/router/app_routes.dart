@@ -25,6 +25,9 @@ final class AppRoutes {
   static const String transactionAddName = 'transaction-add';
   static const String transactionAddPath = 'transaction/add';
 
+  static const String transactionBulkCopyName = 'transaction-bulk-copy';
+  static const String transactionBulkCopyPath = 'transaction/bulk-copy';
+
   static const String transactionEditName = 'transaction-edit';
   static const String transactionEditPath = 'transaction/edit';
 

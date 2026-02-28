@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 
 /// Example widget untuk switch theme
@@ -16,7 +18,9 @@ class ThemeToggleButton extends StatelessWidget {
         return IconButton(
           icon: Icon(cubit.isDarkMode ? Icons.light_mode : Icons.dark_mode),
           onPressed: () => cubit.toggleTheme(),
-          tooltip: cubit.isDarkMode ? 'Switch to Light' : 'Switch to Dark',
+          tooltip: cubit.isDarkMode
+              ? LocaleKeys.sharedWidgetsThemeToggleSwitchToLight.tr()
+              : LocaleKeys.sharedWidgetsThemeToggleSwitchToDark.tr(),
         );
       },
     );
@@ -34,20 +38,20 @@ class ThemeModeSelector extends StatelessWidget {
         final cubit = context.read<ThemeCubit>();
 
         return SegmentedButton<ThemeMode>(
-          segments: const [
+          segments: [
             ButtonSegment(
               value: ThemeMode.light,
-              label: Text('Light'),
+              label: Text(LocaleKeys.sharedWidgetsThemeToggleLight.tr()),
               icon: Icon(Icons.light_mode),
             ),
             ButtonSegment(
               value: ThemeMode.dark,
-              label: Text('Dark'),
+              label: Text(LocaleKeys.sharedWidgetsThemeToggleDark.tr()),
               icon: Icon(Icons.dark_mode),
             ),
             ButtonSegment(
               value: ThemeMode.system,
-              label: Text('System'),
+              label: Text(LocaleKeys.sharedWidgetsThemeToggleSystem.tr()),
               icon: Icon(Icons.brightness_auto),
             ),
           ],

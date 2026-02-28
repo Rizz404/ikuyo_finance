@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
@@ -45,7 +47,7 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
   Future<void> _startMigration() async {
     setState(() {
       _isMigrating = true;
-      _statusMessage = 'Memulai migrasi...';
+      _statusMessage = LocaleKeys.sharedWidgetsCurrencyMigrationStarting.tr();
       _progress = 0;
     });
 
@@ -91,7 +93,9 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
           ),
           const SizedBox(width: 8),
           AppText(
-            _result!.success ? 'Migrasi Berhasil' : 'Migrasi Gagal',
+            _result!.success
+                ? LocaleKeys.sharedWidgetsCurrencyMigrationSuccess.tr()
+                : LocaleKeys.sharedWidgetsCurrencyMigrationFailed.tr(),
             style: AppTextStyle.titleMedium,
             fontWeight: FontWeight.bold,
           ),
@@ -100,7 +104,7 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
     }
 
     if (_isMigrating) {
-      return const Row(
+      return Row(
         children: [
           SizedBox(
             width: 20,
@@ -109,7 +113,7 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
           ),
           SizedBox(width: 12),
           AppText(
-            'Migrasi Mata Uang',
+            LocaleKeys.sharedWidgetsCurrencyMigrationTitle.tr(),
             style: AppTextStyle.titleMedium,
             fontWeight: FontWeight.bold,
           ),
@@ -117,8 +121,8 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
       );
     }
 
-    return const AppText(
-      'Konfirmasi Perubahan',
+    return AppText(
+      LocaleKeys.sharedWidgetsCurrencyMigrationConfirmTitle.tr(),
       style: AppTextStyle.titleMedium,
       fontWeight: FontWeight.bold,
     );
@@ -135,8 +139,9 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppText(
-              'Semua data keuangan berhasil dikonversi '
-              'dari ${fromCurrency.name} ke ${toCurrency.name}.',
+              LocaleKeys.sharedWidgetsCurrencyMigrationSuccessDesc.tr(
+                namedArgs: {'from': fromCurrency.name, 'to': toCurrency.name},
+              ),
               style: AppTextStyle.bodyMedium,
             ),
             const SizedBox(height: 16),
@@ -145,7 +150,9 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
         );
       } else {
         return AppText(
-          'Terjadi kesalahan saat migrasi: ${_result!.errorMessage}',
+          LocaleKeys.sharedWidgetsCurrencyMigrationErrorDesc.tr(
+            namedArgs: {'error': _result!.errorMessage ?? ''},
+          ),
           style: AppTextStyle.bodyMedium,
           color: context.semantic.error,
         );
@@ -181,8 +188,8 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
       children: [
         _buildCurrencyChange(fromCurrency, toCurrency),
         const SizedBox(height: 16),
-        const AppText(
-          'Semua nilai aset, transaksi, dan budget akan dikonversi ke mata uang baru.',
+        AppText(
+          LocaleKeys.sharedWidgetsCurrencyMigrationWarningDesc.tr(),
           style: AppTextStyle.bodyMedium,
         ),
         const SizedBox(height: 12),
@@ -205,7 +212,7 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
               const SizedBox(width: 8),
               Expanded(
                 child: AppText(
-                  'Proses ini tidak dapat dibatalkan. Pastikan Anda yakin.',
+                  LocaleKeys.sharedWidgetsCurrencyMigrationIrreversibleWarning.tr(),
                   style: AppTextStyle.bodySmall,
                   color: context.semantic.warning,
                 ),
@@ -268,14 +275,29 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
       ),
       child: Column(
         children: [
-          _buildStatRow('Aset', _result!.assetsUpdated),
-          _buildStatRow('Transaksi', _result!.transactionsUpdated),
-          _buildStatRow('Budget', _result!.budgetsUpdated),
+          _buildStatRow(
+            LocaleKeys.sharedWidgetsCurrencyMigrationAssets.tr(),
+            _result!.assetsUpdated,
+          ),
+          _buildStatRow(
+            LocaleKeys.sharedWidgetsCurrencyMigrationTransactions.tr(),
+            _result!.transactionsUpdated,
+          ),
+          _buildStatRow(
+            LocaleKeys.sharedWidgetsCurrencyMigrationBudgets.tr(),
+            _result!.budgetsUpdated,
+          ),
           const Divider(),
-          _buildStatRow('Total', _result!.totalUpdated, isBold: true),
+          _buildStatRow(
+            LocaleKeys.sharedWidgetsCurrencyMigrationTotal.tr(),
+            _result!.totalUpdated,
+            isBold: true,
+          ),
           const SizedBox(height: 4),
           AppText(
-            'Selesai dalam ${_result!.duration.inMilliseconds}ms',
+            LocaleKeys.sharedWidgetsCurrencyMigrationDuration.tr(
+              namedArgs: {'ms': _result!.duration.inMilliseconds.toString()},
+            ),
             style: AppTextStyle.labelSmall,
             color: context.colorScheme.outline,
           ),
@@ -296,7 +318,9 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
           ),
           AppText(
-            '$count records',
+            LocaleKeys.sharedWidgetsCurrencyMigrationRecords.tr(
+              namedArgs: {'count': count.toString()},
+            ),
             style: AppTextStyle.bodySmall,
             fontWeight: isBold ? FontWeight.bold : FontWeight.normal,
             color: context.colorScheme.outline,
@@ -310,7 +334,7 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
     if (_result != null) {
       return [
         AppButton(
-          text: 'Tutup',
+          text: LocaleKeys.sharedWidgetsCurrencyMigrationClose.tr(),
           variant: AppButtonVariant.filled,
           onPressed: () => Navigator.pop(context, _result!.success),
         ),
@@ -323,12 +347,12 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
 
     return [
       AppButton(
-        text: 'Batal',
+        text: LocaleKeys.sharedWidgetsCurrencyMigrationCancel.tr(),
         variant: AppButtonVariant.text,
         onPressed: () => Navigator.pop(context, false),
       ),
       AppButton(
-        text: 'Lanjutkan',
+        text: LocaleKeys.sharedWidgetsCurrencyMigrationProceed.tr(),
         variant: AppButtonVariant.filled,
         onPressed: _startMigration,
       ),

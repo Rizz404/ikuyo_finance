@@ -22,14 +22,26 @@ enum AppTextStyle {
 class AppText extends StatelessWidget {
   final String text;
   final AppTextStyle? style;
+
+  // Text Widget Properties
   final TextAlign? textAlign;
-  final Color? color;
-  final TextStyle? customStyle;
-  final int? maxLines;
-  final TextOverflow? overflow;
+  final TextDirection? textDirection;
+  final Locale? locale;
   final bool? softWrap;
+  final TextOverflow? overflow;
+  final TextScaler? textScaler;
+  final int? maxLines;
+  final String? semanticsLabel;
+  final TextWidthBasis? textWidthBasis;
+  final TextHeightBehavior? textHeightBehavior;
+  final Color? selectionColor;
+
+  // Style Overrides
+  final TextStyle? customStyle;
+  final Color? color;
   final double? fontSize;
   final FontWeight? fontWeight;
+  final FontStyle? fontStyle;
   final double? letterSpacing;
   final double? lineHeight;
   final TextDecoration? decoration;
@@ -39,13 +51,21 @@ class AppText extends StatelessWidget {
     super.key,
     this.style,
     this.textAlign,
-    this.color,
-    this.customStyle,
-    this.maxLines,
-    this.overflow,
+    this.textDirection,
+    this.locale,
     this.softWrap,
+    this.overflow,
+    this.textScaler,
+    this.maxLines,
+    this.semanticsLabel,
+    this.textWidthBasis,
+    this.textHeightBehavior,
+    this.selectionColor,
+    this.customStyle,
+    this.color,
     this.fontSize,
     this.fontWeight,
+    this.fontStyle,
     this.letterSpacing,
     this.lineHeight,
     this.decoration,
@@ -56,8 +76,6 @@ class AppText extends StatelessWidget {
     final textTheme = context.textTheme;
 
     TextStyle getBaseStyle() {
-      if (customStyle != null) return customStyle!;
-
       // Default ke bodyMedium jika style tidak dispesifikasikan
       final selectedStyle = style ?? AppTextStyle.bodyMedium;
 
@@ -96,10 +114,18 @@ class AppText extends StatelessWidget {
       }
     }
 
-    final finalStyle = getBaseStyle().copyWith(
+    TextStyle baseStyle = getBaseStyle();
+
+    // Gabungkan dengan customStyle jika ada, agar bisa lebih dinamis/flexible
+    if (customStyle != null) {
+      baseStyle = baseStyle.merge(customStyle);
+    }
+
+    final finalStyle = baseStyle.copyWith(
       color: color,
       fontSize: fontSize,
       fontWeight: fontWeight,
+      fontStyle: fontStyle,
       letterSpacing: letterSpacing,
       height: lineHeight,
       decoration: decoration,
@@ -109,9 +135,16 @@ class AppText extends StatelessWidget {
       text,
       style: finalStyle,
       textAlign: textAlign,
-      maxLines: maxLines,
-      overflow: overflow,
+      textDirection: textDirection,
+      locale: locale,
       softWrap: softWrap,
+      overflow: overflow,
+      textScaler: textScaler,
+      maxLines: maxLines,
+      semanticsLabel: semanticsLabel,
+      textWidthBasis: textWidthBasis,
+      textHeightBehavior: textHeightBehavior,
+      selectionColor: selectionColor,
     );
   }
 }

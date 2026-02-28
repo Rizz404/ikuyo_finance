@@ -6,6 +6,22 @@ enum TransactionStatus { initial, loading, loadingMore, success, failure }
 // * Status untuk write operations (create, update, delete)
 enum TransactionWriteStatus { initial, loading, success, failure }
 
+// * Result model untuk bulk create di state
+class BulkCreateStateResult {
+  final int successCount;
+  final int failureCount;
+  final List<String> failedReasons;
+
+  const BulkCreateStateResult({
+    required this.successCount,
+    required this.failureCount,
+    required this.failedReasons,
+  });
+
+  bool get hasFailures => failureCount > 0;
+  bool get allSucceeded => failureCount == 0;
+}
+
 final class TransactionState extends Equatable {
   // * Read state
   final TransactionStatus status;
@@ -37,6 +53,9 @@ final class TransactionState extends Equatable {
   final String? writeErrorMessage;
   final Transaction? lastCreatedTransaction;
 
+  // * Bulk create state
+  final BulkCreateStateResult? bulkCreateResult;
+
   TransactionState({
     this.status = TransactionStatus.initial,
     this.transactions = const [],
@@ -58,6 +77,7 @@ final class TransactionState extends Equatable {
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedTransaction,
+    this.bulkCreateResult,
   }) : currentMonth = currentMonth ?? DateTime.now(),
        currentYear = currentYear ?? DateTime.now().year;
 
@@ -114,6 +134,7 @@ final class TransactionState extends Equatable {
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
     Transaction? Function()? lastCreatedTransaction,
+    BulkCreateStateResult? Function()? bulkCreateResult,
   }) {
     return TransactionState(
       status: status ?? this.status,
@@ -156,6 +177,9 @@ final class TransactionState extends Equatable {
       lastCreatedTransaction: lastCreatedTransaction != null
           ? lastCreatedTransaction()
           : this.lastCreatedTransaction,
+      bulkCreateResult: bulkCreateResult != null
+          ? bulkCreateResult()
+          : this.bulkCreateResult,
     );
   }
 
@@ -181,5 +205,6 @@ final class TransactionState extends Equatable {
     writeSuccessMessage,
     writeErrorMessage,
     lastCreatedTransaction,
+    bulkCreateResult,
   ];
 }

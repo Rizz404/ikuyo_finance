@@ -150,10 +150,23 @@ class _TransactionScreenState extends State<TransactionScreen>
               ],
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            heroTag: 'transaction_fab',
-            onPressed: () => context.pushToAddTransaction(),
-            child: const Icon(Icons.add),
+          floatingActionButton: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              FloatingActionButton.small(
+                heroTag: 'bulk_copy_fab',
+                onPressed: () => context.pushToBulkCopyTransaction(),
+                backgroundColor: context.colorScheme.secondaryContainer,
+                foregroundColor: context.colorScheme.onSecondaryContainer,
+                child: const Icon(Icons.copy_all_outlined),
+              ),
+              const SizedBox(height: 8),
+              FloatingActionButton(
+                heroTag: 'transaction_fab',
+                onPressed: () => context.pushToAddTransaction(),
+                child: const Icon(Icons.add),
+              ),
+            ],
           ),
         );
       },

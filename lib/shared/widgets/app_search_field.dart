@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -304,7 +306,7 @@ class _AppSearchFieldState<T> extends State<AppSearchField<T>> {
         padding: const EdgeInsets.all(16),
         child: Center(
           child: Text(
-            "No result found",
+            LocaleKeys.sharedWidgetsSearchFieldNoResultFound.tr(),
             style: context.textTheme.bodyMedium?.copyWith(
               color: context.colors.textSecondary,
             ),
@@ -411,7 +413,9 @@ class _AppSearchFieldState<T> extends State<AppSearchField<T>> {
             validator: widget.validator,
             decoration: InputDecoration(
               labelText: widget.label,
-              hintText: widget.hintText ?? "Search...",
+              hintText:
+                  widget.hintText ??
+                  LocaleKeys.sharedWidgetsSearchFieldSearchHint.tr(),
               hintStyle: context.textTheme.bodyMedium?.copyWith(
                 color: context.colors.textTertiary,
               ),
@@ -520,7 +524,7 @@ class _AppSearchFieldState<T> extends State<AppSearchField<T>> {
       return IconButton(
         icon: Icon(Icons.clear, color: context.colors.textSecondary),
         onPressed: widget.enabled ? _clearText : null,
-        tooltip: "Clear",
+        tooltip: LocaleKeys.sharedWidgetsSearchFieldClear.tr(),
       );
     }
 

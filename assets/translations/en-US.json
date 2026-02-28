@@ -1,71 +1,88 @@
 {
-  "app": {
-    "title": "Ikuyo Finance"
-  },
-  "common": {
-    "save": "Save",
-    "cancel": "Cancel",
-    "delete": "Delete",
-    "edit": "Edit",
-    "add": "Add",
-    "ok": "OK",
-    "yes": "Yes",
-    "no": "No",
-    "search": "Search",
-    "loading": "Loading...",
-    "error": "Error",
-    "success": "Success",
-    "settings": "Settings"
-  },
-  "settings": {
-    "language": "Language",
-    "currency": "Currency",
-    "theme": "Theme",
-    "selectLanguage": "Select Language",
-    "selectCurrency": "Select Currency"
-  },
-  "currency": {
-    "usd": "US Dollar",
-    "idr": "Indonesian Rupiah",
-    "eur": "Euro",
-    "gbp": "British Pound",
-    "jpy": "Japanese Yen",
-    "sgd": "Singapore Dollar",
-    "myr": "Malaysian Ringgit",
-    "aud": "Australian Dollar",
-    "cny": "Chinese Yuan",
-    "krw": "South Korean Won"
-  },
-  "asset": {
-    "title": "Assets",
-    "cash": "Cash",
-    "bank": "Bank",
-    "eWallet": "E-Wallet",
-    "stock": "Stock",
-    "crypto": "Crypto",
-    "balance": "Balance",
-    "totalBalance": "Total Balance"
-  },
-  "transaction": {
-    "title": "Transactions",
-    "income": "Income",
-    "expense": "Expense",
-    "transfer": "Transfer",
-    "amount": "Amount",
-    "date": "Date",
-    "description": "Description",
-    "category": "Category"
-  },
-  "budget": {
-    "title": "Budgets",
-    "limit": "Limit",
-    "spent": "Spent",
-    "remaining": "Remaining",
-    "period": {
-      "monthly": "Monthly",
-      "weekly": "Weekly",
-      "yearly": "Yearly",
-      "custom": "Custom"
+  "sharedWidgets": {
+    "colorPicker": {
+      "customColorLabel": "Custom Color (Hex)"
+    },
+    "currencyMigration": {
+      "assets": "Assets",
+      "budgets": "Budgets",
+      "cancel": "Cancel",
+      "close": "Close",
+      "confirmTitle": "Confirm Changes",
+      "duration": "Completed in {ms}ms",
+      "errorDesc": "An error occurred during migration: {error}",
+      "failed": "Migration Failed",
+      "irreversibleWarning": "This process cannot be undone. Make sure you are certain.",
+      "proceed": "Proceed",
+      "records": "{count} records",
+      "starting": "Starting migration...",
+      "success": "Migration Successful",
+      "successDesc": "All financial data has been successfully converted from {from} to {to}.",
+      "title": "Currency Migration",
+      "total": "Total",
+      "transactions": "Transactions",
+      "warningDesc": "All asset values, transactions, and budgets will be converted to the new currency."
+    },
+    "detailActions": {
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "dropdown": {
+      "selectOption": "Select option"
+    },
+    "filePicker": {
+      "chooseFiles": "Choose file(s)",
+      "fileSizeError": "File exceeds size limit",
+      "fileSizeErrorDesc": "{name} exceeds {size}MB limit",
+      "imagePreviewError": "Unable to preview image",
+      "maxFilesError": "Maximum {max} files allowed",
+      "pickFailed": "Failed to pick files",
+      "previewNotAvailable": "Preview not available for this file type",
+      "videoPreviewNotImpl": "Video preview not implemented yet"
+    },
+    "listBottomSheet": {
+      "createSubtitle": "Add a new item",
+      "createTitle": "Create",
+      "exportSubtitle": "Export data to file",
+      "exportTitle": "Export",
+      "filterSortSubtitle": "Customize display",
+      "filterSortTitle": "Filter & Sort",
+      "optionsHeader": "Options",
+      "selectManySubtitle": "Select multiple items to delete",
+      "selectManyTitle": "Select Many"
+    },
+    "multiSelectDropdown": {
+      "clearAll": "Clear all",
+      "done": "Done",
+      "itemsSelected": "{count} items selected",
+      "noData": "No data",
+      "searchHint": "Search...",
+      "selectHint": "Select {label}"
+    },
+    "searchField": {
+      "clear": "Clear",
+      "noResultFound": "No result found",
+      "searchHint": "Search..."
+    },
+    "searchableDropdown": {
+      "noMoreData": "No more data",
+      "noResults": "No results found",
+      "searchHint": "Search...",
+      "selectOption": "Select option"
+    },
+    "themeToggle": {
+      "dark": "Dark",
+      "light": "Light",
+      "switchToDark": "Switch to Dark",
+      "switchToLight": "Switch to Light",
+      "system": "System"
+    },
+    "userShell": {
+      "assets": "Assets",
+      "backToExit": "Press again to exit",
+      "settings": "Settings",
+      "statistics": "Statistics",
+      "transactions": "Transactions"
     }
   }
 }

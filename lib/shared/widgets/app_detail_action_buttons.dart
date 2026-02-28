@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 
 class AppDetailActionButtons extends StatelessWidget {
@@ -24,7 +26,7 @@ class AppDetailActionButtons extends StatelessWidget {
             if (hasDelete) ...[
               Expanded(
                 child: AppButton(
-                  text: 'Delete',
+                  text: LocaleKeys.sharedWidgetsDetailActionsDelete.tr(),
                   color: AppButtonColor.error,
                   variant: AppButtonVariant.outlined,
                   onPressed: onDelete,
@@ -34,7 +36,10 @@ class AppDetailActionButtons extends StatelessWidget {
             ],
             if (hasEdit)
               Expanded(
-                child: AppButton(text: 'Edit', onPressed: onEdit),
+                child: AppButton(
+                  text: LocaleKeys.sharedWidgetsDetailActionsEdit.tr(),
+                  onPressed: onEdit,
+                ),
               ),
           ],
         ),

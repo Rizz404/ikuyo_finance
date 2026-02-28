@@ -1,0 +1,88 @@
+{
+  "sharedWidgets": {
+    "colorPicker": {
+      "customColorLabel": "Custom Color (Hex)"
+    },
+    "detailActions": {
+      "delete": "Delete",
+      "edit": "Edit"
+    },
+    "dropdown": {
+      "selectOption": "Select option"
+    },
+    "filePicker": {
+      "maxFilesError": "Maximum {max} files allowed",
+      "fileSizeError": "File exceeds size limit",
+      "fileSizeErrorDesc": "{name} exceeds {size}MB limit",
+      "pickFailed": "Failed to pick files",
+      "chooseFiles": "Choose file(s)",
+      "imagePreviewError": "Unable to preview image",
+      "videoPreviewNotImpl": "Video preview not implemented yet",
+      "previewNotAvailable": "Preview not available for this file type"
+    },
+    "listBottomSheet": {
+      "createTitle": "Create",
+      "createSubtitle": "Add a new item",
+      "selectManyTitle": "Select Many",
+      "selectManySubtitle": "Select multiple items to delete",
+      "filterSortTitle": "Filter & Sort",
+      "filterSortSubtitle": "Customize display",
+      "exportTitle": "Export",
+      "exportSubtitle": "Export data to file",
+      "optionsHeader": "Options"
+    },
+    "multiSelectDropdown": {
+      "searchHint": "Search...",
+      "noData": "No data",
+      "selectHint": "Select {label}",
+      "itemsSelected": "{count} items selected",
+      "clearAll": "Clear all",
+      "done": "Done"
+    },
+    "searchField": {
+      "noResultFound": "No result found",
+      "searchHint": "Search...",
+      "clear": "Clear"
+    },
+    "searchableDropdown": {
+      "searchHint": "Search...",
+      "noResults": "No results found",
+      "selectOption": "Select option",
+      "noMoreData": "No more data"
+    },
+    "currencyMigration": {
+      "starting": "Starting migration...",
+      "success": "Migration Successful",
+      "failed": "Migration Failed",
+      "title": "Currency Migration",
+      "confirmTitle": "Confirm Changes",
+      "successDesc": "All financial data has been successfully converted from {from} to {to}.",
+      "errorDesc": "An error occurred during migration: {error}",
+      "warningDesc": "All asset values, transactions, and budgets will be converted to the new currency.",
+      "irreversibleWarning": "This process cannot be undone. Make sure you are certain.",
+      "assets": "Assets",
+      "transactions": "Transactions",
+      "budgets": "Budgets",
+      "total": "Total",
+      "duration": "Completed in {ms}ms",
+      "records": "{count} records",
+      "close": "Close",
+      "cancel": "Cancel",
+      "proceed": "Proceed"
+    },
+    "themeToggle": {
+      "switchToLight": "Switch to Light",
+      "switchToDark": "Switch to Dark",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "userShell": {
+      "backToExit": "Press again to exit",
+      "transactions": "Transactions",
+      "statistics": "Statistics",
+      "assets": "Assets",
+      "settings": "Settings"
+    }
+  }
+}

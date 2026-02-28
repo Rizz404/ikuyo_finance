@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -8,14 +10,14 @@ class AppListOptionsBottomSheet extends StatelessWidget {
   final VoidCallback onSelectMany;
   final Widget Function() filterSortWidgetBuilder;
   final Widget Function()? exportWidgetBuilder;
-  final String createTitle;
-  final String createSubtitle;
-  final String selectManyTitle;
-  final String selectManySubtitle;
-  final String filterSortTitle;
-  final String filterSortSubtitle;
-  final String exportTitle;
-  final String exportSubtitle;
+  final String? createTitle;
+  final String? createSubtitle;
+  final String? selectManyTitle;
+  final String? selectManySubtitle;
+  final String? filterSortTitle;
+  final String? filterSortSubtitle;
+  final String? exportTitle;
+  final String? exportSubtitle;
 
   const AppListOptionsBottomSheet({
     super.key,
@@ -23,14 +25,14 @@ class AppListOptionsBottomSheet extends StatelessWidget {
     required this.onSelectMany,
     required this.filterSortWidgetBuilder,
     this.exportWidgetBuilder,
-    this.createTitle = 'Create',
-    this.createSubtitle = 'Add a new item',
-    this.selectManyTitle = 'Select Many',
-    this.selectManySubtitle = 'Select multiple items to delete',
-    this.filterSortTitle = 'Filter & Sort',
-    this.filterSortSubtitle = 'Customize display',
-    this.exportTitle = 'Export',
-    this.exportSubtitle = 'Export data to file',
+    this.createTitle,
+    this.createSubtitle,
+    this.selectManyTitle,
+    this.selectManySubtitle,
+    this.filterSortTitle,
+    this.filterSortSubtitle,
+    this.exportTitle,
+    this.exportSubtitle,
   });
 
   @override
@@ -50,8 +52,8 @@ class AppListOptionsBottomSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            const AppText(
-              'Options',
+            AppText(
+              LocaleKeys.sharedWidgetsListBottomSheetOptionsHeader.tr(),
               style: AppTextStyle.titleLarge,
               fontWeight: FontWeight.bold,
             ),
@@ -59,23 +61,35 @@ class AppListOptionsBottomSheet extends StatelessWidget {
             if (onCreate != null) ...[
               _OptionTile(
                 icon: Icons.add_circle_outline,
-                title: createTitle,
-                subtitle: createSubtitle,
+                title:
+                    createTitle ??
+                    LocaleKeys.sharedWidgetsListBottomSheetCreateTitle.tr(),
+                subtitle:
+                    createSubtitle ??
+                    LocaleKeys.sharedWidgetsListBottomSheetCreateSubtitle.tr(),
                 onTap: onCreate!,
               ),
               const SizedBox(height: 12),
             ],
             _OptionTile(
               icon: Icons.checklist,
-              title: selectManyTitle,
-              subtitle: selectManySubtitle,
+              title:
+                  selectManyTitle ??
+                  LocaleKeys.sharedWidgetsListBottomSheetSelectManyTitle.tr(),
+              subtitle:
+                  selectManySubtitle ??
+                  LocaleKeys.sharedWidgetsListBottomSheetSelectManySubtitle.tr(),
               onTap: onSelectMany,
             ),
             const SizedBox(height: 12),
             _OptionTile(
               icon: Icons.filter_list,
-              title: filterSortTitle,
-              subtitle: filterSortSubtitle,
+              title:
+                  filterSortTitle ??
+                  LocaleKeys.sharedWidgetsListBottomSheetFilterSortTitle.tr(),
+              subtitle:
+                  filterSortSubtitle ??
+                  LocaleKeys.sharedWidgetsListBottomSheetFilterSortSubtitle.tr(),
               onTap: () {
                 Navigator.pop(context);
                 showModalBottomSheet(
@@ -95,8 +109,12 @@ class AppListOptionsBottomSheet extends StatelessWidget {
             if (exportWidgetBuilder != null) ...[
               _OptionTile(
                 icon: Icons.download,
-                title: exportTitle,
-                subtitle: exportSubtitle,
+                title:
+                    exportTitle ??
+                    LocaleKeys.sharedWidgetsListBottomSheetExportTitle.tr(),
+                subtitle:
+                    exportSubtitle ??
+                    LocaleKeys.sharedWidgetsListBottomSheetExportSubtitle.tr(),
                 onTap: () {
                   Navigator.pop(context);
                   showModalBottomSheet(

@@ -100,6 +100,13 @@ final class TransactionCreated extends TransactionEvent {
   const TransactionCreated({required this.params});
 }
 
+// * Bulk Create Event - create multiple transactions at once
+final class TransactionBulkCreated extends TransactionEvent {
+  final List<CreateTransactionParams> paramsList;
+
+  const TransactionBulkCreated({required this.paramsList});
+}
+
 final class TransactionUpdated extends TransactionEvent {
   final UpdateTransactionParams params;
 

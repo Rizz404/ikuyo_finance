@@ -1,0 +1,88 @@
+{
+  "sharedWidgets": {
+    "colorPicker": {
+      "customColorLabel": "Warna Custom (Hex)"
+    },
+    "detailActions": {
+      "delete": "Hapus",
+      "edit": "Edit"
+    },
+    "dropdown": {
+      "selectOption": "Pilih opsi"
+    },
+    "filePicker": {
+      "maxFilesError": "Maksimal {max} file diizinkan",
+      "fileSizeError": "File melebihi batas ukuran",
+      "fileSizeErrorDesc": "{name} melebihi batas {size}MB",
+      "pickFailed": "Gagal memilih file",
+      "chooseFiles": "Pilih file",
+      "imagePreviewError": "Tidak dapat memuat pratinjau gambar",
+      "videoPreviewNotImpl": "Pratinjau video belum tersedia",
+      "previewNotAvailable": "Pratinjau tidak tersedia untuk tipe file ini"
+    },
+    "listBottomSheet": {
+      "createTitle": "Buat",
+      "createSubtitle": "Tambah item baru",
+      "selectManyTitle": "Pilih Beberapa",
+      "selectManySubtitle": "Pilih beberapa item untuk dihapus",
+      "filterSortTitle": "Filter & Urutkan",
+      "filterSortSubtitle": "Kustomisasi tampilan",
+      "exportTitle": "Ekspor",
+      "exportSubtitle": "Ekspor data ke file",
+      "optionsHeader": "Opsi"
+    },
+    "multiSelectDropdown": {
+      "searchHint": "Cari...",
+      "noData": "Tidak ada data",
+      "selectHint": "Pilih {label}",
+      "itemsSelected": "{count} item dipilih",
+      "clearAll": "Hapus semua",
+      "done": "Selesai"
+    },
+    "searchField": {
+      "noResultFound": "Tidak ada hasil ditemukan",
+      "searchHint": "Cari...",
+      "clear": "Hapus"
+    },
+    "searchableDropdown": {
+      "searchHint": "Cari...",
+      "noResults": "Tidak ada hasil ditemukan",
+      "selectOption": "Pilih opsi",
+      "noMoreData": "Tidak ada data lagi"
+    },
+    "currencyMigration": {
+      "starting": "Memulai migrasi...",
+      "success": "Migrasi Berhasil",
+      "failed": "Migrasi Gagal",
+      "title": "Migrasi Mata Uang",
+      "confirmTitle": "Konfirmasi Perubahan",
+      "successDesc": "Semua data keuangan berhasil dikonversi dari {from} ke {to}.",
+      "errorDesc": "Terjadi kesalahan saat migrasi: {error}",
+      "warningDesc": "Semua nilai aset, transaksi, dan budget akan dikonversi ke mata uang baru.",
+      "irreversibleWarning": "Proses ini tidak dapat dibatalkan. Pastikan Anda yakin.",
+      "assets": "Aset",
+      "transactions": "Transaksi",
+      "budgets": "Budget",
+      "total": "Total",
+      "duration": "Selesai dalam {ms}ms",
+      "records": "{count} records",
+      "close": "Tutup",
+      "cancel": "Batal",
+      "proceed": "Lanjutkan"
+    },
+    "themeToggle": {
+      "switchToLight": "Ganti ke Terang",
+      "switchToDark": "Ganti ke Gelap",
+      "light": "Terang",
+      "dark": "Gelap",
+      "system": "Sistem"
+    },
+    "userShell": {
+      "backToExit": "Tekan sekali lagi untuk keluar",
+      "transactions": "Transaksi",
+      "statistics": "Statistik",
+      "assets": "Aset",
+      "settings": "Pengaturan"
+    }
+  }
+}

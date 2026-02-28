@@ -35,6 +35,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
     // * Write events
     on<TransactionCreated>(_onTransactionCreated);
+    on<TransactionBulkCreated>(_onTransactionBulkCreated);
     on<TransactionUpdated>(_onTransactionUpdated);
     on<TransactionDeleted>(_onTransactionDeleted);
     on<TransactionWriteStatusReset>(_onWriteStatusReset);
@@ -557,6 +558,50 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           transactions: [success.data!, ...state.transactions],
         ),
       ),
+    );
+  }
+
+  // * Bulk create transactions
+  Future<void> _onTransactionBulkCreated(
+    TransactionBulkCreated event,
+    Emitter<TransactionState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: TransactionWriteStatus.loading));
+
+    final result = await _transactionRepository
+        .createManyTransactions(event.paramsList)
+        .run();
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          writeStatus: TransactionWriteStatus.failure,
+          writeErrorMessage: () => failure.message,
+        ),
+      ),
+      (success) {
+        final bulkResult = success.data!;
+        final stateResult = BulkCreateStateResult(
+          successCount: bulkResult.successfulTransactions.length,
+          failureCount: bulkResult.failedTransactions.length,
+          failedReasons: bulkResult.failedTransactions
+              .map((f) => 'Item ${f.index + 1}: ${f.errorMessage}')
+              .toList(),
+        );
+
+        emit(
+          state.copyWith(
+            writeStatus: TransactionWriteStatus.success,
+            writeSuccessMessage: () => success.message,
+            bulkCreateResult: () => stateResult,
+            // * Tambah ke list langsung untuk UX responsif
+            transactions: [
+              ...bulkResult.successfulTransactions,
+              ...state.transactions,
+            ],
+          ),
+        );
+      },
     );
   }
 

@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
@@ -85,7 +87,7 @@ class AppDropdown<T> extends StatelessWidget {
       isExpanded: isExpanded,
       decoration: InputDecoration(
         labelText: label,
-        hintText: hintText ?? "Select option",
+        hintText: hintText ?? LocaleKeys.sharedWidgetsDropdownSelectOption.tr(),
         hintStyle: context.textTheme.bodyMedium?.copyWith(
           color: context.colors.textTertiary,
         ),

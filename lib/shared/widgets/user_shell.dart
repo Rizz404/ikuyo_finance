@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 
 // * Shell untuk user dengan navigation bar
@@ -38,7 +40,7 @@ class _UserShellState extends State<UserShell> {
       _lastBackPressTime = now;
       ToastHelper.instance.showInfo(
         context: context,
-        title: 'Tekan sekali lagi untuk keluar',
+        title: LocaleKeys.sharedWidgetsUserShellBackToExit.tr(),
         duration: _doubleTapDuration,
         showProgressBar: true,
       );
@@ -64,26 +66,26 @@ class _UserShellState extends State<UserShell> {
               initialLocation: index == widget.navigationShell.currentIndex,
             );
           },
-          destinations: const [
+          destinations: [
             NavigationDestination(
-              icon: Icon(Icons.receipt_long_outlined),
-              selectedIcon: Icon(Icons.receipt_long),
-              label: 'Transaksi',
+              icon: const Icon(Icons.receipt_long_outlined),
+              selectedIcon: const Icon(Icons.receipt_long),
+              label: LocaleKeys.sharedWidgetsUserShellTransactions.tr(),
             ),
             NavigationDestination(
-              icon: Icon(Icons.bar_chart_outlined),
-              selectedIcon: Icon(Icons.bar_chart),
-              label: 'Statistik',
+              icon: const Icon(Icons.bar_chart_outlined),
+              selectedIcon: const Icon(Icons.bar_chart),
+              label: LocaleKeys.sharedWidgetsUserShellStatistics.tr(),
             ),
             NavigationDestination(
-              icon: Icon(Icons.account_balance_wallet_outlined),
-              selectedIcon: Icon(Icons.account_balance_wallet),
-              label: 'Aset',
+              icon: const Icon(Icons.account_balance_wallet_outlined),
+              selectedIcon: const Icon(Icons.account_balance_wallet),
+              label: LocaleKeys.sharedWidgetsUserShellAssets.tr(),
             ),
             NavigationDestination(
-              icon: Icon(Icons.settings_outlined),
-              selectedIcon: Icon(Icons.settings),
-              label: 'Pengaturan',
+              icon: const Icon(Icons.settings_outlined),
+              selectedIcon: const Icon(Icons.settings),
+              label: LocaleKeys.sharedWidgetsUserShellSettings.tr(),
             ),
           ],
         ),

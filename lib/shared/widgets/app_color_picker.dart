@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -222,7 +224,9 @@ class _AppColorPickerState extends State<AppColorPicker> {
                       name: '${widget.name}_custom',
                       initialValue: _isCustomColor ? _selectedColor : null,
                       decoration: InputDecoration(
-                        labelText: 'Warna Custom (Hex)',
+                        labelText: LocaleKeys
+                            .sharedWidgetsColorPickerCustomColorLabel
+                            .tr(),
                         hintText: '#FF5722',
                         prefixIcon: const Icon(Icons.tag),
                         filled: true,

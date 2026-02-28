@@ -21,6 +21,7 @@ import 'package:ikuyo_finance/features/other/screens/setting_screen.dart';
 import 'package:ikuyo_finance/features/backup/screens/backup_screen.dart';
 import 'package:ikuyo_finance/features/statistic/screens/statistic_screen.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/features/transaction/screens/transaction_bulk_copy_screen.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_screen.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_search_screen.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_upsert_screen.dart';
@@ -79,7 +80,6 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                   child: const TransactionScreen(),
                 ),
                 routes: [
-                  // * Add transaction - slide from bottom (modal-like)
                   GoRoute(
                     name: AppRoutes.transactionAddName,
                     path: AppRoutes.transactionAddPath,
@@ -87,6 +87,16 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                         AppPageTransitions.slideBottom(
                           key: state.pageKey,
                           child: const TransactionUpsertScreen(),
+                        ),
+                  ),
+                  // * Bulk copy transactions - slide from bottom
+                  GoRoute(
+                    name: AppRoutes.transactionBulkCopyName,
+                    path: AppRoutes.transactionBulkCopyPath,
+                    pageBuilder: (context, state) =>
+                        AppPageTransitions.slideBottom(
+                          key: state.pageKey,
+                          child: const TransactionBulkCopyScreen(),
                         ),
                   ),
                   // * Edit transaction - slide from right (detail screen)

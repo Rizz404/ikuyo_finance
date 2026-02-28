@@ -1,9 +1,11 @@
 import 'dart:io';
 
+import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -72,7 +74,9 @@ class AppFilePickerState extends State<AppFilePicker> {
           if (!mounted) return;
           ToastHelper.instance.showWarning(
             context: context,
-            title: 'Maximum ${widget.maxFiles} files allowed',
+            title: LocaleKeys.sharedWidgetsFilePickerMaxFilesError.tr(
+              namedArgs: {'max': widget.maxFiles.toString()},
+            ),
           );
           return;
         }
@@ -84,9 +88,13 @@ class AppFilePickerState extends State<AppFilePicker> {
               if (!mounted) return;
               ToastHelper.instance.showWarning(
                 context: context,
-                title: 'File exceeds size limit',
-                description:
-                    '${file.name} exceeds ${widget.maxSizeInMB}MB limit',
+                title: LocaleKeys.sharedWidgetsFilePickerFileSizeError.tr(),
+                description: LocaleKeys.sharedWidgetsFilePickerFileSizeErrorDesc.tr(
+                  namedArgs: {
+                    'name': file.name,
+                    'size': widget.maxSizeInMB.toString(),
+                  },
+                ),
               );
               return;
             }
@@ -113,7 +121,7 @@ class AppFilePickerState extends State<AppFilePicker> {
       if (!mounted) return;
       ToastHelper.instance.showError(
         context: context,
-        title: 'Failed to pick files',
+        title: LocaleKeys.sharedWidgetsFilePickerPickFailed.tr(),
         description: e.toString(),
       );
     }
@@ -205,7 +213,8 @@ class AppFilePickerState extends State<AppFilePicker> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: AppText(
-                        widget.hintText ?? 'Choose file(s)',
+                        widget.hintText ??
+                            LocaleKeys.sharedWidgetsFilePickerChooseFiles.tr(),
                         style: AppTextStyle.bodyMedium,
                         color: context.colors.textSecondary,
                       ),
@@ -391,11 +400,11 @@ class _FilePreviewDialog extends StatelessWidget {
       if (kIsWeb) {
         return file.bytes != null
             ? Image.memory(file.bytes!, fit: BoxFit.contain)
-            : const AppText('Unable to preview image');
+            : AppText(LocaleKeys.sharedWidgetsFilePickerImagePreviewError.tr());
       } else {
         return file.path != null
             ? Image.file(File(file.path!), fit: BoxFit.contain)
-            : const AppText('Unable to preview image');
+            : AppText(LocaleKeys.sharedWidgetsFilePickerImagePreviewError.tr());
       }
     } else if (_isVideo()) {
       return Column(
@@ -403,14 +412,14 @@ class _FilePreviewDialog extends StatelessWidget {
         children: [
           Icon(Icons.video_file, size: 64, color: Colors.grey[400]),
           const SizedBox(height: 16),
-          const AppText(
-            'Video preview not implemented yet',
+          AppText(
+            LocaleKeys.sharedWidgetsFilePickerVideoPreviewNotImpl.tr(),
             style: AppTextStyle.bodyMedium,
           ),
         ],
       );
     } else {
-      return const AppText('Preview not available for this file type');
+      return AppText(LocaleKeys.sharedWidgetsFilePickerPreviewNotAvailable.tr());
     }
   }
 }
