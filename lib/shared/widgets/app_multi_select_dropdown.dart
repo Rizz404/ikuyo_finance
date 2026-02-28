@@ -126,6 +126,11 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
         });
         widget.onChanged?.call(selected);
       }
+
+      // * Unfocus agar focus tidak jump ke field lain setelah bottom sheet ditutup
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) FocusManager.instance.primaryFocus?.unfocus();
+      });
     });
   }
 
@@ -471,13 +476,15 @@ class _MultiSelectBottomSheetState<T>
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+    final keyboardVisible = bottomInset > 0;
 
     return Padding(
       padding: EdgeInsets.only(bottom: bottomInset),
       child: DraggableScrollableSheet(
-        initialChildSize: 0.7,
-        minChildSize: 0.4,
-        maxChildSize: 0.9,
+        // * Perbesar sheet saat keyboard muncul agar item tetap terlihat
+        initialChildSize: keyboardVisible ? 0.95 : 0.7,
+        minChildSize: keyboardVisible ? 0.7 : 0.4,
+        maxChildSize: 0.95,
         expand: false,
         builder: (context, scrollController) {
           return Column(

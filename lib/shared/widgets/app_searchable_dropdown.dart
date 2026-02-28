@@ -70,7 +70,8 @@ class AppSearchableDropdown<T> extends StatefulWidget {
       _AppSearchableDropdownState<T>();
 }
 
-class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
+class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>>
+    with WidgetsBindingObserver {
   final LayerLink _layerLink = LayerLink();
   final FocusNode _searchFocusNode = FocusNode();
   final TextEditingController _searchController = TextEditingController();
@@ -86,6 +87,7 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fieldKey =
         GlobalKey<FormBuilderFieldState<FormBuilderField<String>, String>>();
     _selectedItem = widget.initialValue;
@@ -116,12 +118,23 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _removeOverlay();
     _searchFocusNode.dispose();
     _searchController.dispose();
     _debounceTimer?.cancel();
     _scrollController?.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeMetrics() {
+    // * Rebuild overlay saat keyboard muncul/hilang agar posisi & ukuran update
+    if (_overlayEntry != null && _isDropdownOpen) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _overlayEntry?.markNeedsBuild();
+      });
+    }
   }
 
   void _performSearch(String query) {
@@ -167,6 +180,9 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
   void _hideDropdown() {
     if (!_isDropdownOpen) return;
 
+    // * Unfocus search field sebelum remove overlay agar focus tidak jump ke field lain
+    _searchFocusNode.unfocus();
+
     _removeOverlay();
     _searchController.clear();
     _debounceTimer?.cancel();
@@ -175,8 +191,10 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
     // * Reset search saat close
     widget.onSearch('');
 
-    // * Unfocus untuk mencegah focus jumping
-    FocusScope.of(context).unfocus();
+    // * Pastikan tidak ada field lain yang ter-focus
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) FocusManager.instance.primaryFocus?.unfocus();
+    });
 
     setState(() {});
   }
@@ -228,53 +246,62 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
   }
 
   OverlayEntry _createOverlayEntry() {
-    final renderBox = context.findRenderObject() as RenderBox;
-    final size = renderBox.size;
-    final offset = renderBox.localToGlobal(Offset.zero);
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    final spaceBelow = screenHeight - offset.dy - size.height;
-    final spaceAbove = offset.dy;
-    final maxHeight = widget.dropdownMaxHeight;
-
-    final shouldShowAbove = spaceBelow < maxHeight && spaceAbove > spaceBelow;
-    final availableHeight = shouldShowAbove
-        ? (spaceAbove - 8).clamp(200.0, maxHeight)
-        : (spaceBelow - 8).clamp(200.0, maxHeight);
-
     return OverlayEntry(
-      builder: (overlayContext) => Positioned(
-        width: size.width,
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: shouldShowAbove
-              ? Offset(0, -(availableHeight + 4))
-              : Offset(0, size.height + 4),
-          child: TapRegion(
-            onTapOutside: (_) => _hideDropdown(),
-            child: Material(
-              elevation: 16,
-              borderRadius: BorderRadius.circular(12),
-              color: context.colors.surface,
-              child: Container(
-                constraints: BoxConstraints(maxHeight: availableHeight),
-                decoration: BoxDecoration(
-                  border: Border.all(color: context.colors.border),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildSearchHeader(),
-                    Flexible(child: _buildItemsList()),
-                  ],
+      builder: (overlayContext) {
+        // * Hitung posisi di dalam builder agar update saat keyboard muncul/hilang
+        final renderBox = context.findRenderObject() as RenderBox;
+        final size = renderBox.size;
+        final offset = renderBox.localToGlobal(Offset.zero);
+        final mediaQuery = MediaQuery.of(context);
+        final screenHeight = mediaQuery.size.height;
+        final keyboardHeight = mediaQuery.viewInsets.bottom;
+
+        // * Kurangi tinggi layar dengan keyboard height
+        final effectiveScreenHeight = screenHeight - keyboardHeight;
+
+        final spaceBelow = effectiveScreenHeight - offset.dy - size.height;
+        final spaceAbove = offset.dy;
+        final maxHeight = widget.dropdownMaxHeight;
+
+        final shouldShowAbove =
+            spaceBelow < maxHeight && spaceAbove > spaceBelow;
+        final availableHeight = shouldShowAbove
+            ? (spaceAbove - 8).clamp(100.0, maxHeight)
+            : (spaceBelow - 8).clamp(100.0, maxHeight);
+
+        return Positioned(
+          width: size.width,
+          child: CompositedTransformFollower(
+            link: _layerLink,
+            showWhenUnlinked: false,
+            offset: shouldShowAbove
+                ? Offset(0, -(availableHeight + 4))
+                : Offset(0, size.height + 4),
+            child: TapRegion(
+              onTapOutside: (_) => _hideDropdown(),
+              child: Material(
+                elevation: 16,
+                borderRadius: BorderRadius.circular(12),
+                color: context.colors.surface,
+                child: Container(
+                  constraints: BoxConstraints(maxHeight: availableHeight),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: context.colors.border),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildSearchHeader(),
+                      Flexible(child: _buildItemsList()),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
