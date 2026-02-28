@@ -405,5 +405,79 @@
       "descriptionMaxLength": "Deskripsi maksimal 500 karakter",
       "ulidRequired": "ULID wajib diisi"
     }
+  },
+  "security": {
+    "lock": {
+      "title": "Aplikasi Terkunci",
+      "subtitle": "Verifikasi identitas Anda untuk melanjutkan",
+      "useBiometric": "Gunakan Biometrik",
+      "usePin": "Gunakan PIN",
+      "usePassword": "Gunakan Kata Sandi",
+      "unlock": "Buka Kunci",
+      "authenticating": "Mengautentikasi...",
+      "biometricFailed": "Autentikasi biometrik gagal. Coba lagi atau gunakan metode lain.",
+      "pinIncorrect": "PIN salah. Silakan coba lagi.",
+      "passwordIncorrect": "Kata sandi salah. Silakan coba lagi.",
+      "enterPassword": "Masukkan kata sandi Anda"
+    },
+    "settings": {
+      "title": "Keamanan",
+      "general": "UMUM",
+      "enable": "Kunci Aplikasi",
+      "enableDesc": "Wajib autentikasi untuk membuka aplikasi",
+      "methods": "METODE AUTENTIKASI",
+      "biometric": "Biometrik",
+      "biometricDesc": "Gunakan sidik jari atau pengenalan wajah",
+      "biometricUnavailable": "Biometrik tidak tersedia di perangkat ini",
+      "pin": "PIN",
+      "pinDesc": "Atur PIN 4-6 digit",
+      "pinActive": "PIN aktif",
+      "password": "Kata Sandi",
+      "passwordDesc": "Atur kata sandi",
+      "passwordActive": "Kata sandi aktif",
+      "lockBehavior": "PERILAKU KUNCI",
+      "lockTrigger": "Kunci Saat",
+      "autoLock": "Kunci Otomatis Setelah",
+      "manage": "KELOLA KREDENSIAL",
+      "changePin": "Ubah PIN",
+      "changePassword": "Ubah Kata Sandi"
+    },
+    "trigger": {
+      "appClose": "Aplikasi ditutup",
+      "screenOff": "Layar dimatikan",
+      "both": "Aplikasi ditutup atau layar mati"
+    },
+    "autoLock": {
+      "immediate": "Segera",
+      "oneMin": "Setelah 1 menit",
+      "nMin": "Setelah {} menit",
+      "custom": "Durasi khusus",
+      "customTitle": "Kunci Otomatis Kustom",
+      "customHint": "Masukkan menit",
+      "minutes": "menit"
+    },
+    "pin": {
+      "setup": "Atur PIN",
+      "setupDesc": "Masukkan PIN 4-6 digit",
+      "confirm": "Konfirmasi PIN",
+      "confirmDesc": "Masukkan ulang PIN Anda untuk konfirmasi",
+      "tooShort": "PIN minimal 4 digit",
+      "mismatch": "PIN tidak cocok",
+      "setSuccess": "PIN berhasil diatur"
+    },
+    "password": {
+      "setup": "Atur Kata Sandi",
+      "setupDesc": "Masukkan kata sandi (min 6 karakter)",
+      "label": "Kata Sandi",
+      "confirmLabel": "Konfirmasi Kata Sandi",
+      "tooShort": "Kata sandi minimal 6 karakter",
+      "mismatch": "Kata sandi tidak cocok",
+      "setSuccess": "Kata sandi berhasil diatur"
+    },
+    "common": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "next": "Selanjutnya"
+    }
   }
 }

@@ -12,6 +12,9 @@ import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
+import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
+import 'package:ikuyo_finance/features/security/service/biometric_service.dart';
+import 'package:ikuyo_finance/features/security/service/security_storage_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
@@ -94,6 +97,19 @@ Future<void> _setupTheme() async {
   getIt.registerSingleton<SharedPreferences>(prefs);
   getIt.registerLazySingleton<ThemeCubit>(() => ThemeCubit(prefs));
   getIt.registerLazySingleton<LocaleCubit>(() => LocaleCubit(prefs));
+
+  // * Security services & cubit
+  final secureStorage = getIt<FlutterSecureStorage>();
+  getIt.registerLazySingleton<SecurityStorageService>(
+    () => SecurityStorageService(secureStorage),
+  );
+  getIt.registerLazySingleton<BiometricService>(() => BiometricService());
+  getIt.registerLazySingleton<SecurityCubit>(
+    () => SecurityCubit(
+      getIt<SecurityStorageService>(),
+      getIt<BiometricService>(),
+    ),
+  );
 }
 
 /// Setup currency after ObjectBox is ready

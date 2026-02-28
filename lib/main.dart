@@ -12,6 +12,8 @@ import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
+import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
+import 'package:ikuyo_finance/features/security/screens/lock_screen.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -65,6 +67,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => getIt<ThemeCubit>()),
         BlocProvider(create: (_) => getIt<CurrencyCubit>()),
         BlocProvider(create: (_) => getIt<LocaleCubit>()),
+        BlocProvider(create: (_) => getIt<SecurityCubit>()),
       ],
       // * Use BlocListener for loose coupling between blocs (best practice)
       child: MultiBlocListener(
@@ -103,10 +106,74 @@ class MyApp extends StatelessWidget {
               localizationsDelegates: context.localizationDelegates,
               supportedLocales: context.supportedLocales,
               locale: context.locale,
+              builder: (context, child) {
+                return _AppSecurityWrapper(child: child!);
+              },
             );
           },
         ),
       ),
+    );
+  }
+}
+
+/// Widget yang menangani app lifecycle & menampilkan lock screen overlay
+class _AppSecurityWrapper extends StatefulWidget {
+  final Widget child;
+  const _AppSecurityWrapper({required this.child});
+
+  @override
+  State<_AppSecurityWrapper> createState() => _AppSecurityWrapperState();
+}
+
+class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
+    with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    final cubit = context.read<SecurityCubit>();
+
+    switch (state) {
+      case AppLifecycleState.paused:
+        cubit.onAppPaused();
+        break;
+      case AppLifecycleState.detached:
+        cubit.onAppClose();
+        break;
+      case AppLifecycleState.inactive:
+        cubit.onScreenOff();
+        break;
+      case AppLifecycleState.resumed:
+        cubit.onAppResumed();
+        break;
+      case AppLifecycleState.hidden:
+        break;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SecurityCubit, SecurityState>(
+      buildWhen: (prev, curr) => prev.shouldLock != curr.shouldLock,
+      builder: (context, state) {
+        return Stack(
+          children: [
+            widget.child,
+            if (state.shouldLock) const Positioned.fill(child: LockScreen()),
+          ],
+        );
+      },
     );
   }
 }

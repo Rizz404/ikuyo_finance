@@ -19,6 +19,7 @@ import 'package:ikuyo_finance/features/category/screens/category_upsert_screen.d
 import 'package:ikuyo_finance/features/other/screens/other_screen.dart';
 import 'package:ikuyo_finance/features/other/screens/setting_screen.dart';
 import 'package:ikuyo_finance/features/backup/screens/backup_screen.dart';
+import 'package:ikuyo_finance/features/security/screens/security_settings_screen.dart';
 import 'package:ikuyo_finance/features/statistic/screens/statistic_screen.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/screens/transaction_bulk_copy_screen.dart';
@@ -300,6 +301,15 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
         pageBuilder: (context, state) => AppPageTransitions.slideRight(
           key: state.pageKey,
           child: const BackupScreen(),
+        ),
+      ),
+      // * Security settings route - outside shell (fullscreen)
+      GoRoute(
+        name: AppRoutes.securityName,
+        path: AppRoutes.securityPath,
+        pageBuilder: (context, state) => AppPageTransitions.slideRight(
+          key: state.pageKey,
+          child: const SecuritySettingsScreen(),
         ),
       ),
     ],

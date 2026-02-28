@@ -533,4 +533,80 @@ abstract class LocaleKeys {
       'transaction.bulkCopy.typeExpense';
   static const transactionBulkCopyTypeIncome =
       'transaction.bulkCopy.typeIncome';
+
+  // * Security - Lock Screen
+  static const securityLockTitle = 'security.lock.title';
+  static const securityLockSubtitle = 'security.lock.subtitle';
+  static const securityUseBiometric = 'security.lock.useBiometric';
+  static const securityUsePin = 'security.lock.usePin';
+  static const securityUsePassword = 'security.lock.usePassword';
+  static const securityUnlock = 'security.lock.unlock';
+  static const securityAuthenticating = 'security.lock.authenticating';
+  static const securityBiometricFailed = 'security.lock.biometricFailed';
+  static const securityPinIncorrect = 'security.lock.pinIncorrect';
+  static const securityPasswordIncorrect = 'security.lock.passwordIncorrect';
+  static const securityEnterPassword = 'security.lock.enterPassword';
+
+  // * Security - Settings
+  static const securitySettingsTitle = 'security.settings.title';
+  static const securitySettingsGeneral = 'security.settings.general';
+  static const securitySettingsEnable = 'security.settings.enable';
+  static const securitySettingsEnableDesc = 'security.settings.enableDesc';
+  static const securitySettingsMethods = 'security.settings.methods';
+  static const securitySettingsBiometric = 'security.settings.biometric';
+  static const securitySettingsBiometricDesc =
+      'security.settings.biometricDesc';
+  static const securitySettingsBiometricUnavailable =
+      'security.settings.biometricUnavailable';
+  static const securitySettingsPin = 'security.settings.pin';
+  static const securitySettingsPinDesc = 'security.settings.pinDesc';
+  static const securitySettingsPinActive = 'security.settings.pinActive';
+  static const securitySettingsPassword = 'security.settings.password';
+  static const securitySettingsPasswordDesc = 'security.settings.passwordDesc';
+  static const securitySettingsPasswordActive =
+      'security.settings.passwordActive';
+  static const securitySettingsLockBehavior = 'security.settings.lockBehavior';
+  static const securitySettingsLockTrigger = 'security.settings.lockTrigger';
+  static const securitySettingsAutoLock = 'security.settings.autoLock';
+  static const securitySettingsManage = 'security.settings.manage';
+  static const securitySettingsChangePin = 'security.settings.changePin';
+  static const securitySettingsChangePassword =
+      'security.settings.changePassword';
+
+  // * Security - Lock Triggers
+  static const securityTriggerAppClose = 'security.trigger.appClose';
+  static const securityTriggerScreenOff = 'security.trigger.screenOff';
+  static const securityTriggerBoth = 'security.trigger.both';
+
+  // * Security - Auto Lock
+  static const securityAutoLockImmediate = 'security.autoLock.immediate';
+  static const securityAutoLock1Min = 'security.autoLock.oneMin';
+  static const securityAutoLockNMin = 'security.autoLock.nMin';
+  static const securityAutoLockCustom = 'security.autoLock.custom';
+  static const securityAutoLockCustomTitle = 'security.autoLock.customTitle';
+  static const securityAutoLockCustomHint = 'security.autoLock.customHint';
+  static const securityAutoLockMinutes = 'security.autoLock.minutes';
+
+  // * Security - PIN Setup
+  static const securityPinSetup = 'security.pin.setup';
+  static const securityPinSetupDesc = 'security.pin.setupDesc';
+  static const securityPinConfirm = 'security.pin.confirm';
+  static const securityPinConfirmDesc = 'security.pin.confirmDesc';
+  static const securityPinTooShort = 'security.pin.tooShort';
+  static const securityPinMismatch = 'security.pin.mismatch';
+  static const securityPinSetSuccess = 'security.pin.setSuccess';
+
+  // * Security - Password Setup
+  static const securityPasswordSetup = 'security.password.setup';
+  static const securityPasswordSetupDesc = 'security.password.setupDesc';
+  static const securityPasswordLabel = 'security.password.label';
+  static const securityPasswordConfirmLabel = 'security.password.confirmLabel';
+  static const securityPasswordTooShort = 'security.password.tooShort';
+  static const securityPasswordMismatch = 'security.password.mismatch';
+  static const securityPasswordSetSuccess = 'security.password.setSuccess';
+
+  // * Security - Common
+  static const securityCancel = 'security.common.cancel';
+  static const securitySave = 'security.common.save';
+  static const securityNext = 'security.common.next';
 }

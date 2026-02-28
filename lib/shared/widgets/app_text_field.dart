@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
-import 'package:ikuyo_finance/core/currency/models/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 
 enum AppTextFieldType {
@@ -12,11 +9,10 @@ enum AppTextFieldType {
   text,
   phone,
   number,
-  currency, // * Dynamic currency based on user selection
-  priceJP,
-  priceUS,
+  currency,
   url,
   multiline,
+  hidden, // * Hidden field untuk form validation tanpa UI visible
 }
 
 class AppTextField extends StatefulWidget {
@@ -33,6 +29,8 @@ class AppTextField extends StatefulWidget {
   final String? suffixText;
   final Widget? prefixIcon;
   final Widget? suffixIcon;
+  final void Function(String?)? onChanged;
+  final bool? enabled;
 
   const AppTextField({
     super.key,
@@ -49,6 +47,8 @@ class AppTextField extends StatefulWidget {
     this.suffixText,
     this.prefixIcon,
     this.suffixIcon,
+    this.onChanged,
+    this.enabled,
   });
 
   @override
@@ -61,9 +61,29 @@ class _AppTextFieldState extends State<AppTextField> {
   @override
   Widget build(BuildContext context) {
     final isPassword = widget.type == AppTextFieldType.password;
+    final isHidden = widget.type == AppTextFieldType.hidden;
     final isMultiline =
         widget.type == AppTextFieldType.multiline ||
         (widget.maxLines != null && widget.maxLines! > 1);
+
+    // * Return invisible field untuk hidden type
+    if (isHidden) {
+      return SizedBox(
+        height: 0,
+        child: FormBuilderTextField(
+          name: widget.name,
+          initialValue: widget.initialValue,
+          validator: widget.validator,
+          onChanged: widget.onChanged,
+          style: const TextStyle(height: 0, fontSize: 0),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            contentPadding: EdgeInsets.zero,
+            constraints: BoxConstraints(maxHeight: 0, maxWidth: 0),
+          ),
+        ),
+      );
+    }
 
     // Menentukan keyboard type berdasarkan enum
     TextInputType getKeyboardType() {
@@ -74,8 +94,6 @@ class _AppTextFieldState extends State<AppTextField> {
           return TextInputType.phone;
         case AppTextFieldType.number:
         case AppTextFieldType.currency:
-        case AppTextFieldType.priceJP:
-        case AppTextFieldType.priceUS:
           return TextInputType.number;
         case AppTextFieldType.url:
           return TextInputType.url;
@@ -96,8 +114,6 @@ class _AppTextFieldState extends State<AppTextField> {
         case AppTextFieldType.phone:
         case AppTextFieldType.number:
         case AppTextFieldType.currency:
-        case AppTextFieldType.priceJP:
-        case AppTextFieldType.priceUS:
         case AppTextFieldType.url:
           return TextCapitalization.none;
         default:
@@ -111,17 +127,7 @@ class _AppTextFieldState extends State<AppTextField> {
         case AppTextFieldType.number:
           return [FilteringTextInputFormatter.digitsOnly];
         case AppTextFieldType.currency:
-          return [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-            _CurrencyFormatter(context),
-          ];
-        case AppTextFieldType.priceJP:
-          return [FilteringTextInputFormatter.digitsOnly, _JPPriceFormatter()];
-        case AppTextFieldType.priceUS:
-          return [
-            FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-            _USPriceFormatter(),
-          ];
+          return [FilteringTextInputFormatter.digitsOnly, _IDRPriceFormatter()];
         case AppTextFieldType.phone:
           return [FilteringTextInputFormatter.allow(RegExp(r'[0-9+\-\s\(\)]'))];
         default:
@@ -135,27 +141,32 @@ class _AppTextFieldState extends State<AppTextField> {
 
       switch (widget.type) {
         case AppTextFieldType.currency:
-          // * Get dynamic currency symbol from CurrencyCubit
-          final currencyState = context.watch<CurrencyCubit>().state;
-          return currencyState.currency.symbol;
-        case AppTextFieldType.priceJP:
-          return '¥';
-        case AppTextFieldType.priceUS:
-          return '\$';
+          return 'Rp';
         default:
           return null;
       }
     }
 
+    // * Format initial value untuk currency field
+    String? formattedInitialValue = widget.initialValue;
+    if (widget.type == AppTextFieldType.currency &&
+        widget.initialValue != null) {
+      formattedInitialValue = _IDRPriceFormatter.formatPrice(
+        widget.initialValue!,
+      );
+    }
+
     return FormBuilderTextField(
       name: widget.name,
-      initialValue: widget.initialValue,
+      initialValue: formattedInitialValue,
       maxLines: isPassword ? 1 : (widget.maxLines ?? (isMultiline ? 5 : 1)),
       obscureText: isPassword ? _obscureText : false,
       keyboardType: getKeyboardType(),
       textCapitalization: getTextCapitalization(),
       inputFormatters: getInputFormatters(),
       readOnly: widget.readOnly,
+      valueTransformer: (value) => value?.trim(),
+      onChanged: widget.onChanged,
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.placeHolder,
@@ -204,12 +215,24 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
       ),
       validator: widget.validator,
+      enabled: widget.enabled ?? true,
     );
   }
 }
 
-// Custom formatter untuk harga Jepang (format: 1,000,000)
-class _JPPriceFormatter extends TextInputFormatter {
+// Custom formatter untuk harga IDR (format: 1.000.000)
+class _IDRPriceFormatter extends TextInputFormatter {
+  // * Static method untuk format initial value
+  static String formatPrice(String value) {
+    if (value.isEmpty) return value;
+
+    // * Remove semua non-digit characters (termasuk titik dan decimal point)
+    final digitsOnly = value.replaceAll(RegExp(r'[^\d]'), '');
+    if (digitsOnly.isEmpty) return '';
+
+    return _addDots(digitsOnly);
+  }
+
   @override
   TextEditingValue formatEditUpdate(
     TextEditingValue oldValue,
@@ -219,19 +242,43 @@ class _JPPriceFormatter extends TextInputFormatter {
       return newValue;
     }
 
-    // Remove existing commas
-    String digitsOnly = newValue.text.replaceAll(',', '');
+    // * Fix cursor jumping issue
+    // 1. Hitung jumlah digit di sebelah kiri cursor pada newValue
+    String newText = newValue.text;
+    int cursorIndex = newValue.selection.end;
 
-    // Add commas for thousands
-    String formatted = _addCommas(digitsOnly);
+    int digitsBeforeCursor = 0;
+    for (int i = 0; i < cursorIndex && i < newText.length; i++) {
+      if (RegExp(r'\d').hasMatch(newText[i])) {
+        digitsBeforeCursor++;
+      }
+    }
+
+    // 2. Format ulang text (hanya digit)
+    String digitsOnly = newText.replaceAll(RegExp(r'[^\d]'), '');
+    String formatted = _addDots(digitsOnly);
+
+    // 3. Cari posisi cursor baru di string formatted
+    int newCursorIndex = 0;
+    int digitsEncountered = 0;
+
+    for (int i = 0; i < formatted.length; i++) {
+      if (digitsEncountered == digitsBeforeCursor) {
+        break;
+      }
+      if (RegExp(r'\d').hasMatch(formatted[i])) {
+        digitsEncountered++;
+      }
+      newCursorIndex++;
+    }
 
     return TextEditingValue(
       text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
+      selection: TextSelection.collapsed(offset: newCursorIndex),
     );
   }
 
-  String _addCommas(String value) {
+  static String _addDots(String value) {
     if (value.length <= 3) return value;
 
     String result = '';
@@ -239,183 +286,7 @@ class _JPPriceFormatter extends TextInputFormatter {
 
     for (int i = value.length - 1; i >= 0; i--) {
       if (count > 0 && count % 3 == 0) {
-        result = ',$result';
-      }
-      result = value[i] + result;
-      count++;
-    }
-
-    return result;
-  }
-}
-
-// Custom formatter untuk harga US (format: 1,000.00)
-class _USPriceFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) {
-      return newValue;
-    }
-
-    // Allow only digits, comma, and one decimal point
-    String filtered = newValue.text.replaceAll(RegExp(r'[^0-9.,]'), '');
-
-    // Ensure only one decimal point
-    List<String> parts = filtered.split('.');
-    if (parts.length > 2) {
-      filtered = '${parts[0]}.${parts.sublist(1).join('')}';
-    }
-
-    // Limit decimal places to 2
-    if (parts.length == 2 && parts[1].length > 2) {
-      filtered = '${parts[0]}.${parts[1].substring(0, 2)}';
-    }
-
-    // Format the integer part with commas
-    if (parts.isNotEmpty) {
-      String integerPart = parts[0].replaceAll(',', '');
-      String formattedInteger = _addCommas(integerPart);
-
-      if (parts.length > 1) {
-        filtered = '$formattedInteger.${parts[1]}';
-      } else if (filtered.endsWith('.')) {
-        filtered = '$formattedInteger.';
-      } else {
-        filtered = formattedInteger;
-      }
-    }
-
-    return TextEditingValue(
-      text: filtered,
-      selection: TextSelection.collapsed(offset: filtered.length),
-    );
-  }
-
-  String _addCommas(String value) {
-    if (value.length <= 3) return value;
-
-    String result = '';
-    int count = 0;
-
-    for (int i = value.length - 1; i >= 0; i--) {
-      if (count > 0 && count % 3 == 0) {
-        result = ',$result';
-      }
-      result = value[i] + result;
-      count++;
-    }
-
-    return result;
-  }
-}
-
-/// Dynamic currency formatter based on selected currency
-/// * IDR: 12.000 (uses . for thousands, no decimals)
-/// * USD: 12,000.00 (uses , for thousands, . for decimals)
-class _CurrencyFormatter extends TextInputFormatter {
-  final BuildContext context;
-
-  _CurrencyFormatter(this.context);
-
-  @override
-  TextEditingValue formatEditUpdate(
-    TextEditingValue oldValue,
-    TextEditingValue newValue,
-  ) {
-    if (newValue.text.isEmpty) return newValue;
-
-    final currencyState = context.read<CurrencyCubit>().state;
-    final currency = currencyState.currency;
-
-    // * For currencies with no decimals (IDR, JPY, KRW)
-    if (currency.decimalDigits == 0) {
-      return _formatNoDecimals(newValue, currency.code);
-    }
-
-    // * For currencies with decimals (USD, EUR, etc.)
-    return _formatWithDecimals(newValue, currency.code);
-  }
-
-  TextEditingValue _formatNoDecimals(
-    TextEditingValue newValue,
-    CurrencyCode code,
-  ) {
-    // Remove all non-digits
-    String digitsOnly = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digitsOnly.isEmpty) return newValue.copyWith(text: '');
-
-    // * IDR, MYR uses . for thousands (12.000)
-    // * JPY, KRW uses , for thousands (12,000)
-    final separator = (code == CurrencyCode.idr || code == CurrencyCode.myr)
-        ? '.'
-        : ',';
-
-    String formatted = _addSeparators(digitsOnly, separator);
-
-    return TextEditingValue(
-      text: formatted,
-      selection: TextSelection.collapsed(offset: formatted.length),
-    );
-  }
-
-  TextEditingValue _formatWithDecimals(
-    TextEditingValue newValue,
-    CurrencyCode code,
-  ) {
-    // * IDR format: 12.000,00 (. for thousands, , for decimals)
-    // * USD format: 12,000.00 (, for thousands, . for decimals)
-    final isIdFormat = code == CurrencyCode.idr || code == CurrencyCode.myr;
-    final thousandsSep = isIdFormat ? '.' : ',';
-    final decimalSep = isIdFormat ? ',' : '.';
-
-    // Allow only digits and decimal separator
-    String filtered = newValue.text.replaceAll(RegExp('[^0-9$decimalSep]'), '');
-
-    // Ensure only one decimal separator
-    List<String> parts = filtered.split(decimalSep);
-    if (parts.length > 2) {
-      filtered = '${parts[0]}$decimalSep${parts.sublist(1).join('')}';
-      parts = [parts[0], parts.sublist(1).join('')];
-    }
-
-    // Limit decimal places to 2
-    if (parts.length == 2 && parts[1].length > 2) {
-      filtered = '${parts[0]}$decimalSep${parts[1].substring(0, 2)}';
-      parts = [parts[0], parts[1].substring(0, 2)];
-    }
-
-    // Format integer part with thousands separator
-    if (parts.isNotEmpty && parts[0].isNotEmpty) {
-      String integerPart = parts[0].replaceAll(thousandsSep, '');
-      String formattedInteger = _addSeparators(integerPart, thousandsSep);
-
-      if (parts.length > 1) {
-        filtered = '$formattedInteger$decimalSep${parts[1]}';
-      } else if (filtered.endsWith(decimalSep)) {
-        filtered = '$formattedInteger$decimalSep';
-      } else {
-        filtered = formattedInteger;
-      }
-    }
-
-    return TextEditingValue(
-      text: filtered,
-      selection: TextSelection.collapsed(offset: filtered.length),
-    );
-  }
-
-  String _addSeparators(String value, String separator) {
-    if (value.length <= 3) return value;
-
-    String result = '';
-    int count = 0;
-
-    for (int i = value.length - 1; i >= 0; i--) {
-      if (count > 0 && count % 3 == 0) {
-        result = '$separator$result';
+        result = '.$result';
       }
       result = value[i] + result;
       count++;

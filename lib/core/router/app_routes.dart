@@ -88,4 +88,11 @@ final class AppRoutes {
   // * Backup Routes
   static const String backupName = 'backup';
   static const String backupPath = '/backup';
+
+  // * Security Routes
+  static const String securityName = 'security';
+  static const String securityPath = '/security';
+
+  static const String lockName = 'lock';
+  static const String lockPath = '/lock';
 }

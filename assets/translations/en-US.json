@@ -405,5 +405,79 @@
       "descriptionMaxLength": "Description must be at most 500 characters",
       "ulidRequired": "ULID is required"
     }
+  },
+  "security": {
+    "lock": {
+      "title": "App Locked",
+      "subtitle": "Verify your identity to continue",
+      "useBiometric": "Use Biometric",
+      "usePin": "Use PIN",
+      "usePassword": "Use Password",
+      "unlock": "Unlock",
+      "authenticating": "Authenticating...",
+      "biometricFailed": "Biometric authentication failed. Try again or use another method.",
+      "pinIncorrect": "Incorrect PIN. Please try again.",
+      "passwordIncorrect": "Incorrect password. Please try again.",
+      "enterPassword": "Enter your password"
+    },
+    "settings": {
+      "title": "Security",
+      "general": "GENERAL",
+      "enable": "App Lock",
+      "enableDesc": "Require authentication to open the app",
+      "methods": "AUTHENTICATION METHODS",
+      "biometric": "Biometric",
+      "biometricDesc": "Use fingerprint or face recognition",
+      "biometricUnavailable": "Biometric not available on this device",
+      "pin": "PIN",
+      "pinDesc": "Set a 4-6 digit PIN",
+      "pinActive": "PIN is active",
+      "password": "Password",
+      "passwordDesc": "Set a password",
+      "passwordActive": "Password is active",
+      "lockBehavior": "LOCK BEHAVIOR",
+      "lockTrigger": "Lock When",
+      "autoLock": "Auto-Lock After",
+      "manage": "MANAGE CREDENTIALS",
+      "changePin": "Change PIN",
+      "changePassword": "Change Password"
+    },
+    "trigger": {
+      "appClose": "App is closed",
+      "screenOff": "Screen is turned off",
+      "both": "App closed or screen off"
+    },
+    "autoLock": {
+      "immediate": "Immediately",
+      "oneMin": "After 1 minute",
+      "nMin": "After {} minutes",
+      "custom": "Custom duration",
+      "customTitle": "Custom Auto-Lock",
+      "customHint": "Enter minutes",
+      "minutes": "min"
+    },
+    "pin": {
+      "setup": "Set PIN",
+      "setupDesc": "Enter a 4-6 digit PIN",
+      "confirm": "Confirm PIN",
+      "confirmDesc": "Re-enter your PIN to confirm",
+      "tooShort": "PIN must be at least 4 digits",
+      "mismatch": "PINs do not match",
+      "setSuccess": "PIN set successfully"
+    },
+    "password": {
+      "setup": "Set Password",
+      "setupDesc": "Enter a password (min 6 characters)",
+      "label": "Password",
+      "confirmLabel": "Confirm Password",
+      "tooShort": "Password must be at least 6 characters",
+      "mismatch": "Passwords do not match",
+      "setSuccess": "Password set successfully"
+    },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "next": "Next"
+    }
   }
 }
