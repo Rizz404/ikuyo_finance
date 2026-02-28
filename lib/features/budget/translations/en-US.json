@@ -1,0 +1,49 @@
+{
+  "budget": {
+    "screen": {
+      "title": "Budget",
+      "tabAll": "All",
+      "tabMonthly": "Monthly",
+      "tabWeekly": "Weekly",
+      "tabYearly": "Yearly",
+      "tabCustom": "Custom",
+      "errorOccurred": "An error occurred",
+      "emptyTitle": "No budgets yet",
+      "emptySubtitle": "Press + to add a new budget"
+    },
+    "search": {
+      "hint": "Search budgets...",
+      "title": "Search Budgets",
+      "subtitle": "Type to search by budget category name",
+      "noResults": "No results",
+      "noResultsFor": "No budgets found for \"{query}\""
+    },
+    "upsert": {
+      "addTitle": "Add Budget",
+      "editTitle": "Edit Budget",
+      "success": "Success",
+      "errorOccurred": "An error occurred",
+      "deleteTitle": "Delete Budget",
+      "deleteConfirm": "Are you sure you want to delete this budget?",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "categoryLabel": "Category",
+      "categoryHint": "Select category",
+      "amountLimitLabel": "Budget Limit",
+      "amountLimitPlaceholder": "Example: 1000000",
+      "periodLabel": "Period",
+      "periodHint": "Select budget period",
+      "periodMonthly": "Monthly",
+      "periodWeekly": "Weekly",
+      "periodYearly": "Yearly",
+      "periodCustom": "Custom",
+      "startDateLabel": "Start Date",
+      "startDateHint": "Select start date",
+      "endDateLabel": "End Date",
+      "endDateHint": "Select end date",
+      "saveChanges": "Save Changes",
+      "addBudget": "Add Budget",
+      "deleteBudget": "Delete Budget"
+    }
+  }
+}

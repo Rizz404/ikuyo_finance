@@ -1,0 +1,21 @@
+{
+  "other": {
+    "screen": {
+      "title": "Settings",
+      "comingSoon": "Coming Soon",
+      "featureInDevelopment": "This feature is under development",
+      "settings": "Settings",
+      "manageAssets": "Manage Assets",
+      "manageCategories": "Manage Categories",
+      "password": "Password",
+      "backup": "Backup",
+      "help": "Help"
+    },
+    "setting": {
+      "title": "Settings",
+      "appearance": "APPEARANCE",
+      "currency": "CURRENCY",
+      "currencyChangeSuccess": "Currency changed successfully"
+    }
+  }
+}

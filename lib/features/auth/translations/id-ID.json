@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "signIn": {
+      "title": "Masuk"
+    },
+    "signUp": {
+      "title": "Daftar"
+    }
+  }
+}

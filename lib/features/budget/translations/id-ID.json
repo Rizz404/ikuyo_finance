@@ -1,0 +1,49 @@
+{
+  "budget": {
+    "screen": {
+      "title": "Anggaran",
+      "tabAll": "Semua",
+      "tabMonthly": "Bulanan",
+      "tabWeekly": "Mingguan",
+      "tabYearly": "Tahunan",
+      "tabCustom": "Kustom",
+      "errorOccurred": "Terjadi kesalahan",
+      "emptyTitle": "Belum ada anggaran",
+      "emptySubtitle": "Tekan + untuk menambah anggaran baru"
+    },
+    "search": {
+      "hint": "Cari anggaran...",
+      "title": "Cari Anggaran",
+      "subtitle": "Ketik untuk mencari berdasarkan nama kategori anggaran",
+      "noResults": "Tidak ada hasil",
+      "noResultsFor": "Tidak ditemukan anggaran dengan \"{query}\""
+    },
+    "upsert": {
+      "addTitle": "Tambah Anggaran",
+      "editTitle": "Edit Anggaran",
+      "success": "Berhasil",
+      "errorOccurred": "Terjadi kesalahan",
+      "deleteTitle": "Hapus Anggaran",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus anggaran ini?",
+      "cancel": "Batal",
+      "delete": "Hapus",
+      "categoryLabel": "Kategori",
+      "categoryHint": "Pilih kategori",
+      "amountLimitLabel": "Batas Anggaran",
+      "amountLimitPlaceholder": "Contoh: 1000000",
+      "periodLabel": "Periode",
+      "periodHint": "Pilih periode anggaran",
+      "periodMonthly": "Bulanan",
+      "periodWeekly": "Mingguan",
+      "periodYearly": "Tahunan",
+      "periodCustom": "Kustom",
+      "startDateLabel": "Tanggal Mulai",
+      "startDateHint": "Pilih tanggal mulai",
+      "endDateLabel": "Tanggal Selesai",
+      "endDateHint": "Pilih tanggal selesai",
+      "saveChanges": "Simpan Perubahan",
+      "addBudget": "Tambah Anggaran",
+      "deleteBudget": "Hapus Anggaran"
+    }
+  }
+}

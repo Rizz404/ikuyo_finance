@@ -1,0 +1,36 @@
+{
+  "backup": {
+    "screen": {
+      "title": "Cadangan Data",
+      "infoDescription": "Backup data disimpan dalam format JSON yang bisa diimpor kembali kapan saja.",
+      "currentData": "Data Saat Ini",
+      "categories": "Kategori",
+      "assets": "Aset",
+      "transactions": "Transaksi",
+      "budgets": "Budget",
+      "total": "Total",
+      "totalItems": "{count} item",
+      "exportTitle": "Export Data",
+      "exportDescription": "Simpan semua data ke file JSON yang bisa disimpan di penyimpanan perangkat.",
+      "exportButton": "Export Sekarang",
+      "importTitle": "Import Data",
+      "importDescription": "Pulihkan data dari file backup JSON. Data yang ada saat ini akan diganti.",
+      "importButton": "Pilih File Backup",
+      "importConfirmTitle": "Konfirmasi Import",
+      "importDataLabel": "Data yang akan diimport:",
+      "importWarning": "Semua data yang ada saat ini akan dihapus dan diganti dengan data backup!",
+      "importCancel": "Batal",
+      "importConfirmButton": "Import & Ganti Data",
+      "saveDialogTitle": "Simpan File Backup",
+      "success": "Berhasil",
+      "backupSavedTo": "Backup disimpan ke: {path}",
+      "importSuccess": "Data berhasil diimpor",
+      "error": "Error",
+      "errorOccurred": "Terjadi kesalahan",
+      "readBackupFailed": "Gagal membaca file backup: {error}",
+      "saveFileFailed": "Gagal menyimpan file: {error}",
+      "comingSoon": "Coming Soon",
+      "featureInDevelopment": "Fitur ini sedang dalam pengembangan"
+    }
+  }
+}

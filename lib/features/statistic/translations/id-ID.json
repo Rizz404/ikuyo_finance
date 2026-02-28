@@ -1,0 +1,10 @@
+{
+  "statistic": {
+    "screen": {
+      "tabExpense": "Pengeluaran",
+      "tabIncome": "Pendapatan",
+      "errorOccurred": "Terjadi kesalahan",
+      "tryAgain": "Coba Lagi"
+    }
+  }
+}

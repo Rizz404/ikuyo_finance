@@ -1,0 +1,21 @@
+{
+  "other": {
+    "screen": {
+      "title": "Pengaturan",
+      "comingSoon": "Coming Soon",
+      "featureInDevelopment": "Fitur ini sedang dalam pengembangan",
+      "settings": "Pengaturan",
+      "manageAssets": "Kelola Aset",
+      "manageCategories": "Kelola Kategori",
+      "password": "Kata Sandi",
+      "backup": "Cadangan",
+      "help": "Bantuan"
+    },
+    "setting": {
+      "title": "Pengaturan",
+      "appearance": "TAMPILAN",
+      "currency": "MATA UANG",
+      "currencyChangeSuccess": "Mata uang berhasil diubah"
+    }
+  }
+}

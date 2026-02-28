@@ -1,0 +1,50 @@
+{
+  "category": {
+    "screen": {
+      "title": "Category",
+      "tabAll": "All",
+      "tabExpense": "Expense",
+      "tabIncome": "Income",
+      "errorOccurred": "An error occurred",
+      "emptyTitle": "No categories yet",
+      "emptySubtitle": "Press + to add a new category"
+    },
+    "search": {
+      "hint": "Search categories...",
+      "title": "Search Categories",
+      "subtitle": "Type to search by category name",
+      "noResults": "No results",
+      "noResultsFor": "No categories found for \"{query}\""
+    },
+    "upsert": {
+      "addTitle": "Add Category",
+      "editTitle": "Edit Category",
+      "success": "Success",
+      "errorOccurred": "An error occurred",
+      "deleteTitle": "Delete Category",
+      "deleteConfirm": "Are you sure you want to delete this category? Transactions using this category will lose their category.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "typeLabel": "Category Type",
+      "typeHint": "Select category type",
+      "typeExpense": "Expense",
+      "typeIncome": "Income",
+      "parentLabel": "Parent Category (Optional)",
+      "parentHint": "None (Main Category)",
+      "parentCantBeChild": "Parent category cannot become a sub-category",
+      "subCategoryOf": "Sub-category of: {name}",
+      "parentCategoryLabel": "Parent Category",
+      "mainCategoryDesc": "Make it a main category without parent",
+      "nameLabel": "Category Name",
+      "namePlaceholder": "Example: Food & Drink",
+      "currentIconLabel": "Current Icon",
+      "changeIcon": "Change Icon",
+      "iconLabel": "Category Icon",
+      "iconHint": "Choose icon image (optional)",
+      "colorLabel": "Category Color",
+      "saveChanges": "Save Changes",
+      "addCategory": "Add Category",
+      "deleteCategory": "Delete Category"
+    }
+  }
+}

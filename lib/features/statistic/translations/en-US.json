@@ -1,0 +1,10 @@
+{
+  "statistic": {
+    "screen": {
+      "tabExpense": "Expense",
+      "tabIncome": "Income",
+      "errorOccurred": "An error occurred",
+      "tryAgain": "Try Again"
+    }
+  }
+}

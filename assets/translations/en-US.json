@@ -1,4 +1,207 @@
 {
+  "asset": {
+    "screen": {
+      "comingSoon": "Coming Soon",
+      "emptySubtitle": "Press + to add a new asset",
+      "emptyTitle": "No assets yet",
+      "errorOccurred": "An error occurred",
+      "featureInDevelopment": "This feature is under development",
+      "statisticTitle": "Statistics",
+      "tabList": "List",
+      "tabStatistic": "Statistic",
+      "title": "Assets"
+    },
+    "search": {
+      "hint": "Search assets...",
+      "noResults": "No results",
+      "noResultsFor": "No assets found for \"{query}\"",
+      "subtitle": "Type to search by asset name",
+      "title": "Search Assets"
+    },
+    "upsert": {
+      "addAsset": "Add Asset",
+      "addTitle": "Add Asset",
+      "balanceLabel": "Initial Balance",
+      "cancel": "Cancel",
+      "changeIcon": "Change Icon",
+      "currentIconLabel": "Current Icon",
+      "delete": "Delete",
+      "deleteAsset": "Delete Asset",
+      "deleteConfirm": "Are you sure you want to delete this asset? Transactions associated with this asset will be affected.",
+      "deleteTitle": "Delete Asset",
+      "editTitle": "Edit Asset",
+      "errorOccurred": "An error occurred",
+      "iconHint": "Choose icon image (optional)",
+      "iconLabel": "Asset Icon",
+      "nameLabel": "Asset Name",
+      "namePlaceholder": "Example: BCA, GoPay, Wallet",
+      "saveChanges": "Save Changes",
+      "success": "Success",
+      "typeBank": "Bank",
+      "typeCash": "Cash",
+      "typeCrypto": "Crypto",
+      "typeEWallet": "E-Wallet",
+      "typeHint": "Select asset type",
+      "typeLabel": "Asset Type",
+      "typeStock": "Stock"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Sign In"
+    },
+    "signUp": {
+      "title": "Sign Up"
+    }
+  },
+  "backup": {
+    "screen": {
+      "assets": "Assets",
+      "backupSavedTo": "Backup saved to: {path}",
+      "budgets": "Budgets",
+      "categories": "Categories",
+      "comingSoon": "Coming Soon",
+      "currentData": "Current Data",
+      "error": "Error",
+      "errorOccurred": "An error occurred",
+      "exportButton": "Export Now",
+      "exportDescription": "Save all data to a JSON file that can be stored on your device.",
+      "exportTitle": "Export Data",
+      "featureInDevelopment": "This feature is under development",
+      "importButton": "Choose Backup File",
+      "importCancel": "Cancel",
+      "importConfirmButton": "Import & Replace Data",
+      "importConfirmTitle": "Confirm Import",
+      "importDataLabel": "Data to import:",
+      "importDescription": "Restore data from a JSON backup file. Existing data will be replaced.",
+      "importSuccess": "Data imported successfully",
+      "importTitle": "Import Data",
+      "importWarning": "All existing data will be deleted and replaced with backup data!",
+      "infoDescription": "Backup data is saved in JSON format that can be imported back anytime.",
+      "readBackupFailed": "Failed to read backup file: {error}",
+      "saveDialogTitle": "Save Backup File",
+      "saveFileFailed": "Failed to save file: {error}",
+      "success": "Success",
+      "title": "Data Backup",
+      "total": "Total",
+      "totalItems": "{count} items",
+      "transactions": "Transactions"
+    }
+  },
+  "budget": {
+    "screen": {
+      "emptySubtitle": "Press + to add a new budget",
+      "emptyTitle": "No budgets yet",
+      "errorOccurred": "An error occurred",
+      "tabAll": "All",
+      "tabCustom": "Custom",
+      "tabMonthly": "Monthly",
+      "tabWeekly": "Weekly",
+      "tabYearly": "Yearly",
+      "title": "Budget"
+    },
+    "search": {
+      "hint": "Search budgets...",
+      "noResults": "No results",
+      "noResultsFor": "No budgets found for \"{query}\"",
+      "subtitle": "Type to search by budget category name",
+      "title": "Search Budgets"
+    },
+    "upsert": {
+      "addBudget": "Add Budget",
+      "addTitle": "Add Budget",
+      "amountLimitLabel": "Budget Limit",
+      "amountLimitPlaceholder": "Example: 1000000",
+      "cancel": "Cancel",
+      "categoryHint": "Select category",
+      "categoryLabel": "Category",
+      "delete": "Delete",
+      "deleteBudget": "Delete Budget",
+      "deleteConfirm": "Are you sure you want to delete this budget?",
+      "deleteTitle": "Delete Budget",
+      "editTitle": "Edit Budget",
+      "endDateHint": "Select end date",
+      "endDateLabel": "End Date",
+      "errorOccurred": "An error occurred",
+      "periodCustom": "Custom",
+      "periodHint": "Select budget period",
+      "periodLabel": "Period",
+      "periodMonthly": "Monthly",
+      "periodWeekly": "Weekly",
+      "periodYearly": "Yearly",
+      "saveChanges": "Save Changes",
+      "startDateHint": "Select start date",
+      "startDateLabel": "Start Date",
+      "success": "Success"
+    }
+  },
+  "category": {
+    "screen": {
+      "emptySubtitle": "Press + to add a new category",
+      "emptyTitle": "No categories yet",
+      "errorOccurred": "An error occurred",
+      "tabAll": "All",
+      "tabExpense": "Expense",
+      "tabIncome": "Income",
+      "title": "Category"
+    },
+    "search": {
+      "hint": "Search categories...",
+      "noResults": "No results",
+      "noResultsFor": "No categories found for \"{query}\"",
+      "subtitle": "Type to search by category name",
+      "title": "Search Categories"
+    },
+    "upsert": {
+      "addCategory": "Add Category",
+      "addTitle": "Add Category",
+      "cancel": "Cancel",
+      "changeIcon": "Change Icon",
+      "colorLabel": "Category Color",
+      "currentIconLabel": "Current Icon",
+      "delete": "Delete",
+      "deleteCategory": "Delete Category",
+      "deleteConfirm": "Are you sure you want to delete this category? Transactions using this category will lose their category.",
+      "deleteTitle": "Delete Category",
+      "editTitle": "Edit Category",
+      "errorOccurred": "An error occurred",
+      "iconHint": "Choose icon image (optional)",
+      "iconLabel": "Category Icon",
+      "mainCategoryDesc": "Make it a main category without parent",
+      "nameLabel": "Category Name",
+      "namePlaceholder": "Example: Food & Drink",
+      "parentCantBeChild": "Parent category cannot become a sub-category",
+      "parentCategoryLabel": "Parent Category",
+      "parentHint": "None (Main Category)",
+      "parentLabel": "Parent Category (Optional)",
+      "saveChanges": "Save Changes",
+      "subCategoryOf": "Sub-category of: {name}",
+      "success": "Success",
+      "typeExpense": "Expense",
+      "typeHint": "Select category type",
+      "typeIncome": "Income",
+      "typeLabel": "Category Type"
+    }
+  },
+  "other": {
+    "screen": {
+      "backup": "Backup",
+      "comingSoon": "Coming Soon",
+      "featureInDevelopment": "This feature is under development",
+      "help": "Help",
+      "manageAssets": "Manage Assets",
+      "manageCategories": "Manage Categories",
+      "password": "Password",
+      "settings": "Settings",
+      "title": "Settings"
+    },
+    "setting": {
+      "appearance": "APPEARANCE",
+      "currency": "CURRENCY",
+      "currencyChangeSuccess": "Currency changed successfully",
+      "title": "Settings"
+    }
+  },
   "sharedWidgets": {
     "colorPicker": {
       "customColorLabel": "Custom Color (Hex)"
@@ -83,6 +286,93 @@
       "settings": "Settings",
       "statistics": "Statistics",
       "transactions": "Transactions"
+    }
+  },
+  "statistic": {
+    "screen": {
+      "errorOccurred": "An error occurred",
+      "tabExpense": "Expense",
+      "tabIncome": "Income",
+      "tryAgain": "Try Again"
+    }
+  },
+  "transaction": {
+    "bulkCopy": {
+      "amountLabel": "Amount",
+      "amountMustBePositive": "Amount must be greater than 0",
+      "amountRequired": "Amount is required",
+      "assetHint": "Select asset",
+      "assetLabel": "Asset",
+      "assetRequired": "Asset must be selected",
+      "categoryHint": "Select category",
+      "categoryLabel": "Category",
+      "checkInvalidData": "Please check invalid data",
+      "clearAll": "Clear All",
+      "copyFromHint": "Select one or more transactions",
+      "copyFromLabel": "Copy from Transactions",
+      "dateLabel": "Date",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Add a note (optional)",
+      "mainCategory": "Main Category",
+      "noCategory": "No category",
+      "noDescription": "No description",
+      "noTransactions": "No transactions found",
+      "original": "Original: {name}",
+      "partialSuccess": "{success} succeeded, {failure} failed",
+      "remove": "Remove",
+      "saveCount": "Save {count} Transactions",
+      "searchHint": "Search transactions...",
+      "selectToCopy": "Select transactions to copy",
+      "subCategoryOf": "Sub of: {name}",
+      "successCount": "{count} transactions created successfully",
+      "title": "Copy Multiple Transactions",
+      "transactionType": "Transaction Type",
+      "transactionsSelected": "{count} transactions selected",
+      "typeExpense": "Expense",
+      "typeIncome": "Income"
+    },
+    "screen": {
+      "errorOccurred": "An error occurred",
+      "tabCalendar": "Calendar",
+      "tabDaily": "Daily",
+      "tabMonthly": "Monthly"
+    },
+    "search": {
+      "hint": "Search transactions...",
+      "noResults": "No results",
+      "noResultsFor": "No transactions found for \"{query}\"",
+      "subtitle": "Type to search by transaction description",
+      "title": "Search Transactions"
+    },
+    "upsert": {
+      "addAsset": "Add Asset",
+      "addCategory": "Add Category",
+      "addTitle": "Add Transaction",
+      "addTransaction": "Add Transaction",
+      "amountLabel": "Amount",
+      "amountMustBePositive": "Amount must be greater than 0",
+      "amountRequired": "Amount is required",
+      "assetHint": "Select asset",
+      "assetLabel": "Asset",
+      "assetRequired": "Asset must be selected",
+      "cancel": "Cancel",
+      "categoryHint": "Select category",
+      "categoryLabel": "Category",
+      "dateTimeLabel": "Date & Time",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this transaction?",
+      "deleteTitle": "Delete Transaction",
+      "deleteTransaction": "Delete Transaction",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Add a note (optional)",
+      "editTitle": "Edit Transaction",
+      "errorOccurred": "An error occurred",
+      "mainCategory": "Main Category",
+      "saveChanges": "Save Changes",
+      "subCategoryOf": "Sub of: {name}",
+      "success": "Success",
+      "typeExpense": "Expense",
+      "typeIncome": "Income"
     }
   }
 }

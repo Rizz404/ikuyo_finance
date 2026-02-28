@@ -1,0 +1,49 @@
+{
+  "asset": {
+    "screen": {
+      "title": "Aset",
+      "tabList": "Daftar",
+      "tabStatistic": "Statistik",
+      "errorOccurred": "Terjadi kesalahan",
+      "emptyTitle": "Belum ada aset",
+      "emptySubtitle": "Tekan + untuk menambah aset baru",
+      "statisticTitle": "Statistik",
+      "comingSoon": "Coming Soon",
+      "featureInDevelopment": "Fitur ini sedang dalam pengembangan"
+    },
+    "search": {
+      "hint": "Cari aset...",
+      "title": "Cari Aset",
+      "subtitle": "Ketik untuk mencari berdasarkan nama aset",
+      "noResults": "Tidak ada hasil",
+      "noResultsFor": "Tidak ditemukan aset dengan \"{query}\""
+    },
+    "upsert": {
+      "addTitle": "Tambah Aset",
+      "editTitle": "Edit Aset",
+      "success": "Berhasil",
+      "errorOccurred": "Terjadi kesalahan",
+      "deleteTitle": "Hapus Aset",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus aset ini? Transaksi yang terkait dengan aset ini akan terpengaruh.",
+      "cancel": "Batal",
+      "delete": "Hapus",
+      "typeLabel": "Tipe Aset",
+      "typeHint": "Pilih tipe aset",
+      "typeCash": "Kas",
+      "typeBank": "Bank",
+      "typeEWallet": "E-Wallet",
+      "typeStock": "Saham",
+      "typeCrypto": "Crypto",
+      "nameLabel": "Nama Aset",
+      "namePlaceholder": "Contoh: BCA, GoPay, Dompet",
+      "balanceLabel": "Saldo Awal",
+      "currentIconLabel": "Ikon Saat Ini",
+      "changeIcon": "Ganti Ikon",
+      "iconLabel": "Ikon Aset",
+      "iconHint": "Pilih gambar ikon (opsional)",
+      "saveChanges": "Simpan Perubahan",
+      "addAsset": "Tambah Aset",
+      "deleteAsset": "Hapus Aset"
+    }
+  }
+}

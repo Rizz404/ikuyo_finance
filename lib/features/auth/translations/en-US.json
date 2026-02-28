@@ -1,0 +1,10 @@
+{
+  "auth": {
+    "signIn": {
+      "title": "Sign In"
+    },
+    "signUp": {
+      "title": "Sign Up"
+    }
+  }
+}

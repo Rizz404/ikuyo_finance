@@ -1,4 +1,207 @@
 {
+  "asset": {
+    "screen": {
+      "comingSoon": "Coming Soon",
+      "emptySubtitle": "Tekan + untuk menambah aset baru",
+      "emptyTitle": "Belum ada aset",
+      "errorOccurred": "Terjadi kesalahan",
+      "featureInDevelopment": "Fitur ini sedang dalam pengembangan",
+      "statisticTitle": "Statistik",
+      "tabList": "Daftar",
+      "tabStatistic": "Statistik",
+      "title": "Aset"
+    },
+    "search": {
+      "hint": "Cari aset...",
+      "noResults": "Tidak ada hasil",
+      "noResultsFor": "Tidak ditemukan aset dengan \"{query}\"",
+      "subtitle": "Ketik untuk mencari berdasarkan nama aset",
+      "title": "Cari Aset"
+    },
+    "upsert": {
+      "addAsset": "Tambah Aset",
+      "addTitle": "Tambah Aset",
+      "balanceLabel": "Saldo Awal",
+      "cancel": "Batal",
+      "changeIcon": "Ganti Ikon",
+      "currentIconLabel": "Ikon Saat Ini",
+      "delete": "Hapus",
+      "deleteAsset": "Hapus Aset",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus aset ini? Transaksi yang terkait dengan aset ini akan terpengaruh.",
+      "deleteTitle": "Hapus Aset",
+      "editTitle": "Edit Aset",
+      "errorOccurred": "Terjadi kesalahan",
+      "iconHint": "Pilih gambar ikon (opsional)",
+      "iconLabel": "Ikon Aset",
+      "nameLabel": "Nama Aset",
+      "namePlaceholder": "Contoh: BCA, GoPay, Dompet",
+      "saveChanges": "Simpan Perubahan",
+      "success": "Berhasil",
+      "typeBank": "Bank",
+      "typeCash": "Kas",
+      "typeCrypto": "Crypto",
+      "typeEWallet": "E-Wallet",
+      "typeHint": "Pilih tipe aset",
+      "typeLabel": "Tipe Aset",
+      "typeStock": "Saham"
+    }
+  },
+  "auth": {
+    "signIn": {
+      "title": "Masuk"
+    },
+    "signUp": {
+      "title": "Daftar"
+    }
+  },
+  "backup": {
+    "screen": {
+      "assets": "Aset",
+      "backupSavedTo": "Backup disimpan ke: {path}",
+      "budgets": "Budget",
+      "categories": "Kategori",
+      "comingSoon": "Coming Soon",
+      "currentData": "Data Saat Ini",
+      "error": "Error",
+      "errorOccurred": "Terjadi kesalahan",
+      "exportButton": "Export Sekarang",
+      "exportDescription": "Simpan semua data ke file JSON yang bisa disimpan di penyimpanan perangkat.",
+      "exportTitle": "Export Data",
+      "featureInDevelopment": "Fitur ini sedang dalam pengembangan",
+      "importButton": "Pilih File Backup",
+      "importCancel": "Batal",
+      "importConfirmButton": "Import & Ganti Data",
+      "importConfirmTitle": "Konfirmasi Import",
+      "importDataLabel": "Data yang akan diimport:",
+      "importDescription": "Pulihkan data dari file backup JSON. Data yang ada saat ini akan diganti.",
+      "importSuccess": "Data berhasil diimpor",
+      "importTitle": "Import Data",
+      "importWarning": "Semua data yang ada saat ini akan dihapus dan diganti dengan data backup!",
+      "infoDescription": "Backup data disimpan dalam format JSON yang bisa diimpor kembali kapan saja.",
+      "readBackupFailed": "Gagal membaca file backup: {error}",
+      "saveDialogTitle": "Simpan File Backup",
+      "saveFileFailed": "Gagal menyimpan file: {error}",
+      "success": "Berhasil",
+      "title": "Cadangan Data",
+      "total": "Total",
+      "totalItems": "{count} item",
+      "transactions": "Transaksi"
+    }
+  },
+  "budget": {
+    "screen": {
+      "emptySubtitle": "Tekan + untuk menambah anggaran baru",
+      "emptyTitle": "Belum ada anggaran",
+      "errorOccurred": "Terjadi kesalahan",
+      "tabAll": "Semua",
+      "tabCustom": "Kustom",
+      "tabMonthly": "Bulanan",
+      "tabWeekly": "Mingguan",
+      "tabYearly": "Tahunan",
+      "title": "Anggaran"
+    },
+    "search": {
+      "hint": "Cari anggaran...",
+      "noResults": "Tidak ada hasil",
+      "noResultsFor": "Tidak ditemukan anggaran dengan \"{query}\"",
+      "subtitle": "Ketik untuk mencari berdasarkan nama kategori anggaran",
+      "title": "Cari Anggaran"
+    },
+    "upsert": {
+      "addBudget": "Tambah Anggaran",
+      "addTitle": "Tambah Anggaran",
+      "amountLimitLabel": "Batas Anggaran",
+      "amountLimitPlaceholder": "Contoh: 1000000",
+      "cancel": "Batal",
+      "categoryHint": "Pilih kategori",
+      "categoryLabel": "Kategori",
+      "delete": "Hapus",
+      "deleteBudget": "Hapus Anggaran",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus anggaran ini?",
+      "deleteTitle": "Hapus Anggaran",
+      "editTitle": "Edit Anggaran",
+      "endDateHint": "Pilih tanggal selesai",
+      "endDateLabel": "Tanggal Selesai",
+      "errorOccurred": "Terjadi kesalahan",
+      "periodCustom": "Kustom",
+      "periodHint": "Pilih periode anggaran",
+      "periodLabel": "Periode",
+      "periodMonthly": "Bulanan",
+      "periodWeekly": "Mingguan",
+      "periodYearly": "Tahunan",
+      "saveChanges": "Simpan Perubahan",
+      "startDateHint": "Pilih tanggal mulai",
+      "startDateLabel": "Tanggal Mulai",
+      "success": "Berhasil"
+    }
+  },
+  "category": {
+    "screen": {
+      "emptySubtitle": "Tekan + untuk menambah kategori baru",
+      "emptyTitle": "Belum ada kategori",
+      "errorOccurred": "Terjadi kesalahan",
+      "tabAll": "Semua",
+      "tabExpense": "Pengeluaran",
+      "tabIncome": "Pemasukan",
+      "title": "Kategori"
+    },
+    "search": {
+      "hint": "Cari kategori...",
+      "noResults": "Tidak ada hasil",
+      "noResultsFor": "Tidak ditemukan kategori dengan \"{query}\"",
+      "subtitle": "Ketik untuk mencari berdasarkan nama kategori",
+      "title": "Cari Kategori"
+    },
+    "upsert": {
+      "addCategory": "Tambah Kategori",
+      "addTitle": "Tambah Kategori",
+      "cancel": "Batal",
+      "changeIcon": "Ganti Ikon",
+      "colorLabel": "Warna Kategori",
+      "currentIconLabel": "Ikon Saat Ini",
+      "delete": "Hapus",
+      "deleteCategory": "Hapus Kategori",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus kategori ini? Transaksi yang menggunakan kategori ini akan kehilangan kategorinya.",
+      "deleteTitle": "Hapus Kategori",
+      "editTitle": "Edit Kategori",
+      "errorOccurred": "Terjadi kesalahan",
+      "iconHint": "Pilih gambar ikon (opsional)",
+      "iconLabel": "Ikon Kategori",
+      "mainCategoryDesc": "Jadikan kategori utama tanpa induk",
+      "nameLabel": "Nama Kategori",
+      "namePlaceholder": "Contoh: Makan & Minum",
+      "parentCantBeChild": "Kategori induk tidak dapat menjadi sub-kategori",
+      "parentCategoryLabel": "Kategori Induk",
+      "parentHint": "Tidak ada (Kategori Utama)",
+      "parentLabel": "Kategori Induk (Opsional)",
+      "saveChanges": "Simpan Perubahan",
+      "subCategoryOf": "Sub-kategori dari: {name}",
+      "success": "Berhasil",
+      "typeExpense": "Pengeluaran",
+      "typeHint": "Pilih tipe kategori",
+      "typeIncome": "Pemasukan",
+      "typeLabel": "Tipe Kategori"
+    }
+  },
+  "other": {
+    "screen": {
+      "backup": "Cadangan",
+      "comingSoon": "Coming Soon",
+      "featureInDevelopment": "Fitur ini sedang dalam pengembangan",
+      "help": "Bantuan",
+      "manageAssets": "Kelola Aset",
+      "manageCategories": "Kelola Kategori",
+      "password": "Kata Sandi",
+      "settings": "Pengaturan",
+      "title": "Pengaturan"
+    },
+    "setting": {
+      "appearance": "TAMPILAN",
+      "currency": "MATA UANG",
+      "currencyChangeSuccess": "Mata uang berhasil diubah",
+      "title": "Pengaturan"
+    }
+  },
   "sharedWidgets": {
     "colorPicker": {
       "customColorLabel": "Warna Custom (Hex)"
@@ -83,6 +286,93 @@
       "settings": "Pengaturan",
       "statistics": "Statistik",
       "transactions": "Transaksi"
+    }
+  },
+  "statistic": {
+    "screen": {
+      "errorOccurred": "Terjadi kesalahan",
+      "tabExpense": "Pengeluaran",
+      "tabIncome": "Pendapatan",
+      "tryAgain": "Coba Lagi"
+    }
+  },
+  "transaction": {
+    "bulkCopy": {
+      "amountLabel": "Jumlah",
+      "amountMustBePositive": "Jumlah harus lebih dari 0",
+      "amountRequired": "Jumlah harus diisi",
+      "assetHint": "Pilih aset",
+      "assetLabel": "Aset",
+      "assetRequired": "Aset harus dipilih",
+      "categoryHint": "Pilih kategori",
+      "categoryLabel": "Kategori",
+      "checkInvalidData": "Periksa kembali data yang belum valid",
+      "clearAll": "Hapus Semua",
+      "copyFromHint": "Pilih satu atau banyak transaksi",
+      "copyFromLabel": "Copy dari Transaksi",
+      "dateLabel": "Tanggal",
+      "descriptionLabel": "Deskripsi",
+      "descriptionPlaceholder": "Tambahkan catatan (opsional)",
+      "mainCategory": "Kategori Utama",
+      "noCategory": "Tanpa kategori",
+      "noDescription": "Tanpa deskripsi",
+      "noTransactions": "Tidak ada transaksi ditemukan",
+      "original": "Original: {name}",
+      "partialSuccess": "{success} berhasil, {failure} gagal",
+      "remove": "Hapus",
+      "saveCount": "Simpan {count} Transaksi",
+      "searchHint": "Cari transaksi...",
+      "selectToCopy": "Pilih transaksi untuk di-copy",
+      "subCategoryOf": "Sub dari: {name}",
+      "successCount": "{count} transaksi berhasil dibuat",
+      "title": "Copy Banyak Transaksi",
+      "transactionType": "Tipe Transaksi",
+      "transactionsSelected": "{count} transaksi dipilih",
+      "typeExpense": "Pengeluaran",
+      "typeIncome": "Pemasukan"
+    },
+    "screen": {
+      "errorOccurred": "Terjadi kesalahan",
+      "tabCalendar": "Kalender",
+      "tabDaily": "Harian",
+      "tabMonthly": "Bulanan"
+    },
+    "search": {
+      "hint": "Cari transaksi...",
+      "noResults": "Tidak ada hasil",
+      "noResultsFor": "Tidak ditemukan transaksi dengan \"{query}\"",
+      "subtitle": "Ketik untuk mencari berdasarkan deskripsi transaksi",
+      "title": "Cari Transaksi"
+    },
+    "upsert": {
+      "addAsset": "Tambah Asset",
+      "addCategory": "Tambah Kategori",
+      "addTitle": "Tambah Transaksi",
+      "addTransaction": "Tambah Transaksi",
+      "amountLabel": "Jumlah",
+      "amountMustBePositive": "Jumlah harus lebih dari 0",
+      "amountRequired": "Jumlah harus diisi",
+      "assetHint": "Pilih asset",
+      "assetLabel": "Asset",
+      "assetRequired": "Asset harus dipilih",
+      "cancel": "Batal",
+      "categoryHint": "Pilih kategori",
+      "categoryLabel": "Kategori",
+      "dateTimeLabel": "Tanggal & Waktu",
+      "delete": "Hapus",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus transaksi ini?",
+      "deleteTitle": "Hapus Transaksi",
+      "deleteTransaction": "Hapus Transaksi",
+      "descriptionLabel": "Deskripsi",
+      "descriptionPlaceholder": "Tambahkan catatan (opsional)",
+      "editTitle": "Edit Transaksi",
+      "errorOccurred": "Terjadi kesalahan",
+      "mainCategory": "Kategori Utama",
+      "saveChanges": "Simpan Perubahan",
+      "subCategoryOf": "Sub dari: {name}",
+      "success": "Berhasil",
+      "typeExpense": "Pengeluaran",
+      "typeIncome": "Pemasukan"
     }
   }
 }

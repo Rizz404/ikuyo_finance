@@ -1,0 +1,50 @@
+{
+  "category": {
+    "screen": {
+      "title": "Kategori",
+      "tabAll": "Semua",
+      "tabExpense": "Pengeluaran",
+      "tabIncome": "Pemasukan",
+      "errorOccurred": "Terjadi kesalahan",
+      "emptyTitle": "Belum ada kategori",
+      "emptySubtitle": "Tekan + untuk menambah kategori baru"
+    },
+    "search": {
+      "hint": "Cari kategori...",
+      "title": "Cari Kategori",
+      "subtitle": "Ketik untuk mencari berdasarkan nama kategori",
+      "noResults": "Tidak ada hasil",
+      "noResultsFor": "Tidak ditemukan kategori dengan \"{query}\""
+    },
+    "upsert": {
+      "addTitle": "Tambah Kategori",
+      "editTitle": "Edit Kategori",
+      "success": "Berhasil",
+      "errorOccurred": "Terjadi kesalahan",
+      "deleteTitle": "Hapus Kategori",
+      "deleteConfirm": "Apakah Anda yakin ingin menghapus kategori ini? Transaksi yang menggunakan kategori ini akan kehilangan kategorinya.",
+      "cancel": "Batal",
+      "delete": "Hapus",
+      "typeLabel": "Tipe Kategori",
+      "typeHint": "Pilih tipe kategori",
+      "typeExpense": "Pengeluaran",
+      "typeIncome": "Pemasukan",
+      "parentLabel": "Kategori Induk (Opsional)",
+      "parentHint": "Tidak ada (Kategori Utama)",
+      "parentCantBeChild": "Kategori induk tidak dapat menjadi sub-kategori",
+      "subCategoryOf": "Sub-kategori dari: {name}",
+      "parentCategoryLabel": "Kategori Induk",
+      "mainCategoryDesc": "Jadikan kategori utama tanpa induk",
+      "nameLabel": "Nama Kategori",
+      "namePlaceholder": "Contoh: Makan & Minum",
+      "currentIconLabel": "Ikon Saat Ini",
+      "changeIcon": "Ganti Ikon",
+      "iconLabel": "Ikon Kategori",
+      "iconHint": "Pilih gambar ikon (opsional)",
+      "colorLabel": "Warna Kategori",
+      "saveChanges": "Simpan Perubahan",
+      "addCategory": "Tambah Kategori",
+      "deleteCategory": "Hapus Kategori"
+    }
+  }
+}

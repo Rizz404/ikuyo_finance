@@ -1,0 +1,49 @@
+{
+  "asset": {
+    "screen": {
+      "title": "Assets",
+      "tabList": "List",
+      "tabStatistic": "Statistic",
+      "errorOccurred": "An error occurred",
+      "emptyTitle": "No assets yet",
+      "emptySubtitle": "Press + to add a new asset",
+      "statisticTitle": "Statistics",
+      "comingSoon": "Coming Soon",
+      "featureInDevelopment": "This feature is under development"
+    },
+    "search": {
+      "hint": "Search assets...",
+      "title": "Search Assets",
+      "subtitle": "Type to search by asset name",
+      "noResults": "No results",
+      "noResultsFor": "No assets found for \"{query}\""
+    },
+    "upsert": {
+      "addTitle": "Add Asset",
+      "editTitle": "Edit Asset",
+      "success": "Success",
+      "errorOccurred": "An error occurred",
+      "deleteTitle": "Delete Asset",
+      "deleteConfirm": "Are you sure you want to delete this asset? Transactions associated with this asset will be affected.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "typeLabel": "Asset Type",
+      "typeHint": "Select asset type",
+      "typeCash": "Cash",
+      "typeBank": "Bank",
+      "typeEWallet": "E-Wallet",
+      "typeStock": "Stock",
+      "typeCrypto": "Crypto",
+      "nameLabel": "Asset Name",
+      "namePlaceholder": "Example: BCA, GoPay, Wallet",
+      "balanceLabel": "Initial Balance",
+      "currentIconLabel": "Current Icon",
+      "changeIcon": "Change Icon",
+      "iconLabel": "Asset Icon",
+      "iconHint": "Choose icon image (optional)",
+      "saveChanges": "Save Changes",
+      "addAsset": "Add Asset",
+      "deleteAsset": "Delete Asset"
+    }
+  }
+}
