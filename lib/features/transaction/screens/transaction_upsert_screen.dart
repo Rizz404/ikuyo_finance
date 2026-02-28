@@ -36,6 +36,12 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   CategoryType _selectedType = CategoryType.expense;
 
+  List<Asset> _assets = [];
+  bool _isSearchingAssets = false;
+
+  List<Category> _categories = [];
+  bool _isSearchingCategories = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,66 +51,48 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
         _selectedType = category.categoryType;
       }
     }
+
+    _searchAssets('');
+    _searchCategories('');
   }
 
   // * Search assets using bloc method
-  Future<List<AppSearchableDropdownItem<String>>> _searchAssets(
-    String query,
-  ) async {
-    final bloc = context.read<AssetBloc>();
-    final assets = await bloc.searchAssetsForDropdown(
-      query: query.isEmpty ? null : query,
-    );
+  Future<void> _searchAssets(String query) async {
+    setState(() => _isSearchingAssets = true);
+    try {
+      final bloc = context.read<AssetBloc>();
+      final assets = await bloc.searchAssetsForDropdown(
+        query: query.isEmpty ? null : query,
+      );
 
-    if (!mounted) return [];
-
-    return assets
-        .map(
-          (asset) => AppSearchableDropdownItem(
-            value: asset.ulid,
-            label: asset.name,
-            subtitle: asset.assetType.name,
-            leading: Icon(
-              _getAssetIcon(asset.assetType),
-              size: 24,
-              color: context.colorScheme.primary,
-            ),
-          ),
-        )
-        .toList();
+      if (mounted) {
+        setState(() => _assets = assets);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSearchingAssets = false);
+      }
+    }
   }
 
   // * Search categories using bloc method (filtered by type)
-  Future<List<AppSearchableDropdownItem<String>>> _searchCategories(
-    String query, [
-    CategoryType? type,
-  ]) async {
-    final bloc = context.read<CategoryBloc>();
-    final categories = await bloc.searchCategoriesForDropdown(
-      query: query.isEmpty ? null : query,
-      type: type ?? _selectedType,
-    );
+  Future<void> _searchCategories(String query, [CategoryType? type]) async {
+    setState(() => _isSearchingCategories = true);
+    try {
+      final bloc = context.read<CategoryBloc>();
+      final categories = await bloc.searchCategoriesForDropdown(
+        query: query.isEmpty ? null : query,
+        type: type ?? _selectedType,
+      );
 
-    if (!mounted) return [];
-
-    return categories
-        .map(
-          (category) => AppSearchableDropdownItem(
-            value: category.ulid,
-            label: category.name,
-            subtitle: category.parent.target != null
-                ? '↳ Sub dari: ${category.parent.target!.name}'
-                : 'Kategori Utama',
-            leading: Icon(
-              category.parent.target != null
-                  ? Icons.subdirectory_arrow_right
-                  : Icons.folder_outlined,
-              size: 24,
-              color: _getCategoryColor(category, context),
-            ),
-          ),
-        )
-        .toList();
+      if (mounted) {
+        setState(() => _categories = categories);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSearchingCategories = false);
+      }
+    }
   }
 
   void _handleWriteStatus(BuildContext context, TransactionState state) {
@@ -283,21 +271,27 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: AppSearchableDropdown<String>(
+                  child: AppSearchableDropdown<Asset>(
                     name: 'assetUlid',
                     label: 'Asset',
                     hintText: 'Pilih asset',
-                    searchHintText: 'Cari asset...',
-                    initialValue: widget.transaction?.asset.target?.ulid,
-                    initialDisplayText: widget.transaction?.asset.target?.name,
+                    initialValue: widget.transaction?.asset.target,
                     prefixIcon: const Icon(
                       Icons.account_balance_wallet_outlined,
                     ),
+                    items: _assets,
+                    isLoading: _isSearchingAssets,
                     onSearch: _searchAssets,
-                    onLoadInitial: () => _searchAssets(''),
+                    itemDisplayMapper: (asset) => asset.name,
+                    itemValueMapper: (asset) => asset.ulid,
+                    itemSubtitleMapper: (asset) => asset.assetType.name,
+                    itemLeadingMapper: (asset) => Icon(
+                      _getAssetIcon(asset.assetType),
+                      size: 24,
+                      color: context.colorScheme.primary,
+                    ),
                     validator: (value) =>
                         value == null ? 'Asset harus dipilih' : null,
-                    emptyMessage: 'Tidak ada asset ditemukan',
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -319,19 +313,29 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
-                  child: AppSearchableDropdown<String>(
+                  child: AppSearchableDropdown<Category>(
                     key: ValueKey(_selectedType),
                     name: 'categoryUlid',
                     label: 'Kategori',
                     hintText: 'Pilih kategori',
-                    searchHintText: 'Cari kategori...',
-                    initialValue: widget.transaction?.category.target?.ulid,
-                    initialDisplayText:
-                        widget.transaction?.category.target?.name,
+                    initialValue: widget.transaction?.category.target,
                     prefixIcon: const Icon(Icons.category_outlined),
+                    items: _categories,
+                    isLoading: _isSearchingCategories,
                     onSearch: _searchCategories,
-                    onLoadInitial: () => _searchCategories(''),
-                    emptyMessage: 'Tidak ada kategori ditemukan',
+                    itemDisplayMapper: (category) => category.name,
+                    itemValueMapper: (category) => category.ulid,
+                    itemSubtitleMapper: (category) =>
+                        category.parent.target != null
+                        ? '↳ Sub dari: ${category.parent.target!.name}'
+                        : 'Kategori Utama',
+                    itemLeadingMapper: (category) => Icon(
+                      category.parent.target != null
+                          ? Icons.subdirectory_arrow_right
+                          : Icons.folder_outlined,
+                      size: 24,
+                      color: _getCategoryColor(category, context),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 8),

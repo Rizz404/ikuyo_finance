@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
-import 'package:ikuyo_finance/shared/widgets/app_searchable_dropdown.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 /// * Multi-select dropdown widget that opens a bottom sheet with search
@@ -21,29 +20,26 @@ class AppMultiSelectDropdown<T> extends StatefulWidget {
   final String? Function(List<T>?)? validator;
 
   /// * Callback to search items - receives query and returns filtered items
-  final Future<List<AppSearchableDropdownItem<T>>> Function(String query)
-  onSearch;
+  final Future<List<T>> Function(String query) onSearch;
+
+  /// * Item configuration
+  final String Function(T item) itemDisplayMapper;
+  final String Function(T item) itemValueMapper;
+  final String? Function(T item)? itemSubtitleMapper;
+  final Widget? Function(T item)? itemLeadingMapper;
 
   /// * Callback when items are selected
   final ValueChanged<List<T>>? onChanged;
 
   /// * Optional: Load initial items when bottom sheet opens
-  final Future<List<AppSearchableDropdownItem<T>>> Function()? onLoadInitial;
+  final Future<List<T>> Function()? onLoadInitial;
 
   /// * Custom item builder for more control
-  final Widget Function(
-    BuildContext context,
-    AppSearchableDropdownItem<T> item,
-    bool isSelected,
-  )?
+  final Widget Function(BuildContext context, T item, bool isSelected)?
   itemBuilder;
 
   /// * Custom chip builder for selected items
-  final Widget Function(
-    BuildContext context,
-    AppSearchableDropdownItem<T> item,
-  )?
-  chipBuilder;
+  final Widget Function(BuildContext context, T item)? chipBuilder;
 
   /// * Empty state message
   final String? emptyMessage;
@@ -54,14 +50,15 @@ class AppMultiSelectDropdown<T> extends StatefulWidget {
   /// * Max items that can be selected (null = unlimited)
   final int? maxItems;
 
-  /// * Label builder for selected items display
-  final String Function(T item)? labelBuilder;
-
   const AppMultiSelectDropdown({
     super.key,
     required this.name,
     required this.label,
     required this.onSearch,
+    required this.itemDisplayMapper,
+    required this.itemValueMapper,
+    this.itemSubtitleMapper,
+    this.itemLeadingMapper,
     this.hintText,
     this.searchHintText,
     this.initialValue,
@@ -75,7 +72,6 @@ class AppMultiSelectDropdown<T> extends StatefulWidget {
     this.emptyMessage,
     this.debounceDuration = const Duration(milliseconds: 300),
     this.maxItems,
-    this.labelBuilder,
   });
 
   @override
@@ -84,18 +80,20 @@ class AppMultiSelectDropdown<T> extends StatefulWidget {
 }
 
 class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
-  List<AppSearchableDropdownItem<T>> _selectedItems = [];
+  List<T> _selectedItems = [];
 
   @override
   void initState() {
     super.initState();
-    // * Initial value handling akan disetup saat bottom sheet dibuka
+    if (widget.initialValue != null) {
+      _selectedItems = List.from(widget.initialValue!);
+    }
   }
 
   void _openSearchSheet() {
     if (!widget.enabled) return;
 
-    showModalBottomSheet<List<AppSearchableDropdownItem<T>>>(
+    showModalBottomSheet<List<T>>(
       context: context,
       isScrollControlled: true,
       backgroundColor: context.colors.surface,
@@ -108,6 +106,10 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
             widget.searchHintText ??
             LocaleKeys.sharedWidgetsMultiSelectDropdownSearchHint.tr(),
         onSearch: widget.onSearch,
+        itemDisplayMapper: widget.itemDisplayMapper,
+        itemValueMapper: widget.itemValueMapper,
+        itemSubtitleMapper: widget.itemSubtitleMapper,
+        itemLeadingMapper: widget.itemLeadingMapper,
         onLoadInitial: widget.onLoadInitial,
         itemBuilder: widget.itemBuilder,
         emptyMessage:
@@ -122,16 +124,18 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
         setState(() {
           _selectedItems = selected;
         });
-        widget.onChanged?.call(selected.map((e) => e.value).toList());
+        widget.onChanged?.call(selected);
       }
     });
   }
 
-  void _removeItem(AppSearchableDropdownItem<T> item) {
+  void _removeItem(T item) {
     setState(() {
-      _selectedItems.removeWhere((e) => e.value == item.value);
+      _selectedItems.removeWhere(
+        (e) => widget.itemValueMapper(e) == widget.itemValueMapper(item),
+      );
     });
-    widget.onChanged?.call(_selectedItems.map((e) => e.value).toList());
+    widget.onChanged?.call(_selectedItems);
   }
 
   void _clearAll() {
@@ -149,7 +153,7 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
       validator: widget.validator,
       builder: (field) {
         // * Sync field state with local state
-        final currentValues = _selectedItems.map((e) => e.value).toList();
+        final currentValues = _selectedItems;
         if (!_listEquals(field.value, currentValues)) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             field.didChange(currentValues);
@@ -207,11 +211,12 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
                 isEmpty: _selectedItems.isEmpty,
                 child: _selectedItems.isNotEmpty
                     ? AppText(
-                        LocaleKeys.sharedWidgetsMultiSelectDropdownItemsSelected.tr(
-                          namedArgs: {
-                            'count': _selectedItems.length.toString(),
-                          },
-                        ),
+                        LocaleKeys.sharedWidgetsMultiSelectDropdownItemsSelected
+                            .tr(
+                              namedArgs: {
+                                'count': _selectedItems.length.toString(),
+                              },
+                            ),
                         color: context.colors.textPrimary,
                       )
                     : null,
@@ -238,7 +243,11 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
     );
   }
 
-  Widget _buildDefaultChip(AppSearchableDropdownItem<T> item) {
+  Widget _buildDefaultChip(T item) {
+    final displayLabel = widget.itemDisplayMapper(item);
+    final subtitleLabel = widget.itemSubtitleMapper?.call(item);
+    final leadingWidget = widget.itemLeadingMapper?.call(item);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -251,8 +260,8 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (item.leading != null) ...[
-            item.leading!,
+          if (leadingWidget != null) ...[
+            leadingWidget,
             const SizedBox(width: 6),
           ],
           Flexible(
@@ -261,15 +270,15 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 AppText(
-                  item.label,
+                  displayLabel,
                   style: AppTextStyle.labelMedium,
                   fontWeight: FontWeight.w500,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                if (item.subtitle != null)
+                if (subtitleLabel != null)
                   AppText(
-                    item.subtitle!,
+                    subtitleLabel,
                     style: AppTextStyle.labelSmall,
                     color: context.colors.textSecondary,
                     maxLines: 1,
@@ -327,24 +336,27 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
 class _MultiSelectBottomSheet<T> extends StatefulWidget {
   final String title;
   final String searchHintText;
-  final Future<List<AppSearchableDropdownItem<T>>> Function(String query)
-  onSearch;
-  final Future<List<AppSearchableDropdownItem<T>>> Function()? onLoadInitial;
-  final Widget Function(
-    BuildContext context,
-    AppSearchableDropdownItem<T> item,
-    bool isSelected,
-  )?
+  final Future<List<T>> Function(String query) onSearch;
+  final Future<List<T>> Function()? onLoadInitial;
+  final String Function(T item) itemDisplayMapper;
+  final String Function(T item) itemValueMapper;
+  final String? Function(T item)? itemSubtitleMapper;
+  final Widget? Function(T item)? itemLeadingMapper;
+  final Widget Function(BuildContext context, T item, bool isSelected)?
   itemBuilder;
   final String emptyMessage;
   final Duration debounceDuration;
-  final List<AppSearchableDropdownItem<T>> selectedItems;
+  final List<T> selectedItems;
   final int? maxItems;
 
   const _MultiSelectBottomSheet({
     required this.title,
     required this.searchHintText,
     required this.onSearch,
+    required this.itemDisplayMapper,
+    required this.itemValueMapper,
+    this.itemSubtitleMapper,
+    this.itemLeadingMapper,
     this.onLoadInitial,
     this.itemBuilder,
     required this.emptyMessage,
@@ -362,8 +374,8 @@ class _MultiSelectBottomSheetState<T>
     extends State<_MultiSelectBottomSheet<T>> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
-  List<AppSearchableDropdownItem<T>> _items = [];
-  List<AppSearchableDropdownItem<T>> _selectedItems = [];
+  List<T> _items = [];
+  List<T> _selectedItems = [];
   bool _isLoading = true;
   Timer? _debounceTimer;
 
@@ -428,10 +440,10 @@ class _MultiSelectBottomSheetState<T>
     });
   }
 
-  void _toggleItem(AppSearchableDropdownItem<T> item) {
+  void _toggleItem(T item) {
     setState(() {
       final existingIndex = _selectedItems.indexWhere(
-        (e) => e.value == item.value,
+        (e) => widget.itemValueMapper(e) == widget.itemValueMapper(item),
       );
       if (existingIndex >= 0) {
         _selectedItems.removeAt(existingIndex);
@@ -446,8 +458,10 @@ class _MultiSelectBottomSheetState<T>
     });
   }
 
-  bool _isSelected(AppSearchableDropdownItem<T> item) {
-    return _selectedItems.any((e) => e.value == item.value);
+  bool _isSelected(T item) {
+    return _selectedItems.any(
+      (e) => widget.itemValueMapper(e) == widget.itemValueMapper(item),
+    );
   }
 
   void _confirm() {
@@ -498,7 +512,7 @@ class _MultiSelectBottomSheetState<T>
                           if (_selectedItems.isNotEmpty)
                             AppText(
                               LocaleKeys
-                                  .widgetsMultiSelectDropdownItemsSelected
+                                  .sharedWidgetsMultiSelectDropdownItemsSelected
                                   .tr(
                                     namedArgs: {
                                       'count': _selectedItems.length.toString(),
@@ -518,7 +532,8 @@ class _MultiSelectBottomSheetState<T>
                             onPressed: () =>
                                 setState(() => _selectedItems.clear()),
                             child: AppText(
-                              LocaleKeys.sharedWidgetsMultiSelectDropdownClearAll
+                              LocaleKeys
+                                  .sharedWidgetsMultiSelectDropdownClearAll
                                   .tr(),
                               color: context.semantic.error,
                             ),
@@ -527,7 +542,8 @@ class _MultiSelectBottomSheetState<T>
                         FilledButton(
                           onPressed: _confirm,
                           child: AppText(
-                            LocaleKeys.sharedWidgetsMultiSelectDropdownDone.tr(),
+                            LocaleKeys.sharedWidgetsMultiSelectDropdownDone
+                                .tr(),
                           ),
                         ),
                       ],
@@ -632,7 +648,11 @@ class _MultiSelectBottomSheetState<T>
     );
   }
 
-  Widget _buildDefaultItem(AppSearchableDropdownItem<T> item, bool isSelected) {
+  Widget _buildDefaultItem(T item, bool isSelected) {
+    final displayLabel = widget.itemDisplayMapper(item);
+    final subtitleLabel = widget.itemSubtitleMapper?.call(item);
+    final leadingWidget = widget.itemLeadingMapper?.call(item);
+
     return InkWell(
       onTap: () => _toggleItem(item),
       borderRadius: BorderRadius.circular(12),
@@ -673,8 +693,8 @@ class _MultiSelectBottomSheetState<T>
                   : null,
             ),
             const SizedBox(width: 12),
-            if (item.leading != null) ...[
-              item.leading!,
+            if (leadingWidget != null) ...[
+              leadingWidget,
               const SizedBox(width: 12),
             ],
             Expanded(
@@ -682,15 +702,15 @@ class _MultiSelectBottomSheetState<T>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    item.label,
+                    displayLabel,
                     style: AppTextStyle.bodyMedium,
                     fontWeight: isSelected
                         ? FontWeight.w600
                         : FontWeight.normal,
                   ),
-                  if (item.subtitle != null)
+                  if (subtitleLabel != null)
                     AppText(
-                      item.subtitle!,
+                      subtitleLabel,
                       style: AppTextStyle.bodySmall,
                       color: context.colors.textSecondary,
                     ),

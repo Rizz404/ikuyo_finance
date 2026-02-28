@@ -39,13 +39,14 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
   final _filePickerKey = GlobalKey<AppFilePickerState>();
   String? _selectedColor;
   late CategoryType _selectedType;
-  String? _selectedParentUlid;
+
+  List<Category?> _parentCategories = [];
+  bool _isSearchingParents = false;
 
   @override
   void initState() {
     super.initState();
     _selectedType = widget.category?.categoryType ?? CategoryType.expense;
-    _selectedParentUlid = widget.category?.parent.target?.ulid;
 
     if (widget.isEdit) {
       _selectedColor = widget.category!.color;
@@ -55,26 +56,37 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       );
     }
 
-    // * Fetch valid parent categories
-    _fetchValidParentCategories();
+    _fetchValidParentCategories('');
   }
 
-  void _fetchValidParentCategories() {
-    context.read<CategoryBloc>().add(
-      ValidParentCategoriesFetched(
+  Future<void> _fetchValidParentCategories(String query) async {
+    setState(() => _isSearchingParents = true);
+    try {
+      final bloc = context.read<CategoryBloc>();
+      final categories = await bloc.searchParentCategoriesForDropdown(
+        query: query.isEmpty ? null : query,
         type: _selectedType,
         excludeUlid: widget.category?.ulid,
-      ),
-    );
+      );
+      if (mounted) {
+        setState(() {
+          // Add 'null' as the "No parent" option
+          _parentCategories = [null, ...categories];
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSearchingParents = false);
+      }
+    }
   }
 
   void _onTypeChanged(int? typeIndex) {
     if (typeIndex != null) {
       setState(() {
         _selectedType = CategoryType.values[typeIndex];
-        _selectedParentUlid = null; // * Reset parent when type changes
       });
-      _fetchValidParentCategories();
+      _fetchValidParentCategories('');
     }
   }
 
@@ -121,64 +133,33 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
           return const SizedBox.shrink();
         }
 
-        return AppSearchableDropdown<String?>(
+        return AppSearchableDropdown<Category?>(
           key: ValueKey(_selectedType), // * Reset when type changes
           name: 'parentUlid',
           label: 'Kategori Induk (Opsional)',
           hintText: 'Tidak ada (Kategori Utama)',
-          searchHintText: 'Cari kategori induk...',
-          initialValue: _selectedParentUlid,
-          initialDisplayText: widget.category?.parent.target?.name,
-          prefixIcon: const Icon(Icons.account_tree_outlined),
-          onSearch: (query) => _searchParentCategories(query),
-          onLoadInitial: () => _searchParentCategories(''),
-          onChanged: (value) => setState(() => _selectedParentUlid = value),
-          emptyMessage: 'Tidak ada kategori induk tersedia',
-        );
-      },
-    );
-  }
-
-  // * Search parent categories using bloc method
-  Future<List<AppSearchableDropdownItem<String?>>> _searchParentCategories(
-    String query,
-  ) async {
-    final bloc = context.read<CategoryBloc>();
-    final categories = await bloc.searchParentCategoriesForDropdown(
-      query: query.isEmpty ? null : query,
-      type: _selectedType,
-      excludeUlid: widget.category?.ulid,
-    );
-
-    if (!mounted) return [];
-
-    // * Add "None" option at the beginning
-    return [
-      AppSearchableDropdownItem(
-        value: null,
-        label: 'Tidak ada (Kategori Utama)',
-        subtitle: 'Jadikan kategori utama tanpa induk',
-        leading: Icon(
-          Icons.folder_outlined,
-          size: 24,
-          color: context.colorScheme.outline,
-        ),
-      ),
-      ...categories.map(
-        (cat) => AppSearchableDropdownItem(
-          value: cat.ulid,
-          label: cat.name,
-          subtitle: 'Kategori Induk', // * All items here are parents
-          leading: cat.icon != null
-              ? _buildIconPreview(cat.icon!, size: 24)
+          items: _parentCategories,
+          isLoading: _isSearchingParents,
+          onSearch: _fetchValidParentCategories,
+          itemDisplayMapper: (cat) => cat?.name ?? 'Tidak ada (Kategori Utama)',
+          itemValueMapper: (cat) => cat?.ulid ?? '',
+          itemSubtitleMapper: (cat) => cat != null
+              ? 'Kategori Induk'
+              : 'Jadikan kategori utama tanpa induk',
+          itemLeadingMapper: (cat) => cat?.icon != null
+              ? _buildIconPreview(cat!.icon!, size: 24)
               : Icon(
                   Icons.folder_outlined,
                   size: 24,
-                  color: context.colorScheme.primary,
+                  color: cat == null
+                      ? context.colorScheme.outline
+                      : context.colorScheme.primary,
                 ),
-        ),
-      ),
-    ];
+          initialValue: widget.category?.parent.target,
+          prefixIcon: const Icon(Icons.account_tree_outlined),
+        );
+      },
+    );
   }
 
   Widget _buildInfoCard({required IconData icon, required String message}) {

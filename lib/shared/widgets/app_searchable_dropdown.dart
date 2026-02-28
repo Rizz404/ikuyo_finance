@@ -29,7 +29,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
   final String Function(T item) itemDisplayMapper;
   final String Function(T item) itemValueMapper;
   final String? Function(T item)? itemSubtitleMapper;
-  final IconData? Function(T item)? itemIconMapper;
+  final Widget? Function(T item)? itemLeadingMapper;
 
   // * Selection callback
   final void Function(T? item)? onChanged;
@@ -54,7 +54,7 @@ class AppSearchableDropdown<T> extends StatefulWidget {
     this.enabled = true,
     this.validator,
     this.itemSubtitleMapper,
-    this.itemIconMapper,
+    this.itemLeadingMapper,
     this.onChanged,
     this.onLoadMore,
     this.hasMore = false,
@@ -152,6 +152,9 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
     _overlayEntry = _createOverlayEntry();
     Overlay.of(context).insert(_overlayEntry!);
     _isDropdownOpen = true;
+
+    // * Trigger search for empty query to ensure data context matches this specific field
+    widget.onSearch('');
 
     // * Request focus ke search field
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -412,7 +415,7 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
   Widget _buildItem(T item, bool isSelected) {
     final displayText = widget.itemDisplayMapper(item);
     final subtitle = widget.itemSubtitleMapper?.call(item);
-    final icon = widget.itemIconMapper?.call(item);
+    final leadingWidget = widget.itemLeadingMapper?.call(item);
 
     return InkWell(
       onTap: () => _selectItem(item),
@@ -431,14 +434,8 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
         ),
         child: Row(
           children: [
-            if (icon != null) ...[
-              Icon(
-                icon,
-                color: isSelected
-                    ? context.colors.primary
-                    : context.colors.textSecondary,
-                size: 20,
-              ),
+            if (leadingWidget != null) ...[
+              leadingWidget,
               const SizedBox(width: 12),
             ],
             Expanded(
@@ -501,7 +498,8 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>> {
                     labelText: widget.label,
                     hintText:
                         widget.hintText ??
-                        LocaleKeys.sharedWidgetsSearchableDropdownSelectOption.tr(),
+                        LocaleKeys.sharedWidgetsSearchableDropdownSelectOption
+                            .tr(),
                     hintStyle: context.textTheme.bodyMedium?.copyWith(
                       color: context.colors.textTertiary,
                     ),
