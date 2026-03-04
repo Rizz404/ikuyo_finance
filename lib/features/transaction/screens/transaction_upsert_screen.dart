@@ -14,6 +14,8 @@ import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
+import 'package:ikuyo_finance/features/transaction/validators/create_transaction_validator.dart';
+import 'package:ikuyo_finance/features/transaction/validators/update_transaction_validator.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_date_time_picker.dart';
@@ -278,15 +280,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               label: LocaleKeys.transactionUpsertAmountLabel.tr(),
               type: AppTextFieldType.currency,
               initialValue: widget.transaction?.amount.toString(),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return LocaleKeys.transactionUpsertAmountRequired.tr();
-                }
-                final amount = double.tryParse(value.replaceAll('.', '')) ?? 0;
-                if (amount <= 0)
-                  return LocaleKeys.transactionUpsertAmountMustBePositive.tr();
-                return null;
-              },
+              validator: (value) => widget.isEdit
+                  ? UpdateTransactionValidator.amount(value)
+                  : CreateTransactionValidator.amount(value),
             ),
             const SizedBox(height: 16),
 
@@ -314,9 +310,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                       size: 24,
                       color: context.colorScheme.primary,
                     ),
-                    validator: (value) => value == null
-                        ? LocaleKeys.transactionUpsertAssetRequired.tr()
-                        : null,
+                    validator: widget.isEdit
+                        ? UpdateTransactionValidator.assetUlid
+                        : CreateTransactionValidator.assetUlid,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -363,6 +359,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                       size: 24,
                       color: _getCategoryColor(category, context),
                     ),
+                    validator: widget.isEdit
+                        ? UpdateTransactionValidator.categoryUlid
+                        : CreateTransactionValidator.categoryUlid,
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -390,6 +389,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                   widget.transaction?.transactionDate ?? DateTime.now(),
               firstDate: DateTime(2000),
               lastDate: DateTime.now().add(const Duration(days: 365)),
+              validator: (value) => widget.isEdit
+                  ? UpdateTransactionValidator.transactionDate(value)
+                  : CreateTransactionValidator.transactionDate(value),
             ),
             const SizedBox(height: 16),
 
@@ -402,6 +404,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               initialValue: widget.transaction?.description,
               placeHolder: LocaleKeys.transactionUpsertDescriptionPlaceholder
                   .tr(),
+              validator: (value) => widget.isEdit
+                  ? UpdateTransactionValidator.description(value)
+                  : CreateTransactionValidator.description(value),
             ),
             const SizedBox(height: 32),
 

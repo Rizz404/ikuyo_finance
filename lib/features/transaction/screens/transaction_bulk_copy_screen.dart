@@ -13,6 +13,7 @@ import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/features/transaction/validators/bulk_copy_transaction_validator.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_date_time_picker.dart';
@@ -201,6 +202,8 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
   void _onSubmit() {
     final List<CreateTransactionParams> paramsList = [];
     bool allValid = true;
+    int invalidCount = 0;
+    final List<String> invalidDescriptions = [];
 
     for (final formData in _copyForms) {
       if (formData.formKey.currentState?.saveAndValidate() ?? false) {
@@ -219,6 +222,13 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
         );
       } else {
         allValid = false;
+        invalidCount++;
+        final title =
+            formData.sourceTransaction.description ??
+            LocaleKeys.transactionBulkCopyNoDescription.tr();
+        if (invalidDescriptions.length < 3) {
+          invalidDescriptions.add(title);
+        }
       }
     }
 
@@ -227,9 +237,19 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
         TransactionBulkCreated(paramsList: paramsList),
       );
     } else if (!allValid) {
+      String? description;
+      if (invalidDescriptions.isNotEmpty) {
+        final items = invalidDescriptions.map((e) => '• $e').join('\n');
+        final suffix = invalidCount > 3
+            ? '\n• ...dan ${invalidCount - 3} lainnya'
+            : '';
+        description = 'Data yang perlu diperbaiki:\n$items$suffix';
+      }
+
       ToastHelper.instance.showError(
         context: context,
         title: LocaleKeys.transactionBulkCopyCheckInvalidData.tr(),
+        description: description,
       );
     }
   }
@@ -311,6 +331,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                 initialValue: _copyForms
                     .map((f) => f.sourceTransaction)
                     .toList(),
+                showSelectedChips: false,
               ),
               const SizedBox(height: 16),
               if (_copyForms.isNotEmpty) ...[
@@ -525,16 +546,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
               label: LocaleKeys.transactionBulkCopyAmountLabel.tr(),
               type: AppTextFieldType.currency,
               initialValue: formData.amount?.toStringAsFixed(decimalDigits),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return LocaleKeys.transactionBulkCopyAmountRequired.tr();
-                }
-                final amount = double.tryParse(value.replaceAll('.', '')) ?? 0;
-                if (amount <= 0)
-                  return LocaleKeys.transactionBulkCopyAmountMustBePositive
-                      .tr();
-                return null;
-              },
+              validator: BulkCopyTransactionValidator.amount,
             ),
             const SizedBox(height: 16),
             Row(
@@ -563,9 +575,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                       formData.assetUlid = asset?.ulid;
                       formData.assetName = asset?.name;
                     },
-                    validator: (value) => value == null
-                        ? LocaleKeys.transactionBulkCopyAssetRequired.tr()
-                        : null,
+                    validator: BulkCopyTransactionValidator.assetUlid,
                   ),
                 ),
               ],
@@ -603,6 +613,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                       formData.categoryUlid = category?.ulid;
                       formData.categoryName = category?.name;
                     },
+                    validator: BulkCopyTransactionValidator.categoryUlid,
                   ),
                 ),
               ],
@@ -616,6 +627,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
               initialValue: formData.transactionDate ?? DateTime.now(),
               firstDate: DateTime(2000),
               lastDate: DateTime.now().add(const Duration(days: 365)),
+              validator: BulkCopyTransactionValidator.transactionDate,
             ),
             const SizedBox(height: 16),
             AppTextField(
@@ -626,6 +638,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
               initialValue: formData.description,
               placeHolder: LocaleKeys.transactionBulkCopyDescriptionPlaceholder
                   .tr(),
+              validator: BulkCopyTransactionValidator.description,
             ),
           ],
         ),

@@ -50,6 +50,9 @@ class AppMultiSelectDropdown<T> extends StatefulWidget {
   /// * Max items that can be selected (null = unlimited)
   final int? maxItems;
 
+  /// * Tampilkan chips item terpilih di bawah dropdown (default: true)
+  final bool showSelectedChips;
+
   const AppMultiSelectDropdown({
     super.key,
     required this.name,
@@ -72,6 +75,7 @@ class AppMultiSelectDropdown<T> extends StatefulWidget {
     this.emptyMessage,
     this.debounceDuration = const Duration(milliseconds: 300),
     this.maxItems,
+    this.showSelectedChips = true,
   });
 
   @override
@@ -229,7 +233,7 @@ class _AppMultiSelectDropdownState<T> extends State<AppMultiSelectDropdown<T>> {
             ),
 
             // * Selected items chips
-            if (_selectedItems.isNotEmpty) ...[
+            if (widget.showSelectedChips && _selectedItems.isNotEmpty) ...[
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
