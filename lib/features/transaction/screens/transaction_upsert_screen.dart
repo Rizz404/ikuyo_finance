@@ -37,6 +37,7 @@ class TransactionUpsertScreen extends StatefulWidget {
 class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   CategoryType _selectedType = CategoryType.expense;
+  Category? _selectedCategory;
 
   List<Asset> _assets = [];
   bool _isSearchingAssets = false;
@@ -51,6 +52,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
       final category = widget.transaction!.category.target;
       if (category != null) {
         _selectedType = category.categoryType;
+        _selectedCategory = category;
       }
     }
 
@@ -253,9 +255,19 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
             _TransactionTypeSelector(
               selectedType: _selectedType,
               onTypeChanged: (type) {
-                setState(() => _selectedType = type);
-                // * Reset category when type changes
-                _formKey.currentState?.fields['categoryUlid']?.didChange(null);
+                final originalCategory = widget.transaction?.category.target;
+                final originalType = originalCategory?.categoryType;
+                setState(() {
+                  _selectedType = type;
+                  // * Restore original category if reverting to original type,
+                  // * otherwise clear it since categories differ per type
+                  if (originalType != null && type == originalType) {
+                    _selectedCategory = originalCategory;
+                  } else {
+                    _selectedCategory = null;
+                  }
+                });
+                _searchCategories('', type);
               },
             ),
             const SizedBox(height: 24),
@@ -327,11 +339,13 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               children: [
                 Expanded(
                   child: AppSearchableDropdown<Category>(
-                    key: ValueKey(_selectedType),
+                    key: ValueKey(
+                      'category_${_selectedType}_${_selectedCategory?.ulid}',
+                    ),
                     name: 'categoryUlid',
                     label: LocaleKeys.transactionUpsertCategoryLabel.tr(),
                     hintText: LocaleKeys.transactionUpsertCategoryHint.tr(),
-                    initialValue: widget.transaction?.category.target,
+                    initialValue: _selectedCategory,
                     prefixIcon: const Icon(Icons.category_outlined),
                     items: _categories,
                     isLoading: _isSearchingCategories,
