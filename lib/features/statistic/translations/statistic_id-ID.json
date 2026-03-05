@@ -4,7 +4,38 @@
       "tabExpense": "Pengeluaran",
       "tabIncome": "Pendapatan",
       "errorOccurred": "Terjadi kesalahan",
-      "tryAgain": "Coba Lagi"
+      "tryAgain": "Coba Lagi",
+      "title": "Statistik"
+    },
+    "category": {
+      "income": "Pendapatan per Kategori",
+      "expense": "Pengeluaran per Kategori"
+    },
+    "common": {
+      "transactionCount": "transaksi",
+      "categoryCount": "kategori"
+    },
+    "empty": {
+      "income": "Belum ada pendapatan",
+      "expense": "Belum ada pengeluaran",
+      "description": "Transaksi akan muncul di sini"
+    },
+    "chart": {
+      "totalIncome": "Total Pendapatan",
+      "totalExpense": "Total Pengeluaran",
+      "pie": "Pie",
+      "bar": "Bar",
+      "line": "Line"
+    },
+    "period": {
+      "selectTitle": "Pilih Periode",
+      "startDate": "Tanggal Mulai",
+      "endDate": "Tanggal Selesai",
+      "apply": "Terapkan",
+      "weekly": "Mingguan",
+      "monthly": "Bulanan",
+      "yearly": "Tahunan",
+      "custom": "Periode"
     }
   }
 }

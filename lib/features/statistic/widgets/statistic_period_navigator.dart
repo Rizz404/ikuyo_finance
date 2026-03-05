@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/statistic/models/statistic_period.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
@@ -55,7 +57,7 @@ class StatisticPeriodNavigator extends StatelessWidget {
                 ? onCustomPeriodTap
                 : null,
             child: AppText(
-              _formatPeriodLabel(),
+              _formatPeriodLabel(context),
               style: AppTextStyle.titleMedium,
               fontWeight: FontWeight.w600,
               maxLines: 1,
@@ -111,21 +113,24 @@ class StatisticPeriodNavigator extends StatelessWidget {
     );
   }
 
-  String _formatPeriodLabel() {
+  String _formatPeriodLabel(BuildContext context) {
     switch (period.type) {
       case StatisticPeriodType.weekly:
-        final startFormat = DateFormat('d MMM', 'id_ID');
-        final endFormat = DateFormat('d MMM yyyy', 'id_ID');
+        final startFormat = DateFormat('d MMM', context.locale.toString());
+        final endFormat = DateFormat('d MMM yyyy', context.locale.toString());
         return '${startFormat.format(period.startDate)} - ${endFormat.format(period.endDate)}';
 
       case StatisticPeriodType.monthly:
-        return DateFormat('MMMM yyyy', 'id_ID').format(period.startDate);
+        return DateFormat(
+          'MMMM yyyy',
+          context.locale.toString(),
+        ).format(period.startDate);
 
       case StatisticPeriodType.yearly:
         return period.startDate.year.toString();
 
       case StatisticPeriodType.custom:
-        final format = DateFormat('d MMM yy', 'id_ID');
+        final format = DateFormat('d MMM yy', context.locale.toString());
         return '${format.format(period.startDate)} - ${format.format(period.endDate)}';
     }
   }
@@ -133,13 +138,13 @@ class StatisticPeriodNavigator extends StatelessWidget {
   String _getPeriodTypeLabel(StatisticPeriodType type) {
     switch (type) {
       case StatisticPeriodType.weekly:
-        return 'Mingguan';
+        return LocaleKeys.statisticPeriodWeekly.tr();
       case StatisticPeriodType.monthly:
-        return 'Bulanan';
+        return LocaleKeys.statisticPeriodMonthly.tr();
       case StatisticPeriodType.yearly:
-        return 'Tahunan';
+        return LocaleKeys.statisticPeriodYearly.tr();
       case StatisticPeriodType.custom:
-        return 'Periode';
+        return LocaleKeys.statisticPeriodCustom.tr();
     }
   }
 }

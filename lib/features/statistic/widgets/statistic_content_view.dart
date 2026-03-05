@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
@@ -102,7 +104,9 @@ class StatisticContentView extends StatelessWidget {
               ),
               const SizedBox(width: 8),
               AppText(
-                isIncome ? 'Total Pendapatan' : 'Total Pengeluaran',
+                isIncome
+                    ? LocaleKeys.statisticChartTotalIncome.tr()
+                    : LocaleKeys.statisticChartTotalExpense.tr(),
                 style: AppTextStyle.titleSmall,
                 color: Colors.white.withValues(alpha: 0.9),
               ),
@@ -117,7 +121,7 @@ class StatisticContentView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           AppText(
-            '${summaries.length} kategori • ${_getTotalTransactionCount()} transaksi',
+            '${summaries.length} ${LocaleKeys.statisticCommonCategoryCount.tr()} • ${_getTotalTransactionCount()} ${LocaleKeys.statisticCommonTransactionCount.tr()}',
             style: AppTextStyle.bodySmall,
             color: Colors.white.withValues(alpha: 0.8),
           ),

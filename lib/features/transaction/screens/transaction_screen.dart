@@ -291,7 +291,10 @@ class _TransactionScreenState extends State<TransactionScreen>
         GestureDetector(
           onTap: () => _showMonthPicker(context, state.currentMonth),
           child: AppText(
-            DateFormat('MMMM yyyy', 'id_ID').format(state.currentMonth),
+            DateFormat(
+              'MMMM yyyy',
+              context.locale.toString(),
+            ).format(state.currentMonth),
             style: AppTextStyle.titleMedium,
             fontWeight: FontWeight.w600,
           ),

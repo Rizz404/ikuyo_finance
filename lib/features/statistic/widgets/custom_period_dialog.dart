@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 /// * Dialog untuk memilih periode kustom
@@ -45,8 +47,8 @@ class _CustomPeriodDialogState extends State<CustomPeriodDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const AppText(
-        'Pilih Periode',
+      title: AppText(
+        LocaleKeys.statisticPeriodSelectTitle.tr(),
         style: AppTextStyle.titleMedium,
         fontWeight: FontWeight.bold,
       ),
@@ -57,8 +59,8 @@ class _CustomPeriodDialogState extends State<CustomPeriodDialog> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.calendar_today),
-            title: const AppText(
-              'Tanggal Mulai',
+            title: AppText(
+              LocaleKeys.statisticPeriodStartDate.tr(),
               style: AppTextStyle.bodySmall,
             ),
             subtitle: AppText(
@@ -73,8 +75,8 @@ class _CustomPeriodDialogState extends State<CustomPeriodDialog> {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.event),
-            title: const AppText(
-              'Tanggal Selesai',
+            title: AppText(
+              LocaleKeys.statisticPeriodEndDate.tr(),
               style: AppTextStyle.bodySmall,
             ),
             subtitle: AppText(
@@ -89,11 +91,11 @@ class _CustomPeriodDialogState extends State<CustomPeriodDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Batal'),
+          child: Text(LocaleKeys.securityCancel.tr()),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, (_startDate, _endDate)),
-          child: const Text('Terapkan'),
+          child: Text(LocaleKeys.statisticPeriodApply.tr()),
         ),
       ],
     );
@@ -123,6 +125,6 @@ class _CustomPeriodDialogState extends State<CustomPeriodDialog> {
   }
 
   String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+    return DateFormat.yMd(context.locale.toString()).format(date);
   }
 }

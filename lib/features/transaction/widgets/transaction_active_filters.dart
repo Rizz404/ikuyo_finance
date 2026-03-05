@@ -1,5 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:intl/intl.dart';
 
 /// * Active filters indicator with clear button (pure UI, no bloc logic)
 class TransactionActiveFilters extends StatelessWidget {
@@ -27,7 +30,7 @@ class TransactionActiveFilters extends StatelessWidget {
     this.endDate,
     this.minAmount,
     this.maxAmount,
-    this.sortLabel = 'Tanggal (Terbaru)',
+    this.sortLabel = '',
   });
 
   @override
@@ -49,7 +52,7 @@ class TransactionActiveFilters extends StatelessWidget {
       activeFilterChips.add(_buildChip(context, Icons.category, categoryName!));
     }
     if (startDate != null || endDate != null) {
-      final dateText = _formatDateRange(startDate, endDate);
+      final dateText = _formatDateRange(context, startDate, endDate);
       activeFilterChips.add(_buildChip(context, Icons.date_range, dateText));
     }
     if (minAmount != null || maxAmount != null) {
@@ -78,7 +81,9 @@ class TransactionActiveFilters extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   Text(
-                    hasActiveFilters ? 'Filter & Sorting aktif' : 'Sorting',
+                    hasActiveFilters
+                        ? 'Filter & Sorting aktif' // TODO: add key for this if needed
+                        : LocaleKeys.transactionFilterSort.tr(),
                     style: TextStyle(
                       color: context.colorScheme.primary,
                       fontSize: 12,
@@ -101,9 +106,9 @@ class TransactionActiveFilters extends StatelessWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         minimumSize: const Size(0, 32),
                       ),
-                      child: const Text(
-                        'Reset',
-                        style: TextStyle(fontSize: 12),
+                      child: Text(
+                        LocaleKeys.transactionFilterReset.tr(),
+                        style: const TextStyle(fontSize: 12),
                       ),
                     ),
                 ],
@@ -170,28 +175,32 @@ class TransactionActiveFilters extends StatelessWidget {
     );
   }
 
-  String _formatDateRange(DateTime? start, DateTime? end) {
+  String _formatDateRange(
+    BuildContext context,
+    DateTime? start,
+    DateTime? end,
+  ) {
     if (start != null && end != null) {
-      return '${_formatDate(start)} - ${_formatDate(end)}';
+      return '${_formatDate(context, start)} - ${_formatDate(context, end)}';
     } else if (start != null) {
-      return 'Dari ${_formatDate(start)}';
+      return '${LocaleKeys.transactionFilterFrom.tr()} ${_formatDate(context, start)}';
     } else if (end != null) {
-      return 'Sampai ${_formatDate(end)}';
+      return '${LocaleKeys.transactionFilterTo.tr()} ${_formatDate(context, end)}';
     }
     return '';
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.day}/${date.month}/${date.year}';
+  String _formatDate(BuildContext context, DateTime date) {
+    return DateFormat.yMd(context.locale.toString()).format(date);
   }
 
   String _formatAmountRange(double? min, double? max) {
     if (min != null && max != null) {
       return '${_formatAmount(min)} - ${_formatAmount(max)}';
     } else if (min != null) {
-      return 'Min ${_formatAmount(min)}';
+      return '${LocaleKeys.transactionFilterMin.tr()} ${_formatAmount(min)}';
     } else if (max != null) {
-      return 'Max ${_formatAmount(max)}';
+      return '${LocaleKeys.transactionFilterMax.tr()} ${_formatAmount(max)}';
     }
     return '';
   }

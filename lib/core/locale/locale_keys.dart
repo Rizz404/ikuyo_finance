@@ -159,6 +159,35 @@ abstract class LocaleKeys {
       'asset.validator.balanceNegative';
   static const assetValidatorUlidRequired = 'asset.validator.ulidRequired';
 
+  // * Asset — Types
+  static const assetTypesCash = 'asset.types.cash';
+  static const assetTypesBank = 'asset.types.bank';
+  static const assetTypesEWallet = 'asset.types.eWallet';
+  static const assetTypesStock = 'asset.types.stock';
+  static const assetTypesCrypto = 'asset.types.crypto';
+
+  // * Asset — Filter
+  static const assetFilterTitle = 'asset.filter.title';
+  static const assetFilterReset = 'asset.filter.reset';
+  static const assetFilterTypeLabel = 'asset.filter.typeLabel';
+  static const assetFilterTypeAll = 'asset.filter.typeAll';
+  static const assetFilterBalanceRange = 'asset.filter.balanceRange';
+  static const assetFilterMinLabel = 'asset.filter.minLabel';
+  static const assetFilterMaxLabel = 'asset.filter.maxLabel';
+  static const assetFilterSortByLabel = 'asset.filter.sortByLabel';
+  static const assetFilterSortFieldLabel = 'asset.filter.sortFieldLabel';
+  static const assetFilterSortOrderLabel = 'asset.filter.sortOrderLabel';
+  static const assetFilterApply = 'asset.filter.apply';
+  static const assetFilterSortCreated = 'asset.filter.sortCreated';
+  static const assetFilterSortName = 'asset.filter.sortName';
+  static const assetFilterSortBalance = 'asset.filter.sortBalance';
+  static const assetFilterSortDescGeneral = 'asset.filter.sortDescGeneral';
+  static const assetFilterSortAscGeneral = 'asset.filter.sortAscGeneral';
+  static const assetFilterSortDescBalance = 'asset.filter.sortDescBalance';
+  static const assetFilterSortAscBalance = 'asset.filter.sortAscBalance';
+  static const assetFilterSortDescCombined = 'asset.filter.sortDescCombined';
+  static const assetFilterSortAscCombined = 'asset.filter.sortAscCombined';
+
   // * Asset — Screen
   static const assetScreenTitle = 'asset.screen.title';
   static const assetScreenTabList = 'asset.screen.tabList';
@@ -261,6 +290,38 @@ abstract class LocaleKeys {
   static const budgetValidatorPeriodRequired =
       'budget.validator.periodRequired';
   static const budgetValidatorUlidRequired = 'budget.validator.ulidRequired';
+
+  // * Budget — Filter
+  static const budgetFilterTitle = 'budget.filter.title';
+  static const budgetFilterReset = 'budget.filter.reset';
+  static const budgetFilterPeriodLabel = 'budget.filter.periodLabel';
+  static const budgetFilterPeriodAll = 'budget.filter.periodAll';
+  static const budgetFilterPeriodMonthly = 'budget.filter.periodMonthly';
+  static const budgetFilterPeriodWeekly = 'budget.filter.periodWeekly';
+  static const budgetFilterPeriodYearly = 'budget.filter.periodYearly';
+  static const budgetFilterPeriodCustom = 'budget.filter.periodCustom';
+  static const budgetFilterCategoryLabel = 'budget.filter.categoryLabel';
+  static const budgetFilterCategoryAll = 'budget.filter.categoryAll';
+  static const budgetFilterAmountRange = 'budget.filter.amountRange';
+  static const budgetFilterMin = 'budget.filter.min';
+  static const budgetFilterMax = 'budget.filter.max';
+  static const budgetFilterStartDateRange = 'budget.filter.startDateRange';
+  static const budgetFilterFrom = 'budget.filter.from';
+  static const budgetFilterTo = 'budget.filter.to';
+  static const budgetFilterSortSection = 'budget.filter.sortSection';
+  static const budgetFilterSortBy = 'budget.filter.sortBy';
+  static const budgetFilterSortOrder = 'budget.filter.sortOrder';
+  static const budgetFilterSortCreated = 'budget.filter.sortCreated';
+  static const budgetFilterSortAmountLimit = 'budget.filter.sortAmountLimit';
+  static const budgetFilterSortStartDate = 'budget.filter.sortStartDate';
+  static const budgetFilterSortEndDate = 'budget.filter.sortEndDate';
+  static const budgetFilterSortBiggest = 'budget.filter.sortBiggest';
+  static const budgetFilterSortNewest = 'budget.filter.sortNewest';
+  static const budgetFilterSortSmallest = 'budget.filter.sortSmallest';
+  static const budgetFilterSortOldest = 'budget.filter.sortOldest';
+  static const budgetFilterSortDesc = 'budget.filter.sortDesc';
+  static const budgetFilterSortAsc = 'budget.filter.sortAsc';
+  static const budgetFilterApply = 'budget.filter.apply';
 
   // * Budget — Screen
   static const budgetScreenTitle = 'budget.screen.title';
@@ -373,6 +434,23 @@ abstract class LocaleKeys {
   static const categoryUpsertAddCategory = 'category.upsert.addCategory';
   static const categoryUpsertDeleteCategory = 'category.upsert.deleteCategory';
 
+  // * Category — Filter
+  static const categoryFilterTitle = 'category.filter.title';
+  static const categoryFilterReset = 'category.filter.reset';
+  static const categoryFilterTypeLabel = 'category.filter.typeLabel';
+  static const categoryFilterTypeAll = 'category.filter.typeAll';
+  static const categoryFilterParentLabel = 'category.filter.parentLabel';
+  static const categoryFilterParentAll = 'category.filter.parentAll';
+  static const categoryFilterIsRootOnly = 'category.filter.isRootOnly';
+  static const categoryFilterSortByLabel = 'category.filter.sortByLabel';
+  static const categoryFilterSortFieldLabel = 'category.filter.sortFieldLabel';
+  static const categoryFilterSortOrderLabel = 'category.filter.sortOrderLabel';
+  static const categoryFilterApply = 'category.filter.apply';
+  static const categoryFilterSortCreated = 'category.filter.sortCreated';
+  static const categoryFilterSortName = 'category.filter.sortName';
+  static const categoryFilterSortNewest = 'category.filter.sortNewest';
+  static const categoryFilterSortOldest = 'category.filter.sortOldest';
+
   // ──────────────────────────────────────────────
   // * Other — Screen
   // ──────────────────────────────────────────────
@@ -393,6 +471,18 @@ abstract class LocaleKeys {
   static const otherSettingCurrency = 'other.setting.currency';
   static const otherSettingCurrencyChangeSuccess =
       'other.setting.currencyChangeSuccess';
+  static const otherSettingTheme = 'other.setting.theme';
+  static const otherSettingThemeTitle = 'other.setting.themeTitle';
+  static const otherSettingThemeSubtitle = 'other.setting.themeSubtitle';
+  static const otherSettingThemeLight = 'other.setting.themeLight';
+  static const otherSettingThemeDark = 'other.setting.themeDark';
+  static const otherSettingThemeSystem = 'other.setting.themeSystem';
+  static const otherSettingCurrencyLabel = 'other.setting.currencyLabel';
+  static const otherSettingCurrencyTitle = 'other.setting.currencyTitle';
+  static const otherSettingCurrencySubtitle = 'other.setting.currencySubtitle';
+  static const otherSettingLanguage = 'other.setting.language';
+  static const otherSettingLanguageTitle = 'other.setting.languageTitle';
+  static const otherSettingLanguageSubtitle = 'other.setting.languageSubtitle';
 
   // ──────────────────────────────────────────────
   // * Statistic — Screen
@@ -401,6 +491,31 @@ abstract class LocaleKeys {
   static const statisticScreenTabIncome = 'statistic.screen.tabIncome';
   static const statisticScreenErrorOccurred = 'statistic.screen.errorOccurred';
   static const statisticScreenTryAgain = 'statistic.screen.tryAgain';
+  static const statisticScreenTitle = 'statistic.screen.title';
+  static const statisticCommonTransactionCount =
+      'statistic.common.transactionCount';
+  static const statisticCommonCategoryCount = 'statistic.common.categoryCount';
+  static const statisticChartTotalIncome = 'statistic.chart.totalIncome';
+  static const statisticChartTotalExpense = 'statistic.chart.totalExpense';
+  static const statisticChartPie = 'statistic.chart.pie';
+  static const statisticChartBar = 'statistic.chart.bar';
+  static const statisticChartLine = 'statistic.chart.line';
+  static const statisticPeriodSelectTitle = 'statistic.period.selectTitle';
+  static const statisticPeriodStartDate = 'statistic.period.startDate';
+  static const statisticPeriodEndDate = 'statistic.period.endDate';
+  static const statisticPeriodApply = 'statistic.period.apply';
+  static const statisticPeriodWeekly = 'statistic.period.weekly';
+  static const statisticPeriodMonthly = 'statistic.period.monthly';
+  static const statisticPeriodYearly = 'statistic.period.yearly';
+  static const statisticPeriodCustom = 'statistic.period.custom';
+  static const statisticCategoryIncome = 'statistic.category.income';
+  static const statisticCategoryExpense = 'statistic.category.expense';
+  static const statisticTransactionCount = 'statistic.common.transactionCount';
+  static const statisticEmptyIncome = 'statistic.empty.income';
+  static const statisticEmptyExpense = 'statistic.empty.expense';
+  static const statisticEmptyDescription = 'statistic.empty.description';
+  static const statisticTotalIncome = 'statistic.chart.totalIncome';
+  static const statisticTotalExpense = 'statistic.chart.totalExpense';
 
   // ──────────────────────────────────────────────
   // * Transaction — Validator
@@ -533,6 +648,45 @@ abstract class LocaleKeys {
       'transaction.bulkCopy.typeExpense';
   static const transactionBulkCopyTypeIncome =
       'transaction.bulkCopy.typeIncome';
+  static const transactionFilterCategory = 'transaction.filter.category';
+  static const transactionFilterAsset = 'transaction.filter.asset';
+  static const transactionFilterType = 'transaction.filter.type';
+  static const transactionFilterRange = 'transaction.filter.range';
+  static const transactionFilterMin = 'transaction.filter.min';
+  static const transactionFilterMax = 'transaction.filter.max';
+  static const transactionSortDate = 'transaction.sort.date';
+  static const transactionSortAmount = 'transaction.sort.amount';
+  static const transactionSortCreated = 'transaction.sort.created';
+  static const transactionSortShortDate = 'transaction.sort.shortDate';
+  static const transactionSortShortAmount = 'transaction.sort.shortAmount';
+  static const transactionSortShortCreated = 'transaction.sort.shortCreated';
+  static const transactionSortOrderNewest = 'transaction.sort.orderNewest';
+  static const transactionSortOrderOldest = 'transaction.sort.orderOldest';
+  static const transactionSortOrderLargest = 'transaction.sort.orderLargest';
+  static const transactionSortOrderSmallest = 'transaction.sort.orderSmallest';
+  static const transactionFilterTitle = 'transaction.filter.title';
+  static const transactionFilterReset = 'transaction.filter.reset';
+  static const transactionFilterDateRange = 'transaction.filter.dateRange';
+  static const transactionFilterFrom = 'transaction.filter.from';
+  static const transactionFilterTo = 'transaction.filter.to';
+  static const transactionFilterAmountRange = 'transaction.filter.amountRange';
+  static const transactionFilterAllAssets = 'transaction.filter.allAssets';
+  static const transactionFilterAllCategories =
+      'transaction.filter.allCategories';
+  static const transactionFilterSort = 'transaction.filter.sort';
+  static const transactionFilterSortBy = 'transaction.filter.sortBy';
+  static const transactionFilterSortOrder = 'transaction.filter.sortOrder';
+  static const transactionFilterApply = 'transaction.filter.apply';
+  static const transactionDateToday = 'transaction.date.today';
+  static const transactionDateYesterday = 'transaction.date.yesterday';
+  static const transactionCount = 'transaction.common.count';
+  static const transactionEmptyTitle = 'transaction.empty.title';
+  static const transactionEmptyMonth = 'transaction.empty.month';
+  static const transactionIncome = 'transaction.common.income';
+  static const transactionExpense = 'transaction.common.expense';
+  static const transactionTopExpense = 'transaction.summary.topExpense';
+  static const transactionNoCategory = 'transaction.common.noCategory';
+  static const transactionUnknownAsset = 'transaction.common.unknownAsset';
 
   // * Security - Lock Screen
   static const securityLockTitle = 'security.lock.title';
@@ -572,6 +726,7 @@ abstract class LocaleKeys {
   static const securitySettingsChangePin = 'security.settings.changePin';
   static const securitySettingsChangePassword =
       'security.settings.changePassword';
+  static const securityPinDigit = 'security.pin.digit';
 
   // * Security - Lock Triggers
   static const securityTriggerAppClose = 'security.trigger.appClose';

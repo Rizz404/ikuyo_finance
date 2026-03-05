@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/shared/widgets/app_search_field.dart';
 
 /// * Search bar widget untuk transaksi (pure UI, no bloc logic)
@@ -18,7 +20,7 @@ class TransactionSearchBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppSearchField<String>(
       name: 'transaction_search',
-      hintText: 'Cari transaksi...',
+      hintText: LocaleKeys.transactionSearchHint.tr(),
       initialValue: currentQuery,
       showClearButton: currentQuery != null && currentQuery!.isNotEmpty,
       onChanged: onChanged,

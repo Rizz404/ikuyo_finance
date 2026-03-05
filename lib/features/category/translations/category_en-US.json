@@ -52,6 +52,23 @@
       "saveChanges": "Save Changes",
       "addCategory": "Add Category",
       "deleteCategory": "Delete Category"
+    },
+    "filter": {
+      "title": "Filter Categories",
+      "reset": "Reset",
+      "typeLabel": "Category Type",
+      "typeAll": "All types",
+      "parentLabel": "Parent Category",
+      "parentAll": "All categories",
+      "isRootOnly": "Root categories only (no parent)",
+      "sortByLabel": "Sort By",
+      "sortFieldLabel": "Field",
+      "sortOrderLabel": "Order",
+      "apply": "Apply Filter",
+      "sortCreated": "Created",
+      "sortName": "Name",
+      "sortNewest": "Newest",
+      "sortOldest": "Oldest"
     }
   }
 }

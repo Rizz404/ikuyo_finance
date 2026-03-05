@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -35,13 +37,19 @@ class TransactionFilterData {
   /// * Get human-readable sort label
   String get sortLabel {
     final sortByLabel = switch (sortBy) {
-      TransactionSortBy.transactionDate => 'Tanggal',
-      TransactionSortBy.amount => 'Jumlah',
-      TransactionSortBy.createdAt => 'Dibuat',
+      TransactionSortBy.transactionDate =>
+        LocaleKeys.transactionSortShortDate.tr(),
+      TransactionSortBy.amount => LocaleKeys.transactionSortShortAmount.tr(),
+      TransactionSortBy.createdAt =>
+        LocaleKeys.transactionSortShortCreated.tr(),
     };
     final orderLabel = sortOrder == SortOrder.descending
-        ? (sortBy == TransactionSortBy.amount ? 'Terbesar' : 'Terbaru')
-        : (sortBy == TransactionSortBy.amount ? 'Terkecil' : 'Terlama');
+        ? (sortBy == TransactionSortBy.amount
+              ? LocaleKeys.transactionSortOrderLargest.tr()
+              : LocaleKeys.transactionSortOrderNewest.tr())
+        : (sortBy == TransactionSortBy.amount
+              ? LocaleKeys.transactionSortOrderSmallest.tr()
+              : LocaleKeys.transactionSortOrderOldest.tr());
     return '$sortByLabel ($orderLabel)';
   }
 }
@@ -160,14 +168,14 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const AppText(
-                        'Filter Transaksi',
+                      AppText(
+                        LocaleKeys.transactionFilterTitle.tr(),
                         style: AppTextStyle.titleLarge,
                         fontWeight: FontWeight.bold,
                       ),
                       TextButton(
                         onPressed: _clearAllFilters,
-                        child: const Text('Reset'),
+                        child: Text(LocaleKeys.transactionFilterReset.tr()),
                       ),
                     ],
                   ),
@@ -180,8 +188,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                     padding: const EdgeInsets.all(16),
                     children: [
                       // * Date range filter
-                      const AppText(
-                        'Rentang Tanggal',
+                      AppText(
+                        LocaleKeys.transactionFilterDateRange.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -191,7 +199,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                           Expanded(
                             child: AppDateTimePicker(
                               name: 'start_date',
-                              label: 'Dari',
+                              label: LocaleKeys.transactionFilterFrom.tr(),
                               initialValue: _startDate,
                             ),
                           ),
@@ -199,7 +207,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                           Expanded(
                             child: AppDateTimePicker(
                               name: 'end_date',
-                              label: 'Sampai',
+                              label: LocaleKeys.transactionFilterTo.tr(),
                               initialValue: _endDate,
                             ),
                           ),
@@ -207,8 +215,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Amount range filter
-                      const AppText(
-                        'Rentang Jumlah',
+                      AppText(
+                        LocaleKeys.transactionFilterAmountRange.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -218,7 +226,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                           Expanded(
                             child: AppTextField(
                               name: 'min_amount',
-                              label: 'Min',
+                              label: LocaleKeys.transactionFilterMin.tr(),
                               type: AppTextFieldType.number,
                               initialValue: _minAmount?.toString(),
                             ),
@@ -227,7 +235,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                           Expanded(
                             child: AppTextField(
                               name: 'max_amount',
-                              label: 'Max',
+                              label: LocaleKeys.transactionFilterMax.tr(),
                               type: AppTextFieldType.number,
                               initialValue: _maxAmount?.toString(),
                             ),
@@ -238,8 +246,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                       // * Asset filter
                       AppDropdown<String>(
                         name: 'asset_filter',
-                        label: 'Aset',
-                        hintText: 'Semua aset',
+                        label: LocaleKeys.transactionFilterAsset.tr(),
+                        hintText: LocaleKeys.transactionFilterAllAssets.tr(),
                         initialValue: _selectedAssetUlid,
                         items: widget.assets
                             .map(
@@ -257,8 +265,9 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                       // * Category filter
                       AppDropdown<String>(
                         name: 'category_filter',
-                        label: 'Kategori',
-                        hintText: 'Semua kategori',
+                        label: LocaleKeys.transactionFilterCategory.tr(),
+                        hintText: LocaleKeys.transactionFilterAllCategories
+                            .tr(),
                         initialValue: _selectedCategoryUlid,
                         items: widget.categories
                             .map(
@@ -274,8 +283,8 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Sort options
-                      const AppText(
-                        'Urutkan',
+                      AppText(
+                        LocaleKeys.transactionFilterSort.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -285,20 +294,23 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                           Expanded(
                             child: AppDropdown<TransactionSortBy>(
                               name: 'sort_by',
-                              label: 'Berdasarkan',
+                              label: LocaleKeys.transactionFilterSortBy.tr(),
                               initialValue: _sortBy,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: TransactionSortBy.transactionDate,
-                                  label: 'Tanggal',
+                                  label: LocaleKeys.transactionSortShortDate
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: TransactionSortBy.amount,
-                                  label: 'Jumlah',
+                                  label: LocaleKeys.transactionSortShortAmount
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: TransactionSortBy.createdAt,
-                                  label: 'Dibuat',
+                                  label: LocaleKeys.transactionSortShortCreated
+                                      .tr(),
                                 ),
                               ],
                               onChanged: (value) {
@@ -312,16 +324,18 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                           Expanded(
                             child: AppDropdown<SortOrder>(
                               name: 'sort_order',
-                              label: 'Urutan',
+                              label: LocaleKeys.transactionFilterSortOrder.tr(),
                               initialValue: _sortOrder,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: SortOrder.descending,
-                                  label: 'Terbaru/Terbesar',
+                                  label:
+                                      '${LocaleKeys.transactionSortOrderNewest.tr()}/${LocaleKeys.transactionSortOrderLargest.tr()}',
                                 ),
                                 AppDropdownItem(
                                   value: SortOrder.ascending,
-                                  label: 'Terlama/Terkecil',
+                                  label:
+                                      '${LocaleKeys.transactionSortOrderOldest.tr()}/${LocaleKeys.transactionSortOrderSmallest.tr()}',
                                 ),
                               ],
                               onChanged: (value) {
@@ -340,7 +354,7 @@ class _TransactionFilterSheetState extends State<TransactionFilterSheet> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: AppButton(
-                    text: 'Terapkan Filter',
+                    text: LocaleKeys.transactionFilterApply.tr(),
                     onPressed: _applyFilters,
                   ),
                 ),

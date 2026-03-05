@@ -1,5 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -121,18 +124,18 @@ class ThemeSettingTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      'Tema Aplikasi',
+                      LocaleKeys.otherSettingThemeTitle.tr(),
                       style: AppTextStyle.bodyMedium,
                       fontWeight: FontWeight.w500,
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     AppText(
-                      'Pilih tampilan sesuai preferensi',
+                      LocaleKeys.otherSettingThemeSubtitle.tr(),
                       style: AppTextStyle.bodySmall,
                     ),
                   ],
@@ -148,24 +151,24 @@ class ThemeSettingTile extends StatelessWidget {
               segments: [
                 ButtonSegment(
                   value: ThemeMode.light,
-                  label: const AppText(
-                    'Terang',
+                  label: AppText(
+                    LocaleKeys.otherSettingThemeLight.tr(),
                     style: AppTextStyle.labelMedium,
                   ),
                   icon: const Icon(Icons.light_mode_outlined, size: 18),
                 ),
                 ButtonSegment(
                   value: ThemeMode.dark,
-                  label: const AppText(
-                    'Gelap',
+                  label: AppText(
+                    LocaleKeys.otherSettingThemeDark.tr(),
                     style: AppTextStyle.labelMedium,
                   ),
                   icon: const Icon(Icons.dark_mode_outlined, size: 18),
                 ),
                 ButtonSegment(
                   value: ThemeMode.system,
-                  label: const AppText(
-                    'Sistem',
+                  label: AppText(
+                    LocaleKeys.otherSettingThemeSystem.tr(),
                     style: AppTextStyle.labelMedium,
                   ),
                   icon: const Icon(Icons.brightness_auto_outlined, size: 18),
@@ -187,6 +190,91 @@ class ThemeSettingTile extends StatelessWidget {
       ThemeMode.dark => Icons.dark_mode,
       ThemeMode.system => Icons.brightness_auto,
     };
+  }
+}
+
+/// Widget tile untuk pilihan bahasa
+class LanguageSettingTile extends StatelessWidget {
+  final SupportedLocale currentLocale;
+  final List<SupportedLocale> availableLocales;
+  final ValueChanged<SupportedLocale> onChanged;
+
+  const LanguageSettingTile({
+    super.key,
+    required this.currentLocale,
+    required this.availableLocales,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.colors;
+
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.language_outlined,
+                  size: 20,
+                  color: colors.primary,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      LocaleKeys.otherSettingLanguageTitle.tr(),
+                      style: AppTextStyle.bodyMedium,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    const SizedBox(height: 2),
+                    AppText(
+                      LocaleKeys.otherSettingLanguageSubtitle.tr(),
+                      style: AppTextStyle.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          // * Language segmented button
+          SizedBox(
+            width: double.infinity,
+            child: SegmentedButton<SupportedLocale>(
+              segments: availableLocales.map((locale) {
+                return ButtonSegment<SupportedLocale>(
+                  value: locale,
+                  label: AppText(
+                    locale.displayName,
+                    style: AppTextStyle.labelMedium,
+                  ),
+                );
+              }).toList(),
+              selected: {currentLocale},
+              onSelectionChanged: (selection) => onChanged(selection.first),
+              style: const ButtonStyle(
+                visualDensity: VisualDensity.compact,
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -232,18 +320,18 @@ class CurrencySettingTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              const Expanded(
+              Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
-                      'Mata Uang',
+                      LocaleKeys.otherSettingCurrencyTitle.tr(),
                       style: AppTextStyle.bodyMedium,
                       fontWeight: FontWeight.w500,
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     AppText(
-                      'Semua nilai akan dikonversi',
+                      LocaleKeys.otherSettingCurrencySubtitle.tr(),
                       style: AppTextStyle.bodySmall,
                     ),
                   ],

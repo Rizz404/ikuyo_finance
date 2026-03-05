@@ -56,7 +56,8 @@
       "confirmDesc": "Masukkan kembali PIN Anda untuk mengonfirmasi",
       "tooShort": "PIN terlalu pendek",
       "mismatch": "PIN tidak cocok",
-      "setSuccess": "PIN berhasil diatur"
+      "setSuccess": "PIN berhasil diatur",
+      "digit": "{} Digit"
     },
     "password": {
       "setup": "Atur Kata Sandi",

@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -59,7 +61,9 @@ class CategoryCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
               child: AppText(
-                isExpense ? 'Pengeluaran' : 'Pemasukan',
+                isExpense
+                    ? LocaleKeys.categoryUpsertTypeExpense.tr()
+                    : LocaleKeys.categoryUpsertTypeIncome.tr(),
                 style: AppTextStyle.labelSmall,
                 color: color,
                 fontWeight: FontWeight.w500,

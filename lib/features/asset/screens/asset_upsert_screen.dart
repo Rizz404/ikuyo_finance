@@ -205,8 +205,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                     items: [
                       AppDropdownItem(
                         value: AssetType.cash.index,
-                        label: LocaleKeys.assetUpsertTypeCash.tr(),
-                        icon: Icon(
+                        label: LocaleKeys.assetTypesCash.tr(),
+                        icon: const Icon(
                           Icons.wallet_outlined,
                           size: 20,
                           color: Colors.green,
@@ -214,8 +214,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.bank.index,
-                        label: LocaleKeys.assetUpsertTypeBank.tr(),
-                        icon: Icon(
+                        label: LocaleKeys.assetTypesBank.tr(),
+                        icon: const Icon(
                           Icons.account_balance_outlined,
                           size: 20,
                           color: Colors.blue,
@@ -223,8 +223,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.eWallet.index,
-                        label: LocaleKeys.assetUpsertTypeEWallet.tr(),
-                        icon: Icon(
+                        label: LocaleKeys.assetTypesEWallet.tr(),
+                        icon: const Icon(
                           Icons.phone_android_outlined,
                           size: 20,
                           color: Colors.orange,
@@ -232,8 +232,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.stock.index,
-                        label: LocaleKeys.assetUpsertTypeStock.tr(),
-                        icon: Icon(
+                        label: LocaleKeys.assetTypesStock.tr(),
+                        icon: const Icon(
                           Icons.trending_up_outlined,
                           size: 20,
                           color: Colors.purple,
@@ -241,8 +241,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                       ),
                       AppDropdownItem(
                         value: AssetType.crypto.index,
-                        label: LocaleKeys.assetUpsertTypeCrypto.tr(),
-                        icon: Icon(
+                        label: LocaleKeys.assetTypesCrypto.tr(),
+                        icon: const Icon(
                           Icons.currency_bitcoin_outlined,
                           size: 20,
                           color: Colors.amber,

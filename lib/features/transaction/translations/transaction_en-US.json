@@ -83,6 +83,56 @@
       "descriptionPlaceholder": "Add a note (optional)",
       "typeExpense": "Expense",
       "typeIncome": "Income"
+    },
+    "filter": {
+      "title": "Filter Transactions",
+      "reset": "Reset",
+      "category": "Category",
+      "asset": "Asset",
+      "type": "Type",
+      "range": "Range",
+      "min": "Minimum",
+      "max": "Maximum",
+      "dateRange": "Date Range",
+      "from": "From",
+      "to": "To",
+      "amountRange": "Amount Range",
+      "allAssets": "All assets",
+      "allCategories": "All categories",
+      "sort": "Sort",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "apply": "Apply Filter"
+    },
+    "sort": {
+      "date": "Transaction Date",
+      "amount": "Amount",
+      "created": "Date Created",
+      "shortDate": "Date",
+      "shortAmount": "Amount",
+      "shortCreated": "Created",
+      "orderNewest": "Newest",
+      "orderOldest": "Oldest",
+      "orderLargest": "Largest",
+      "orderSmallest": "Smallest"
+    },
+    "date": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "common": {
+      "count": "transactions",
+      "income": "Income",
+      "expense": "Expense",
+      "noCategory": "No Category",
+      "unknownAsset": "Unknown Asset"
+    },
+    "empty": {
+      "title": "No transactions yet",
+      "month": "No transactions in this month"
+    },
+    "summary": {
+      "topExpense": "Top Expense"
     }
   }
 }

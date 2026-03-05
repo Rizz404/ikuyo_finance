@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -44,7 +46,7 @@ class TransactionTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
-                    category?.name ?? 'Tanpa Kategori',
+                    category?.name ?? LocaleKeys.transactionNoCategory.tr(),
                     style: AppTextStyle.bodyMedium,
                     fontWeight: FontWeight.w600,
                     maxLines: 1,
@@ -61,7 +63,8 @@ class TransactionTile extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: AppText(
-                          asset?.name ?? 'Unknown Asset',
+                          asset?.name ??
+                              LocaleKeys.transactionUnknownAsset.tr(),
                           style: AppTextStyle.labelSmall,
                           color: context.colorScheme.outline,
                           maxLines: 1,

@@ -15,7 +15,19 @@
       "title": "Pengaturan",
       "appearance": "TAMPILAN",
       "currency": "MATA UANG",
-      "currencyChangeSuccess": "Mata uang berhasil diubah"
+      "currencyChangeSuccess": "Mata uang berhasil diubah",
+      "theme": "Tema",
+      "themeTitle": "Tema Aplikasi",
+      "themeSubtitle": "Pilih tampilan sesuai preferensi",
+      "themeLight": "Terang",
+      "themeDark": "Gelap",
+      "themeSystem": "Sistem",
+      "currencyLabel": "Mata Uang",
+      "currencyTitle": "Mata Uang",
+      "currencySubtitle": "Semua nilai akan dikonversi",
+      "language": "Bahasa",
+      "languageTitle": "Bahasa",
+      "languageSubtitle": "Pilih bahasa aplikasi"
     }
   }
 }

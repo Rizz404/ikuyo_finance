@@ -2,6 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/cubit/locale_cubit.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -63,6 +64,29 @@ class SettingScreen extends StatelessWidget {
                         availableCurrencies: currencyCubit.availableCurrencies,
                         onChanged: (newCurrency) =>
                             _handleCurrencyChange(context, state, newCurrency),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // * Bahasa Settings Group
+              SettingGroup(
+                title: LocaleKeys.otherSettingLanguage.tr(),
+                children: [
+                  BlocBuilder<LocaleCubit, LocaleState>(
+                    builder: (context, state) {
+                      final localeCubit = context.read<LocaleCubit>();
+                      return LanguageSettingTile(
+                        currentLocale: state.currentLocale,
+                        availableLocales: localeCubit.availableLocales,
+                        onChanged: (newLocale) async {
+                          await localeCubit.setLocale(newLocale);
+                          if (context.mounted) {
+                            await context.setLocale(newLocale.locale);
+                          }
+                        },
                       );
                     },
                   ),

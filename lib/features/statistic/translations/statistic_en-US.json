@@ -4,7 +4,38 @@
       "tabExpense": "Expense",
       "tabIncome": "Income",
       "errorOccurred": "An error occurred",
-      "tryAgain": "Try Again"
+      "tryAgain": "Try Again",
+      "title": "Statistics"
+    },
+    "category": {
+      "income": "Income by Category",
+      "expense": "Expense by Category"
+    },
+    "common": {
+      "transactionCount": "transactions",
+      "categoryCount": "categories"
+    },
+    "empty": {
+      "income": "No income yet",
+      "expense": "No expense yet",
+      "description": "Transactions will appear here"
+    },
+    "chart": {
+      "totalIncome": "Total Income",
+      "totalExpense": "Total Expense",
+      "pie": "Pie",
+      "bar": "Bar",
+      "line": "Line"
+    },
+    "period": {
+      "selectTitle": "Select Period",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "apply": "Apply",
+      "weekly": "Weekly",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "custom": "Period"
     }
   }
 }

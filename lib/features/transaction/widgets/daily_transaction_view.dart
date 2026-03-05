@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
@@ -76,7 +78,7 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
             ),
             const SizedBox(height: 16),
             AppText(
-              'Belum ada transaksi',
+              LocaleKeys.transactionEmptyTitle.tr(),
               style: AppTextStyle.bodyLarge,
               color: context.colorScheme.outline,
             ),
@@ -195,11 +197,11 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
 
     String dateText;
     if (date == today) {
-      dateText = 'Hari Ini';
+      dateText = LocaleKeys.transactionDateToday.tr();
     } else if (date == yesterday) {
-      dateText = 'Kemarin';
+      dateText = LocaleKeys.transactionDateYesterday.tr();
     } else {
-      dateText = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(date);
+      dateText = DateFormat.yMMMMEEEEd(context.locale.toString()).format(date);
     }
 
     return Container(

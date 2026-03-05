@@ -83,6 +83,56 @@
       "descriptionPlaceholder": "Tambahkan catatan (opsional)",
       "typeExpense": "Pengeluaran",
       "typeIncome": "Pemasukan"
+    },
+    "filter": {
+      "title": "Filter Transaksi",
+      "reset": "Reset",
+      "category": "Kategori",
+      "asset": "Asset",
+      "type": "Jenis",
+      "range": "Rentang",
+      "min": "Minimum",
+      "max": "Maksimum",
+      "dateRange": "Rentang Tanggal",
+      "from": "Dari",
+      "to": "Sampai",
+      "amountRange": "Rentang Jumlah",
+      "allAssets": "Semua aset",
+      "allCategories": "Semua kategori",
+      "sort": "Urutkan",
+      "sortBy": "Berdasarkan",
+      "sortOrder": "Urutan",
+      "apply": "Terapkan Filter"
+    },
+    "sort": {
+      "date": "Tanggal Transaksi",
+      "amount": "Jumlah",
+      "created": "Tanggal Dibuat",
+      "shortDate": "Tanggal",
+      "shortAmount": "Jumlah",
+      "shortCreated": "Dibuat",
+      "orderNewest": "Terbaru",
+      "orderOldest": "Terlama",
+      "orderLargest": "Terbesar",
+      "orderSmallest": "Terkecil"
+    },
+    "date": {
+      "today": "Hari Ini",
+      "yesterday": "Kemarin"
+    },
+    "common": {
+      "count": "transaksi",
+      "income": "Pemasukan",
+      "expense": "Pengeluaran",
+      "noCategory": "Tanpa Kategori",
+      "unknownAsset": "Asset Tidak Diketahui"
+    },
+    "empty": {
+      "title": "Belum ada transaksi",
+      "month": "Belum ada transaksi di bulan ini"
+    },
+    "summary": {
+      "topExpense": "Top Pengeluaran"
     }
   }
 }

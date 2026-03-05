@@ -52,6 +52,23 @@
       "saveChanges": "Simpan Perubahan",
       "addCategory": "Tambah Kategori",
       "deleteCategory": "Hapus Kategori"
+    },
+    "filter": {
+      "title": "Filter Kategori",
+      "reset": "Reset",
+      "typeLabel": "Tipe Kategori",
+      "typeAll": "Semua tipe",
+      "parentLabel": "Kategori Induk",
+      "parentAll": "Semua kategori",
+      "isRootOnly": "Hanya kategori utama (tanpa induk)",
+      "sortByLabel": "Urutkan",
+      "sortFieldLabel": "Berdasarkan",
+      "sortOrderLabel": "Urutan",
+      "apply": "Terapkan Filter",
+      "sortCreated": "Dibuat",
+      "sortName": "Nama",
+      "sortNewest": "Terbaru",
+      "sortOldest": "Terlama"
     }
   }
 }

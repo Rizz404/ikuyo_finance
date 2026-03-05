@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/models/get_categories_params.dart';
@@ -26,12 +28,12 @@ class CategoryFilterData {
   /// * Get human-readable sort label
   String get sortLabel {
     final sortByLabel = switch (sortBy) {
-      CategorySortBy.createdAt => 'Dibuat',
-      CategorySortBy.name => 'Nama',
+      CategorySortBy.createdAt => LocaleKeys.categoryFilterSortCreated.tr(),
+      CategorySortBy.name => LocaleKeys.categoryFilterSortName.tr(),
     };
     final orderLabel = sortOrder == CategorySortOrder.descending
-        ? 'Terbaru'
-        : 'Terlama';
+        ? LocaleKeys.categoryFilterSortNewest.tr()
+        : LocaleKeys.categoryFilterSortOldest.tr();
     return '$sortByLabel ($orderLabel)';
   }
 }
@@ -134,14 +136,14 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const AppText(
-                        'Filter Kategori',
+                      AppText(
+                        LocaleKeys.categoryFilterTitle.tr(),
                         style: AppTextStyle.titleLarge,
                         fontWeight: FontWeight.bold,
                       ),
                       TextButton(
                         onPressed: _clearAllFilters,
-                        child: const Text('Reset'),
+                        child: Text(LocaleKeys.categoryFilterReset.tr()),
                       ),
                     ],
                   ),
@@ -156,17 +158,17 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       // * Type filter
                       AppDropdown<CategoryType>(
                         name: 'type_filter',
-                        label: 'Tipe Kategori',
-                        hintText: 'Semua tipe',
+                        label: LocaleKeys.categoryFilterTypeLabel.tr(),
+                        hintText: LocaleKeys.categoryFilterTypeAll.tr(),
                         initialValue: _selectedType,
-                        items: const [
+                        items: [
                           AppDropdownItem(
                             value: CategoryType.expense,
-                            label: 'Pengeluaran',
+                            label: LocaleKeys.categoryUpsertTypeExpense.tr(),
                           ),
                           AppDropdownItem(
                             value: CategoryType.income,
-                            label: 'Pemasukan',
+                            label: LocaleKeys.categoryUpsertTypeIncome.tr(),
                           ),
                         ],
                         onChanged: (value) {
@@ -177,8 +179,8 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       // * Parent category filter
                       AppDropdown<String>(
                         name: 'parent_filter',
-                        label: 'Kategori Induk',
-                        hintText: 'Semua kategori',
+                        label: LocaleKeys.categoryFilterParentLabel.tr(),
+                        hintText: LocaleKeys.categoryFilterParentAll.tr(),
                         initialValue: _selectedParentUlid,
                         items: widget.parentCategories
                             .map(
@@ -196,7 +198,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       // * Root only filter
                       FormBuilderCheckbox(
                         name: 'is_root_only',
-                        title: const Text('Hanya kategori utama (tanpa induk)'),
+                        title: Text(LocaleKeys.categoryFilterIsRootOnly.tr()),
                         initialValue: _isRootOnly ?? false,
                         onChanged: (value) {
                           setState(() => _isRootOnly = value);
@@ -204,8 +206,8 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Sort options
-                      const AppText(
-                        'Urutkan',
+                      AppText(
+                        LocaleKeys.categoryFilterSortByLabel.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -215,16 +217,18 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                           Expanded(
                             child: AppDropdown<CategorySortBy>(
                               name: 'sort_by',
-                              label: 'Berdasarkan',
+                              label: LocaleKeys.categoryFilterSortFieldLabel
+                                  .tr(),
                               initialValue: _sortBy,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: CategorySortBy.createdAt,
-                                  label: 'Dibuat',
+                                  label: LocaleKeys.categoryFilterSortCreated
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: CategorySortBy.name,
-                                  label: 'Nama',
+                                  label: LocaleKeys.categoryFilterSortName.tr(),
                                 ),
                               ],
                               onChanged: (value) {
@@ -238,16 +242,19 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                           Expanded(
                             child: AppDropdown<CategorySortOrder>(
                               name: 'sort_order',
-                              label: 'Urutan',
+                              label: LocaleKeys.categoryFilterSortOrderLabel
+                                  .tr(),
                               initialValue: _sortOrder,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: CategorySortOrder.descending,
-                                  label: 'Terbaru',
+                                  label: LocaleKeys.categoryFilterSortNewest
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: CategorySortOrder.ascending,
-                                  label: 'Terlama',
+                                  label: LocaleKeys.categoryFilterSortOldest
+                                      .tr(),
                                 ),
                               ],
                               onChanged: (value) {
@@ -266,7 +273,7 @@ class _CategoryFilterSheetState extends State<CategoryFilterSheet> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: AppButton(
-                    text: 'Terapkan Filter',
+                    text: LocaleKeys.categoryFilterApply.tr(),
                     onPressed: _applyFilters,
                   ),
                 ),

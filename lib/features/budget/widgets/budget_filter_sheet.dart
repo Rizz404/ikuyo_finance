@@ -1,5 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:ikuyo_finance/core/locale/extensions/localization_extension.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/budget/models/get_budgets_params.dart';
@@ -33,16 +36,20 @@ class BudgetFilterData {
   });
 
   /// * Get human-readable sort label
-  String get sortLabel {
+  String sortLabel(BuildContext context) {
     final sortByLabel = switch (sortBy) {
-      BudgetSortBy.createdAt => 'Dibuat',
-      BudgetSortBy.amountLimit => 'Limit',
-      BudgetSortBy.startDate => 'Mulai',
-      BudgetSortBy.endDate => 'Selesai',
+      BudgetSortBy.createdAt => LocaleKeys.budgetFilterSortCreated.tr(),
+      BudgetSortBy.amountLimit => LocaleKeys.budgetFilterSortAmountLimit.tr(),
+      BudgetSortBy.startDate => LocaleKeys.budgetFilterSortStartDate.tr(),
+      BudgetSortBy.endDate => LocaleKeys.budgetFilterSortEndDate.tr(),
     };
     final orderLabel = sortOrder == BudgetSortOrder.descending
-        ? (sortBy == BudgetSortBy.amountLimit ? 'Terbesar' : 'Terbaru')
-        : (sortBy == BudgetSortBy.amountLimit ? 'Terkecil' : 'Terlama');
+        ? (sortBy == BudgetSortBy.amountLimit
+              ? LocaleKeys.budgetFilterSortBiggest.tr()
+              : LocaleKeys.budgetFilterSortNewest.tr())
+        : (sortBy == BudgetSortBy.amountLimit
+              ? LocaleKeys.budgetFilterSortSmallest.tr()
+              : LocaleKeys.budgetFilterSortOldest.tr());
     return '$sortByLabel ($orderLabel)';
   }
 }
@@ -153,14 +160,14 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const AppText(
-                        'Filter Anggaran',
+                      AppText(
+                        LocaleKeys.budgetFilterTitle.tr(),
                         style: AppTextStyle.titleLarge,
                         fontWeight: FontWeight.bold,
                       ),
                       TextButton(
                         onPressed: _clearAllFilters,
-                        child: const Text('Reset'),
+                        child: Text(LocaleKeys.budgetFilterReset.tr()),
                       ),
                     ],
                   ),
@@ -175,25 +182,25 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                       // * Period filter
                       AppDropdown<BudgetPeriod>(
                         name: 'period_filter',
-                        label: 'Periode',
-                        hintText: 'Semua periode',
+                        label: LocaleKeys.budgetFilterPeriodLabel.tr(),
+                        hintText: LocaleKeys.budgetFilterPeriodAll.tr(),
                         initialValue: _selectedPeriod,
-                        items: const [
+                        items: [
                           AppDropdownItem(
                             value: BudgetPeriod.monthly,
-                            label: 'Bulanan',
+                            label: LocaleKeys.budgetFilterPeriodMonthly.tr(),
                           ),
                           AppDropdownItem(
                             value: BudgetPeriod.weekly,
-                            label: 'Mingguan',
+                            label: LocaleKeys.budgetFilterPeriodWeekly.tr(),
                           ),
                           AppDropdownItem(
                             value: BudgetPeriod.yearly,
-                            label: 'Tahunan',
+                            label: LocaleKeys.budgetFilterPeriodYearly.tr(),
                           ),
                           AppDropdownItem(
                             value: BudgetPeriod.custom,
-                            label: 'Kustom',
+                            label: LocaleKeys.budgetFilterPeriodCustom.tr(),
                           ),
                         ],
                         onChanged: (value) {
@@ -204,8 +211,8 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                       // * Category filter
                       AppDropdown<String>(
                         name: 'category_filter',
-                        label: 'Kategori',
-                        hintText: 'Semua kategori',
+                        label: LocaleKeys.budgetFilterCategoryLabel.tr(),
+                        hintText: LocaleKeys.budgetFilterCategoryAll.tr(),
                         initialValue: _selectedCategoryUlid,
                         items: widget.categories
                             .map(
@@ -221,8 +228,8 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Amount limit range filter
-                      const AppText(
-                        'Rentang Limit',
+                      AppText(
+                        LocaleKeys.budgetFilterAmountRange.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -232,7 +239,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                           Expanded(
                             child: AppTextField(
                               name: 'min_amount_limit',
-                              label: 'Min',
+                              label: LocaleKeys.budgetFilterMin.tr(),
                               type: AppTextFieldType.number,
                               initialValue: _minAmountLimit?.toString(),
                             ),
@@ -241,7 +248,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                           Expanded(
                             child: AppTextField(
                               name: 'max_amount_limit',
-                              label: 'Max',
+                              label: LocaleKeys.budgetFilterMax.tr(),
                               type: AppTextFieldType.number,
                               initialValue: _maxAmountLimit?.toString(),
                             ),
@@ -250,8 +257,8 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Date range filter
-                      const AppText(
-                        'Rentang Tanggal Mulai',
+                      AppText(
+                        LocaleKeys.budgetFilterStartDateRange.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -261,7 +268,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                           Expanded(
                             child: AppDateTimePicker(
                               name: 'start_date_from',
-                              label: 'Dari',
+                              label: LocaleKeys.budgetFilterFrom.tr(),
                               initialValue: _startDateFrom,
                             ),
                           ),
@@ -269,7 +276,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                           Expanded(
                             child: AppDateTimePicker(
                               name: 'start_date_to',
-                              label: 'Sampai',
+                              label: LocaleKeys.budgetFilterTo.tr(),
                               initialValue: _startDateTo,
                             ),
                           ),
@@ -277,8 +284,8 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Sort options
-                      const AppText(
-                        'Urutkan',
+                      AppText(
+                        LocaleKeys.budgetFilterSortSection.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -288,24 +295,28 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                           Expanded(
                             child: AppDropdown<BudgetSortBy>(
                               name: 'sort_by',
-                              label: 'Berdasarkan',
+                              label: LocaleKeys.budgetFilterSortBy.tr(),
                               initialValue: _sortBy,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: BudgetSortBy.createdAt,
-                                  label: 'Dibuat',
+                                  label: LocaleKeys.budgetFilterSortCreated
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: BudgetSortBy.amountLimit,
-                                  label: 'Limit',
+                                  label: LocaleKeys.budgetFilterSortAmountLimit
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: BudgetSortBy.startDate,
-                                  label: 'Mulai',
+                                  label: LocaleKeys.budgetFilterSortStartDate
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: BudgetSortBy.endDate,
-                                  label: 'Selesai',
+                                  label: LocaleKeys.budgetFilterSortEndDate
+                                      .tr(),
                                 ),
                               ],
                               onChanged: (value) {
@@ -319,16 +330,16 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                           Expanded(
                             child: AppDropdown<BudgetSortOrder>(
                               name: 'sort_order',
-                              label: 'Urutan',
+                              label: LocaleKeys.budgetFilterSortOrder.tr(),
                               initialValue: _sortOrder,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: BudgetSortOrder.descending,
-                                  label: 'Terbaru/Terbesar',
+                                  label: LocaleKeys.budgetFilterSortDesc.tr(),
                                 ),
                                 AppDropdownItem(
                                   value: BudgetSortOrder.ascending,
-                                  label: 'Terlama/Terkecil',
+                                  label: LocaleKeys.budgetFilterSortAsc.tr(),
                                 ),
                               ],
                               onChanged: (value) {
@@ -347,7 +358,7 @@ class _BudgetFilterSheetState extends State<BudgetFilterSheet> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: AppButton(
-                    text: 'Terapkan Filter',
+                    text: LocaleKeys.budgetFilterApply.tr(),
                     onPressed: _applyFilters,
                   ),
                 ),

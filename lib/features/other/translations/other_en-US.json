@@ -15,7 +15,19 @@
       "title": "Settings",
       "appearance": "APPEARANCE",
       "currency": "CURRENCY",
-      "currencyChangeSuccess": "Currency changed successfully"
+      "currencyChangeSuccess": "Currency changed successfully",
+      "theme": "Theme",
+      "themeTitle": "App Theme",
+      "themeSubtitle": "Choose appearance according to preference",
+      "themeLight": "Light",
+      "themeDark": "Dark",
+      "themeSystem": "System",
+      "currencyLabel": "Currency",
+      "currencyTitle": "Currency",
+      "currencySubtitle": "All values will be converted",
+      "language": "Language",
+      "languageTitle": "Language",
+      "languageSubtitle": "Choose app language"
     }
   }
 }

@@ -1,5 +1,27 @@
 {
   "asset": {
+    "filter": {
+      "apply": "Apply Filter",
+      "balanceRange": "Balance Range",
+      "maxLabel": "Max",
+      "minLabel": "Min",
+      "reset": "Reset",
+      "sortAscBalance": "Smallest",
+      "sortAscCombined": "Oldest/Smallest",
+      "sortAscGeneral": "Oldest",
+      "sortBalance": "Balance",
+      "sortByLabel": "Sort By",
+      "sortCreated": "Created",
+      "sortDescBalance": "Largest",
+      "sortDescCombined": "Newest/Largest",
+      "sortDescGeneral": "Newest",
+      "sortFieldLabel": "By",
+      "sortName": "Name",
+      "sortOrderLabel": "Order",
+      "title": "Filter Assets",
+      "typeAll": "All types",
+      "typeLabel": "Asset Type"
+    },
     "screen": {
       "comingSoon": "Coming Soon",
       "emptySubtitle": "Press + to add a new asset",
@@ -17,6 +39,13 @@
       "noResultsFor": "No assets found for \"{query}\"",
       "subtitle": "Type to search by asset name",
       "title": "Search Assets"
+    },
+    "types": {
+      "bank": "Bank",
+      "cash": "Cash",
+      "crypto": "Crypto",
+      "eWallet": "E-Wallet",
+      "stock": "Stock"
     },
     "upsert": {
       "addAsset": "Add Asset",
@@ -37,13 +66,8 @@
       "namePlaceholder": "Example: BCA, GoPay, Wallet",
       "saveChanges": "Save Changes",
       "success": "Success",
-      "typeBank": "Bank",
-      "typeCash": "Cash",
-      "typeCrypto": "Crypto",
-      "typeEWallet": "E-Wallet",
       "typeHint": "Select asset type",
-      "typeLabel": "Asset Type",
-      "typeStock": "Stock"
+      "typeLabel": "Asset Type"
     },
     "validator": {
       "balanceInvalid": "Balance is not valid",
@@ -98,6 +122,38 @@
     }
   },
   "budget": {
+    "filter": {
+      "amountRange": "Limit Range",
+      "apply": "Apply Filter",
+      "categoryAll": "All categories",
+      "categoryLabel": "Category",
+      "from": "From",
+      "max": "Max",
+      "min": "Min",
+      "periodAll": "All periods",
+      "periodCustom": "Custom",
+      "periodLabel": "Period",
+      "periodMonthly": "Monthly",
+      "periodWeekly": "Weekly",
+      "periodYearly": "Yearly",
+      "reset": "Reset",
+      "sortAmountLimit": "Limit",
+      "sortAsc": "Oldest/Smallest",
+      "sortBiggest": "Biggest",
+      "sortBy": "Sort By",
+      "sortCreated": "Created At",
+      "sortDesc": "Newest/Biggest",
+      "sortEndDate": "End Date",
+      "sortNewest": "Newest",
+      "sortOldest": "Oldest",
+      "sortOrder": "Order",
+      "sortSection": "Sort",
+      "sortSmallest": "Smallest",
+      "sortStartDate": "Start Date",
+      "startDateRange": "Start Date Range",
+      "title": "Budget Filter",
+      "to": "To"
+    },
     "screen": {
       "emptySubtitle": "Press + to add a new budget",
       "emptyTitle": "No budgets yet",
@@ -153,6 +209,23 @@
     }
   },
   "category": {
+    "filter": {
+      "apply": "Apply Filter",
+      "isRootOnly": "Root categories only (no parent)",
+      "parentAll": "All categories",
+      "parentLabel": "Parent Category",
+      "reset": "Reset",
+      "sortByLabel": "Sort By",
+      "sortCreated": "Created",
+      "sortFieldLabel": "Field",
+      "sortName": "Name",
+      "sortNewest": "Newest",
+      "sortOldest": "Oldest",
+      "sortOrderLabel": "Order",
+      "title": "Filter Categories",
+      "typeAll": "All types",
+      "typeLabel": "Category Type"
+    },
     "screen": {
       "emptySubtitle": "Press + to add a new category",
       "emptyTitle": "No categories yet",
@@ -223,6 +296,18 @@
       "appearance": "APPEARANCE",
       "currency": "CURRENCY",
       "currencyChangeSuccess": "Currency changed successfully",
+      "currencyLabel": "Currency",
+      "currencySubtitle": "All values will be converted",
+      "currencyTitle": "Currency",
+      "language": "Language",
+      "languageSubtitle": "Choose app language",
+      "languageTitle": "Language",
+      "theme": "Theme",
+      "themeDark": "Dark",
+      "themeLight": "Light",
+      "themeSubtitle": "Choose appearance according to preference",
+      "themeSystem": "System",
+      "themeTitle": "App Theme",
       "title": "Settings"
     }
   },
@@ -266,6 +351,7 @@
     "pin": {
       "confirm": "Confirm PIN",
       "confirmDesc": "Re-enter your PIN to confirm",
+      "digit": "{} Digit",
       "mismatch": "PINs do not match",
       "setSuccess": "PIN set successfully",
       "setup": "Set Up PIN",
@@ -387,10 +473,41 @@
     }
   },
   "statistic": {
+    "category": {
+      "expense": "Expense by Category",
+      "income": "Income by Category"
+    },
+    "chart": {
+      "bar": "Bar",
+      "line": "Line",
+      "pie": "Pie",
+      "totalExpense": "Total Expense",
+      "totalIncome": "Total Income"
+    },
+    "common": {
+      "categoryCount": "categories",
+      "transactionCount": "transactions"
+    },
+    "empty": {
+      "description": "Transactions will appear here",
+      "expense": "No expense yet",
+      "income": "No income yet"
+    },
+    "period": {
+      "apply": "Apply",
+      "custom": "Period",
+      "endDate": "End Date",
+      "monthly": "Monthly",
+      "selectTitle": "Select Period",
+      "startDate": "Start Date",
+      "weekly": "Weekly",
+      "yearly": "Yearly"
+    },
     "screen": {
       "errorOccurred": "An error occurred",
       "tabExpense": "Expense",
       "tabIncome": "Income",
+      "title": "Statistics",
       "tryAgain": "Try Again"
     }
   },
@@ -429,6 +546,41 @@
       "typeExpense": "Expense",
       "typeIncome": "Income"
     },
+    "common": {
+      "count": "transactions",
+      "expense": "Expense",
+      "income": "Income",
+      "noCategory": "No Category",
+      "unknownAsset": "Unknown Asset"
+    },
+    "date": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "empty": {
+      "month": "No transactions in this month",
+      "title": "No transactions yet"
+    },
+    "filter": {
+      "allAssets": "All assets",
+      "allCategories": "All categories",
+      "amountRange": "Amount Range",
+      "apply": "Apply Filter",
+      "asset": "Asset",
+      "category": "Category",
+      "dateRange": "Date Range",
+      "from": "From",
+      "max": "Maximum",
+      "min": "Minimum",
+      "range": "Range",
+      "reset": "Reset",
+      "sort": "Sort",
+      "sortBy": "Sort by",
+      "sortOrder": "Sort order",
+      "title": "Filter Transactions",
+      "to": "To",
+      "type": "Type"
+    },
     "screen": {
       "errorOccurred": "An error occurred",
       "tabCalendar": "Calendar",
@@ -441,6 +593,21 @@
       "noResultsFor": "No transactions found for \"{query}\"",
       "subtitle": "Type to search by transaction description",
       "title": "Search Transactions"
+    },
+    "sort": {
+      "amount": "Amount",
+      "created": "Date Created",
+      "date": "Transaction Date",
+      "orderLargest": "Largest",
+      "orderNewest": "Newest",
+      "orderOldest": "Oldest",
+      "orderSmallest": "Smallest",
+      "shortAmount": "Amount",
+      "shortCreated": "Created",
+      "shortDate": "Date"
+    },
+    "summary": {
+      "topExpense": "Top Expense"
     },
     "upsert": {
       "addAsset": "Add Asset",

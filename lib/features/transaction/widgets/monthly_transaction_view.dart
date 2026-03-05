@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
@@ -133,7 +135,9 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
 
     // * Get month name
     final monthDate = DateTime(widget.currentYear, month);
-    final monthName = DateFormat('MMMM', 'id_ID').format(monthDate);
+    final monthName = DateFormat.MMMM(
+      context.locale.toString(),
+    ).format(monthDate);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -185,8 +189,10 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
                     const SizedBox(height: 2),
                     AppText(
                       hasTransactions
-                          ? '$transactionCount transaksi'
-                          : 'Belum ada transaksi',
+                          ? LocaleKeys.transactionCount.tr(
+                              args: [transactionCount.toString()],
+                            )
+                          : LocaleKeys.transactionEmptyTitle.tr(),
                       style: AppTextStyle.labelSmall,
                       color: context.colorScheme.outline,
                     ),
@@ -227,7 +233,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
                     child: _summaryItem(
                       context: context,
                       icon: Icons.arrow_downward_rounded,
-                      label: 'Pemasukan',
+                      label: LocaleKeys.transactionIncome.tr(),
                       amount: totalIncome,
                       color: context.semantic.success,
                     ),
@@ -243,7 +249,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
                     child: _summaryItem(
                       context: context,
                       icon: Icons.arrow_upward_rounded,
-                      label: 'Pengeluaran',
+                      label: LocaleKeys.transactionExpense.tr(),
                       amount: totalExpense,
                       color: context.semantic.error,
                     ),
@@ -331,7 +337,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
           ),
           const SizedBox(height: 8),
           AppText(
-            'Top Pengeluaran',
+            LocaleKeys.transactionTopExpense.tr(),
             style: AppTextStyle.labelSmall,
             color: context.colorScheme.outline,
           ),
@@ -356,7 +362,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: AppText(
-                      category?.name ?? 'Tanpa Kategori',
+                      category?.name ?? LocaleKeys.transactionNoCategory.tr(),
                       style: AppTextStyle.labelMedium,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,

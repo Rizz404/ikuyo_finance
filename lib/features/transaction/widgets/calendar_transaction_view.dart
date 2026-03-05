@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
@@ -63,15 +64,24 @@ class _CalendarBody extends StatelessWidget {
   }
 
   Widget _buildWeekdayHeaders(BuildContext context) {
-    const weekdays = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
+    final locale = context.locale.toString();
+    final weekdays = [
+      DateTime(2024, 1, 1), // Monday
+      DateTime(2024, 1, 2),
+      DateTime(2024, 1, 3),
+      DateTime(2024, 1, 4),
+      DateTime(2024, 1, 5),
+      DateTime(2024, 1, 6),
+      DateTime(2024, 1, 7), // Sunday
+    ];
 
     return Row(
       children: weekdays
           .map(
-            (day) => Expanded(
+            (date) => Expanded(
               child: Center(
                 child: AppText(
-                  day,
+                  DateFormat.E(locale).format(date),
                   style: AppTextStyle.labelMedium,
                   fontWeight: FontWeight.w600,
                   color: context.colorScheme.onSurfaceVariant,
@@ -233,7 +243,7 @@ class _CalendarDayCell extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 2),
       child: AppText(
-        _formatCompactCurrency(netAmount.abs()),
+        _formatCompactCurrency(context, netAmount.abs()),
         style: AppTextStyle.labelSmall,
         fontWeight: FontWeight.w600,
         color: isPositive ? context.semantic.success : context.semantic.error,
@@ -299,15 +309,10 @@ class _CalendarDayCell extends StatelessWidget {
     return _DayTotal(income: income, expense: expense);
   }
 
-  String _formatCompactCurrency(double amount) {
-    if (amount >= 1000000000) {
-      return '${(amount / 1000000000).toStringAsFixed(1)}M';
-    } else if (amount >= 1000000) {
-      return '${(amount / 1000000).toStringAsFixed(1)}Jt';
-    } else if (amount >= 1000) {
-      return '${(amount / 1000).toStringAsFixed(0)}K';
-    }
-    return amount.toStringAsFixed(0);
+  String _formatCompactCurrency(BuildContext context, double amount) {
+    return NumberFormat.compact(
+      locale: context.locale.toString(),
+    ).format(amount);
   }
 
   void _showTransactionModal(BuildContext context) {
@@ -366,7 +371,9 @@ class _TransactionDayModal extends StatelessWidget {
                 child: Column(
                   children: [
                     AppText(
-                      DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(date),
+                      DateFormat.yMMMMEEEEd(
+                        context.locale.toString(),
+                      ).format(date),
                       style: AppTextStyle.titleMedium,
                       fontWeight: FontWeight.w600,
                     ),

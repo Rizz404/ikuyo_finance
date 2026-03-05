@@ -1,5 +1,27 @@
 {
   "asset": {
+    "filter": {
+      "apply": "Terapkan Filter",
+      "balanceRange": "Rentang Saldo",
+      "maxLabel": "Max",
+      "minLabel": "Min",
+      "reset": "Reset",
+      "sortAscBalance": "Terkecil",
+      "sortAscCombined": "Terlama/Terkecil",
+      "sortAscGeneral": "Terlama",
+      "sortBalance": "Saldo",
+      "sortByLabel": "Urutkan",
+      "sortCreated": "Dibuat",
+      "sortDescBalance": "Terbesar",
+      "sortDescCombined": "Terbaru/Terbesar",
+      "sortDescGeneral": "Terbaru",
+      "sortFieldLabel": "Berdasarkan",
+      "sortName": "Nama",
+      "sortOrderLabel": "Urutan",
+      "title": "Filter Aset",
+      "typeAll": "Semua tipe",
+      "typeLabel": "Tipe Aset"
+    },
     "screen": {
       "comingSoon": "Coming Soon",
       "emptySubtitle": "Tekan + untuk menambah aset baru",
@@ -17,6 +39,13 @@
       "noResultsFor": "Tidak ditemukan aset dengan \"{query}\"",
       "subtitle": "Ketik untuk mencari berdasarkan nama aset",
       "title": "Cari Aset"
+    },
+    "types": {
+      "bank": "Bank",
+      "cash": "Kas",
+      "crypto": "Crypto",
+      "eWallet": "E-Wallet",
+      "stock": "Saham"
     },
     "upsert": {
       "addAsset": "Tambah Aset",
@@ -37,13 +66,8 @@
       "namePlaceholder": "Contoh: BCA, GoPay, Dompet",
       "saveChanges": "Simpan Perubahan",
       "success": "Berhasil",
-      "typeBank": "Bank",
-      "typeCash": "Kas",
-      "typeCrypto": "Crypto",
-      "typeEWallet": "E-Wallet",
       "typeHint": "Pilih tipe aset",
-      "typeLabel": "Tipe Aset",
-      "typeStock": "Saham"
+      "typeLabel": "Tipe Aset"
     },
     "validator": {
       "balanceInvalid": "Saldo tidak valid",
@@ -98,6 +122,38 @@
     }
   },
   "budget": {
+    "filter": {
+      "amountRange": "Rentang Limit",
+      "apply": "Terapkan Filter",
+      "categoryAll": "Semua kategori",
+      "categoryLabel": "Kategori",
+      "from": "Dari",
+      "max": "Max",
+      "min": "Min",
+      "periodAll": "Semua periode",
+      "periodCustom": "Kustom",
+      "periodLabel": "Periode",
+      "periodMonthly": "Bulanan",
+      "periodWeekly": "Mingguan",
+      "periodYearly": "Tahunan",
+      "reset": "Reset",
+      "sortAmountLimit": "Limit",
+      "sortAsc": "Terlama/Terkecil",
+      "sortBiggest": "Terbesar",
+      "sortBy": "Berdasarkan",
+      "sortCreated": "Dibuat",
+      "sortDesc": "Terbaru/Terbesar",
+      "sortEndDate": "Selesai",
+      "sortNewest": "Terbaru",
+      "sortOldest": "Terlama",
+      "sortOrder": "Urutan",
+      "sortSection": "Urutkan",
+      "sortSmallest": "Terkecil",
+      "sortStartDate": "Mulai",
+      "startDateRange": "Rentang Tanggal Mulai",
+      "title": "Filter Anggaran",
+      "to": "Sampai"
+    },
     "screen": {
       "emptySubtitle": "Tekan + untuk menambah anggaran baru",
       "emptyTitle": "Belum ada anggaran",
@@ -153,6 +209,23 @@
     }
   },
   "category": {
+    "filter": {
+      "apply": "Terapkan Filter",
+      "isRootOnly": "Hanya kategori utama (tanpa induk)",
+      "parentAll": "Semua kategori",
+      "parentLabel": "Kategori Induk",
+      "reset": "Reset",
+      "sortByLabel": "Urutkan",
+      "sortCreated": "Dibuat",
+      "sortFieldLabel": "Berdasarkan",
+      "sortName": "Nama",
+      "sortNewest": "Terbaru",
+      "sortOldest": "Terlama",
+      "sortOrderLabel": "Urutan",
+      "title": "Filter Kategori",
+      "typeAll": "Semua tipe",
+      "typeLabel": "Tipe Kategori"
+    },
     "screen": {
       "emptySubtitle": "Tekan + untuk menambah kategori baru",
       "emptyTitle": "Belum ada kategori",
@@ -223,6 +296,18 @@
       "appearance": "TAMPILAN",
       "currency": "MATA UANG",
       "currencyChangeSuccess": "Mata uang berhasil diubah",
+      "currencyLabel": "Mata Uang",
+      "currencySubtitle": "Semua nilai akan dikonversi",
+      "currencyTitle": "Mata Uang",
+      "language": "Bahasa",
+      "languageSubtitle": "Pilih bahasa aplikasi",
+      "languageTitle": "Bahasa",
+      "theme": "Tema",
+      "themeDark": "Gelap",
+      "themeLight": "Terang",
+      "themeSubtitle": "Pilih tampilan sesuai preferensi",
+      "themeSystem": "Sistem",
+      "themeTitle": "Tema Aplikasi",
       "title": "Pengaturan"
     }
   },
@@ -266,6 +351,7 @@
     "pin": {
       "confirm": "Konfirmasi PIN",
       "confirmDesc": "Masukkan kembali PIN Anda untuk mengonfirmasi",
+      "digit": "{} Digit",
       "mismatch": "PIN tidak cocok",
       "setSuccess": "PIN berhasil diatur",
       "setup": "Atur PIN",
@@ -387,10 +473,41 @@
     }
   },
   "statistic": {
+    "category": {
+      "expense": "Pengeluaran per Kategori",
+      "income": "Pendapatan per Kategori"
+    },
+    "chart": {
+      "bar": "Bar",
+      "line": "Line",
+      "pie": "Pie",
+      "totalExpense": "Total Pengeluaran",
+      "totalIncome": "Total Pendapatan"
+    },
+    "common": {
+      "categoryCount": "kategori",
+      "transactionCount": "transaksi"
+    },
+    "empty": {
+      "description": "Transaksi akan muncul di sini",
+      "expense": "Belum ada pengeluaran",
+      "income": "Belum ada pendapatan"
+    },
+    "period": {
+      "apply": "Terapkan",
+      "custom": "Periode",
+      "endDate": "Tanggal Selesai",
+      "monthly": "Bulanan",
+      "selectTitle": "Pilih Periode",
+      "startDate": "Tanggal Mulai",
+      "weekly": "Mingguan",
+      "yearly": "Tahunan"
+    },
     "screen": {
       "errorOccurred": "Terjadi kesalahan",
       "tabExpense": "Pengeluaran",
       "tabIncome": "Pendapatan",
+      "title": "Statistik",
       "tryAgain": "Coba Lagi"
     }
   },
@@ -429,6 +546,41 @@
       "typeExpense": "Pengeluaran",
       "typeIncome": "Pemasukan"
     },
+    "common": {
+      "count": "transaksi",
+      "expense": "Pengeluaran",
+      "income": "Pemasukan",
+      "noCategory": "Tanpa Kategori",
+      "unknownAsset": "Asset Tidak Diketahui"
+    },
+    "date": {
+      "today": "Hari Ini",
+      "yesterday": "Kemarin"
+    },
+    "empty": {
+      "month": "Belum ada transaksi di bulan ini",
+      "title": "Belum ada transaksi"
+    },
+    "filter": {
+      "allAssets": "Semua aset",
+      "allCategories": "Semua kategori",
+      "amountRange": "Rentang Jumlah",
+      "apply": "Terapkan Filter",
+      "asset": "Asset",
+      "category": "Kategori",
+      "dateRange": "Rentang Tanggal",
+      "from": "Dari",
+      "max": "Maksimum",
+      "min": "Minimum",
+      "range": "Rentang",
+      "reset": "Reset",
+      "sort": "Urutkan",
+      "sortBy": "Berdasarkan",
+      "sortOrder": "Urutan",
+      "title": "Filter Transaksi",
+      "to": "Sampai",
+      "type": "Jenis"
+    },
     "screen": {
       "errorOccurred": "Terjadi kesalahan",
       "tabCalendar": "Kalender",
@@ -441,6 +593,21 @@
       "noResultsFor": "Tidak ditemukan transaksi dengan \"{query}\"",
       "subtitle": "Ketik untuk mencari berdasarkan deskripsi transaksi",
       "title": "Cari Transaksi"
+    },
+    "sort": {
+      "amount": "Jumlah",
+      "created": "Tanggal Dibuat",
+      "date": "Tanggal Transaksi",
+      "orderLargest": "Terbesar",
+      "orderNewest": "Terbaru",
+      "orderOldest": "Terlama",
+      "orderSmallest": "Terkecil",
+      "shortAmount": "Jumlah",
+      "shortCreated": "Dibuat",
+      "shortDate": "Tanggal"
+    },
+    "summary": {
+      "topExpense": "Top Pengeluaran"
     },
     "upsert": {
       "addAsset": "Tambah Asset",

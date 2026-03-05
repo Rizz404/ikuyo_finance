@@ -56,7 +56,8 @@
       "confirmDesc": "Re-enter your PIN to confirm",
       "tooShort": "PIN is too short",
       "mismatch": "PINs do not match",
-      "setSuccess": "PIN set successfully"
+      "setSuccess": "PIN set successfully",
+      "digit": "{} Digit"
     },
     "password": {
       "setup": "Set Up Password",

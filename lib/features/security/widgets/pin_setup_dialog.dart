@@ -95,9 +95,15 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
           const SizedBox(height: 16),
           if (!_isConfirming) ...[
             SegmentedButton<int>(
-              segments: const [
-                ButtonSegment(value: 4, label: Text('4 Digit')),
-                ButtonSegment(value: 6, label: Text('6 Digit')),
+              segments: [
+                ButtonSegment(
+                  value: 4,
+                  label: Text(LocaleKeys.securityPinDigit.tr(args: ['4'])),
+                ),
+                ButtonSegment(
+                  value: 6,
+                  label: Text(LocaleKeys.securityPinDigit.tr(args: ['6'])),
+                ),
               ],
               selected: {_pinLength},
               onSelectionChanged: (Set<int> newSelection) {

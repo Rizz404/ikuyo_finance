@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/get_assets_params.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
@@ -27,13 +29,17 @@ class AssetFilterData {
   /// * Get human-readable sort label
   String get sortLabel {
     final sortByLabel = switch (sortBy) {
-      AssetSortBy.createdAt => 'Dibuat',
-      AssetSortBy.name => 'Nama',
-      AssetSortBy.balance => 'Saldo',
+      AssetSortBy.createdAt => LocaleKeys.assetFilterSortCreated.tr(),
+      AssetSortBy.name => LocaleKeys.assetFilterSortName.tr(),
+      AssetSortBy.balance => LocaleKeys.assetFilterSortBalance.tr(),
     };
     final orderLabel = sortOrder == AssetSortOrder.descending
-        ? (sortBy == AssetSortBy.balance ? 'Terbesar' : 'Terbaru')
-        : (sortBy == AssetSortBy.balance ? 'Terkecil' : 'Terlama');
+        ? (sortBy == AssetSortBy.balance
+              ? LocaleKeys.assetFilterSortDescBalance.tr()
+              : LocaleKeys.assetFilterSortDescGeneral.tr())
+        : (sortBy == AssetSortBy.balance
+              ? LocaleKeys.assetFilterSortAscBalance.tr()
+              : LocaleKeys.assetFilterSortAscGeneral.tr());
     return '$sortByLabel ($orderLabel)';
   }
 }
@@ -128,14 +134,14 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const AppText(
-                        'Filter Aset',
+                      AppText(
+                        LocaleKeys.assetFilterTitle.tr(),
                         style: AppTextStyle.titleLarge,
                         fontWeight: FontWeight.bold,
                       ),
                       TextButton(
                         onPressed: _clearAllFilters,
-                        child: const Text('Reset'),
+                        child: Text(LocaleKeys.assetFilterReset.tr()),
                       ),
                     ],
                   ),
@@ -150,23 +156,29 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                       // * Type filter
                       AppDropdown<AssetType>(
                         name: 'type_filter',
-                        label: 'Tipe Aset',
-                        hintText: 'Semua tipe',
+                        label: LocaleKeys.assetFilterTypeLabel.tr(),
+                        hintText: LocaleKeys.assetFilterTypeAll.tr(),
                         initialValue: _selectedType,
-                        items: const [
-                          AppDropdownItem(value: AssetType.cash, label: 'Kas'),
-                          AppDropdownItem(value: AssetType.bank, label: 'Bank'),
+                        items: [
+                          AppDropdownItem(
+                            value: AssetType.cash,
+                            label: LocaleKeys.assetTypesCash.tr(),
+                          ),
+                          AppDropdownItem(
+                            value: AssetType.bank,
+                            label: LocaleKeys.assetTypesBank.tr(),
+                          ),
                           AppDropdownItem(
                             value: AssetType.eWallet,
-                            label: 'E-Wallet',
+                            label: LocaleKeys.assetTypesEWallet.tr(),
                           ),
                           AppDropdownItem(
                             value: AssetType.stock,
-                            label: 'Saham',
+                            label: LocaleKeys.assetTypesStock.tr(),
                           ),
                           AppDropdownItem(
                             value: AssetType.crypto,
-                            label: 'Crypto',
+                            label: LocaleKeys.assetTypesCrypto.tr(),
                           ),
                         ],
                         onChanged: (value) {
@@ -175,8 +187,8 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Balance range filter
-                      const AppText(
-                        'Rentang Saldo',
+                      AppText(
+                        LocaleKeys.assetFilterBalanceRange.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -186,7 +198,7 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                           Expanded(
                             child: AppTextField(
                               name: 'min_balance',
-                              label: 'Min',
+                              label: LocaleKeys.assetFilterMinLabel.tr(),
                               type: AppTextFieldType.number,
                               initialValue: _minBalance?.toString(),
                             ),
@@ -195,7 +207,7 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                           Expanded(
                             child: AppTextField(
                               name: 'max_balance',
-                              label: 'Max',
+                              label: LocaleKeys.assetFilterMaxLabel.tr(),
                               type: AppTextFieldType.number,
                               initialValue: _maxBalance?.toString(),
                             ),
@@ -204,8 +216,8 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                       ),
                       const SizedBox(height: 24),
                       // * Sort options
-                      const AppText(
-                        'Urutkan',
+                      AppText(
+                        LocaleKeys.assetFilterSortByLabel.tr(),
                         style: AppTextStyle.labelLarge,
                         fontWeight: FontWeight.w600,
                       ),
@@ -215,20 +227,20 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                           Expanded(
                             child: AppDropdown<AssetSortBy>(
                               name: 'sort_by',
-                              label: 'Berdasarkan',
+                              label: LocaleKeys.assetFilterSortFieldLabel.tr(),
                               initialValue: _sortBy,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: AssetSortBy.createdAt,
-                                  label: 'Dibuat',
+                                  label: LocaleKeys.assetFilterSortCreated.tr(),
                                 ),
                                 AppDropdownItem(
                                   value: AssetSortBy.name,
-                                  label: 'Nama',
+                                  label: LocaleKeys.assetFilterSortName.tr(),
                                 ),
                                 AppDropdownItem(
                                   value: AssetSortBy.balance,
-                                  label: 'Saldo',
+                                  label: LocaleKeys.assetFilterSortBalance.tr(),
                                 ),
                               ],
                               onChanged: (value) {
@@ -242,16 +254,18 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                           Expanded(
                             child: AppDropdown<AssetSortOrder>(
                               name: 'sort_order',
-                              label: 'Urutan',
+                              label: LocaleKeys.assetFilterSortOrderLabel.tr(),
                               initialValue: _sortOrder,
-                              items: const [
+                              items: [
                                 AppDropdownItem(
                                   value: AssetSortOrder.descending,
-                                  label: 'Terbaru/Terbesar',
+                                  label: LocaleKeys.assetFilterSortDescCombined
+                                      .tr(),
                                 ),
                                 AppDropdownItem(
                                   value: AssetSortOrder.ascending,
-                                  label: 'Terlama/Terkecil',
+                                  label: LocaleKeys.assetFilterSortAscCombined
+                                      .tr(),
                                 ),
                               ],
                               onChanged: (value) {
@@ -270,7 +284,7 @@ class _AssetFilterSheetState extends State<AssetFilterSheet> {
                 Padding(
                   padding: const EdgeInsets.all(16),
                   child: AppButton(
-                    text: 'Terapkan Filter',
+                    text: LocaleKeys.assetFilterApply.tr(),
                     onPressed: _applyFilters,
                   ),
                 ),

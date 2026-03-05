@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
@@ -93,11 +95,11 @@ class AssetCard extends StatelessWidget {
 
   String _getAssetTypeLabel() {
     return switch (asset.assetType) {
-      AssetType.cash => 'Kas',
-      AssetType.bank => 'Bank',
-      AssetType.eWallet => 'E-Wallet',
-      AssetType.stock => 'Saham',
-      AssetType.crypto => 'Crypto',
+      AssetType.cash => LocaleKeys.assetTypesCash.tr(),
+      AssetType.bank => LocaleKeys.assetTypesBank.tr(),
+      AssetType.eWallet => LocaleKeys.assetTypesEWallet.tr(),
+      AssetType.stock => LocaleKeys.assetTypesStock.tr(),
+      AssetType.crypto => LocaleKeys.assetTypesCrypto.tr(),
     };
   }
 
