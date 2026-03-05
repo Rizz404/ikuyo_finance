@@ -520,18 +520,25 @@ class _MultiSelectBottomSheetState<T>
                             style: AppTextStyle.titleMedium,
                             fontWeight: FontWeight.bold,
                           ),
-                          if (_selectedItems.isNotEmpty)
-                            AppText(
+                          Visibility(
+                            maintainSize: true,
+                            maintainAnimation: true,
+                            maintainState: true,
+                            visible: _selectedItems.isNotEmpty,
+                            child: AppText(
                               LocaleKeys
                                   .sharedWidgetsMultiSelectDropdownItemsSelected
                                   .tr(
                                     namedArgs: {
-                                      'count': _selectedItems.length.toString(),
+                                      'count': _selectedItems.isNotEmpty
+                                          ? _selectedItems.length.toString()
+                                          : '0',
                                     },
                                   ),
                               style: AppTextStyle.bodySmall,
                               color: context.colors.primary,
                             ),
+                          ),
                         ],
                       ),
                     ),
@@ -647,10 +654,13 @@ class _MultiSelectBottomSheetState<T>
         final isSelected = _isSelected(item);
 
         if (widget.itemBuilder != null) {
-          return InkWell(
-            onTap: () => _toggleItem(item),
-            borderRadius: BorderRadius.circular(12),
-            child: widget.itemBuilder!(context, item, isSelected),
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => _toggleItem(item),
+              borderRadius: BorderRadius.circular(12),
+              child: widget.itemBuilder!(context, item, isSelected),
+            ),
           );
         }
 
@@ -664,71 +674,76 @@ class _MultiSelectBottomSheetState<T>
     final subtitleLabel = widget.itemSubtitleMapper?.call(item);
     final leadingWidget = widget.itemLeadingMapper?.call(item);
 
-    return InkWell(
-      onTap: () => _toggleItem(item),
-      borderRadius: BorderRadius.circular(12),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? context.colors.primary.withValues(alpha: 0.1)
-              : context.colors.surfaceVariant.withValues(alpha: 0.5),
-          borderRadius: BorderRadius.circular(12),
-          border: isSelected
-              ? Border.all(color: context.colors.primary, width: 1.5)
-              : null,
-        ),
-        child: Row(
-          children: [
-            // * Checkbox
-            Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                color: isSelected ? context.colors.primary : Colors.transparent,
-                borderRadius: BorderRadius.circular(6),
-                border: Border.all(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        onTap: () => _toggleItem(item),
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? context.colors.primary.withValues(alpha: 0.1)
+                : context.colors.surfaceVariant.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected ? context.colors.primary : Colors.transparent,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            children: [
+              // * Checkbox
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
                   color: isSelected
                       ? context.colors.primary
-                      : context.colors.border,
-                  width: 2,
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: isSelected
+                        ? context.colors.primary
+                        : context.colors.border,
+                    width: 2,
+                  ),
+                ),
+                child: isSelected
+                    ? Icon(
+                        Icons.check,
+                        size: 16,
+                        color: context.colors.textOnPrimary,
+                      )
+                    : null,
+              ),
+              const SizedBox(width: 12),
+              if (leadingWidget != null) ...[
+                leadingWidget,
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      displayLabel,
+                      style: AppTextStyle.bodyMedium,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                    if (subtitleLabel != null)
+                      AppText(
+                        subtitleLabel,
+                        style: AppTextStyle.bodySmall,
+                        color: context.colors.textSecondary,
+                      ),
+                  ],
                 ),
               ),
-              child: isSelected
-                  ? Icon(
-                      Icons.check,
-                      size: 16,
-                      color: context.colors.textOnPrimary,
-                    )
-                  : null,
-            ),
-            const SizedBox(width: 12),
-            if (leadingWidget != null) ...[
-              leadingWidget,
-              const SizedBox(width: 12),
             ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    displayLabel,
-                    style: AppTextStyle.bodyMedium,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                  if (subtitleLabel != null)
-                    AppText(
-                      subtitleLabel,
-                      style: AppTextStyle.bodySmall,
-                      color: context.colors.textSecondary,
-                    ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

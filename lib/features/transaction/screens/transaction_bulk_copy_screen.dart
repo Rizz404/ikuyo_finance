@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -208,8 +209,9 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
     for (final formData in _copyForms) {
       if (formData.formKey.currentState?.saveAndValidate() ?? false) {
         final values = formData.formKey.currentState!.value;
-        final amountStr = (values['amount'] as String).replaceAll('.', '');
-        final amount = double.tryParse(amountStr) ?? 0;
+        final amountRaw = values['amount'];
+        final amountStr = amountRaw?.toString() ?? '0';
+        final amount = double.tryParse(amountStr.replaceAll('.', '')) ?? 0;
 
         paramsList.add(
           CreateTransactionParams(
@@ -223,6 +225,14 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
       } else {
         allValid = false;
         invalidCount++;
+
+        final errors = formData.formKey.currentState?.errors;
+        final values = formData.formKey.currentState?.value;
+        logError(
+          'Bulk copy validation failed for [${formData.sourceTransaction.description}]',
+          Exception('Validation Errors: $errors | Current Values: $values'),
+        );
+
         final title =
             formData.sourceTransaction.description ??
             LocaleKeys.transactionBulkCopyNoDescription.tr();
@@ -382,10 +392,15 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
                 ),
                 const SizedBox(height: 16),
                 Expanded(
-                  child: ListView.separated(
-                    itemCount: _copyForms.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) => _buildForm(index),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        for (int i = 0; i < _copyForms.length; i++) ...[
+                          if (i > 0) const SizedBox(height: 16),
+                          _buildForm(i),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -462,10 +477,10 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
           formData.transactionDate = values['transactionDate'] as DateTime?;
           formData.description = values['description'] as String?;
 
-          final amountStr = values['amount'] as String?;
-          if (amountStr != null && amountStr.isNotEmpty) {
+          final amountRaw = values['amount'];
+          if (amountRaw != null && amountRaw.toString().isNotEmpty) {
             formData.amount =
-                double.tryParse(amountStr.replaceAll('.', '')) ?? 0;
+                double.tryParse(amountRaw.toString().replaceAll('.', '')) ?? 0;
           }
         },
         child: Column(
@@ -716,7 +731,10 @@ class _TypeButton extends StatelessWidget {
               ? color.withValues(alpha: 0.15)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
-          border: isSelected ? Border.all(color: color, width: 1.5) : null,
+          border: Border.all(
+            color: isSelected ? color : Colors.transparent,
+            width: 1.5,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,

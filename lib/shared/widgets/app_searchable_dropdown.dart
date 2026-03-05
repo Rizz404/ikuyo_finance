@@ -444,53 +444,62 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>>
     final subtitle = widget.itemSubtitleMapper?.call(item);
     final leadingWidget = widget.itemLeadingMapper?.call(item);
 
-    return InkWell(
-      onTap: () => _selectItem(item),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.symmetric(vertical: 2),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? context.colors.primary.withValues(alpha: 0.1)
-              : context.colors.surfaceVariant,
-          borderRadius: BorderRadius.circular(8),
-          border: isSelected
-              ? Border.all(color: context.colors.primary, width: 1.5)
-              : null,
-        ),
-        child: Row(
-          children: [
-            if (leadingWidget != null) ...[
-              leadingWidget,
-              const SizedBox(width: 12),
-            ],
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    displayText,
-                    style: AppTextStyle.bodyMedium,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected
-                        ? context.colors.primary
-                        : context.colors.textPrimary,
-                  ),
-                  if (subtitle != null) ...[
-                    const SizedBox(height: 2),
-                    AppText(
-                      subtitle,
-                      style: AppTextStyle.bodySmall,
-                      color: context.colors.textTertiary,
-                    ),
-                  ],
-                ],
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: InkWell(
+        onTap: () => _selectItem(item),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? context.colors.primary.withValues(alpha: 0.1)
+                : context.colors.surfaceVariant,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: isSelected ? context.colors.primary : Colors.transparent,
+              width: 1.5,
             ),
-            if (isSelected)
-              Icon(Icons.check_circle, color: context.colors.primary, size: 20),
-          ],
+          ),
+          child: Row(
+            children: [
+              if (leadingWidget != null) ...[
+                leadingWidget,
+                const SizedBox(width: 12),
+              ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    AppText(
+                      displayText,
+                      style: AppTextStyle.bodyMedium,
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w500,
+                      color: isSelected
+                          ? context.colors.primary
+                          : context.colors.textPrimary,
+                    ),
+                    if (subtitle != null) ...[
+                      const SizedBox(height: 2),
+                      AppText(
+                        subtitle,
+                        style: AppTextStyle.bodySmall,
+                        color: context.colors.textTertiary,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (isSelected)
+                Icon(
+                  Icons.check_circle,
+                  color: context.colors.primary,
+                  size: 20,
+                ),
+            ],
+          ),
         ),
       ),
     );
