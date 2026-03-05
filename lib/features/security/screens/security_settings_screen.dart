@@ -361,55 +361,57 @@ class _AutoLockDurationTile extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: colors.divider,
-                borderRadius: BorderRadius.circular(2),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: colors.divider,
+                  borderRadius: BorderRadius.circular(2),
+                ),
               ),
-            ),
-            const SizedBox(height: 16),
-            AppText(
-              LocaleKeys.securitySettingsAutoLock.tr(),
-              style: AppTextStyle.titleMedium,
-              fontWeight: FontWeight.bold,
-            ),
-            const SizedBox(height: 8),
-            ...presets.map((m) {
-              return RadioListTile<int>(
-                value: m,
-                groupValue: currentMinutes,
-                title: Text(_durationLabel(m)),
-                activeColor: colors.primary,
-                onChanged: (v) {
-                  if (v != null) onChanged(v);
+              const SizedBox(height: 16),
+              AppText(
+                LocaleKeys.securitySettingsAutoLock.tr(),
+                style: AppTextStyle.titleMedium,
+                fontWeight: FontWeight.bold,
+              ),
+              const SizedBox(height: 8),
+              ...presets.map((m) {
+                return RadioListTile<int>(
+                  value: m,
+                  groupValue: currentMinutes,
+                  title: Text(_durationLabel(m)),
+                  activeColor: colors.primary,
+                  onChanged: (v) {
+                    if (v != null) onChanged(v);
+                    Navigator.pop(ctx);
+                  },
+                );
+              }),
+              // * Custom duration
+              ListTile(
+                leading: Radio<int>(
+                  value: -1,
+                  groupValue: presets.contains(currentMinutes)
+                      ? null
+                      : currentMinutes,
+                  activeColor: colors.primary,
+                  onChanged: (_) {},
+                ),
+                title: Text(LocaleKeys.securityAutoLockCustom.tr()),
+                onTap: () {
                   Navigator.pop(ctx);
+                  _showCustomDurationDialog(context, colors);
                 },
-              );
-            }),
-            // * Custom duration
-            ListTile(
-              leading: Radio<int>(
-                value: -1,
-                groupValue: presets.contains(currentMinutes)
-                    ? null
-                    : currentMinutes,
-                activeColor: colors.primary,
-                onChanged: (_) {},
               ),
-              title: Text(LocaleKeys.securityAutoLockCustom.tr()),
-              onTap: () {
-                Navigator.pop(ctx);
-                _showCustomDurationDialog(context, colors);
-              },
-            ),
-            const SizedBox(height: 16),
-          ],
+              const SizedBox(height: 16),
+            ],
+          ),
         ),
       ),
     );

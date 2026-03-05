@@ -170,7 +170,13 @@ class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
         return Stack(
           children: [
             widget.child,
-            if (state.shouldLock) const Positioned.fill(child: LockScreen()),
+            if (state.shouldLock)
+              Positioned.fill(
+                child: Navigator(
+                  onPopPage: (route, result) => false,
+                  pages: const [MaterialPage(child: LockScreen())],
+                ),
+              ),
           ],
         );
       },

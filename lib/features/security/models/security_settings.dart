@@ -19,6 +19,9 @@ class SecuritySettings {
   /// Durasi auto-lock dalam menit (0 = langsung)
   final int autoLockMinutes;
 
+  /// Panjang karakter PIN (4 atau 6)
+  final int pinLength;
+
   const SecuritySettings({
     this.isEnabled = false,
     this.biometricEnabled = false,
@@ -28,6 +31,7 @@ class SecuritySettings {
     this.passwordHash,
     this.lockTrigger = LockTrigger.onAppClose,
     this.autoLockMinutes = 0,
+    this.pinLength = 6,
   });
 
   SecuritySettings copyWith({
@@ -39,6 +43,7 @@ class SecuritySettings {
     String? passwordHash,
     LockTrigger? lockTrigger,
     int? autoLockMinutes,
+    int? pinLength,
   }) {
     return SecuritySettings(
       isEnabled: isEnabled ?? this.isEnabled,
@@ -49,6 +54,7 @@ class SecuritySettings {
       passwordHash: passwordHash ?? this.passwordHash,
       lockTrigger: lockTrigger ?? this.lockTrigger,
       autoLockMinutes: autoLockMinutes ?? this.autoLockMinutes,
+      pinLength: pinLength ?? this.pinLength,
     );
   }
 
@@ -61,6 +67,7 @@ class SecuritySettings {
     'passwordHash': passwordHash,
     'lockTrigger': lockTrigger.name,
     'autoLockMinutes': autoLockMinutes,
+    'pinLength': pinLength,
   };
 
   factory SecuritySettings.fromJson(Map<String, dynamic> json) {
@@ -76,6 +83,7 @@ class SecuritySettings {
         orElse: () => LockTrigger.onAppClose,
       ),
       autoLockMinutes: json['autoLockMinutes'] as int? ?? 0,
+      pinLength: json['pinLength'] as int? ?? 6,
     );
   }
 

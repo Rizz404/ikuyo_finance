@@ -20,13 +20,18 @@ class PinSetupDialog extends StatefulWidget {
 class _PinSetupDialogState extends State<PinSetupDialog> {
   final _pinController = TextEditingController();
   final _confirmController = TextEditingController();
+  final _pinFocus = FocusNode();
+  final _confirmFocus = FocusNode();
   String? _errorText;
   bool _isConfirming = false;
+  int _pinLength = 6;
 
   @override
   void dispose() {
     _pinController.dispose();
     _confirmController.dispose();
+    _pinFocus.dispose();
+    _confirmFocus.dispose();
     super.dispose();
   }
 
@@ -34,7 +39,7 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
     if (!_isConfirming) {
       // * Step 1: enter PIN
       final pin = _pinController.text.trim();
-      if (pin.length < 4) {
+      if (pin.length != _pinLength) {
         setState(() => _errorText = LocaleKeys.securityPinTooShort.tr());
         return;
       }
@@ -42,12 +47,20 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
         _isConfirming = true;
         _errorText = null;
       });
+      Future.delayed(
+        const Duration(milliseconds: 100),
+        () => _confirmFocus.requestFocus(),
+      );
     } else {
       // * Step 2: confirm PIN
       final pin = _pinController.text.trim();
       final confirm = _confirmController.text.trim();
       if (pin != confirm) {
-        setState(() => _errorText = LocaleKeys.securityPinMismatch.tr());
+        setState(() {
+          _errorText = LocaleKeys.securityPinMismatch.tr();
+          _confirmController.clear();
+        });
+        _confirmFocus.requestFocus();
         return;
       }
 
@@ -80,18 +93,35 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
             color: colors.textSecondary,
           ),
           const SizedBox(height: 16),
-          if (!_isConfirming)
+          if (!_isConfirming) ...[
+            SegmentedButton<int>(
+              segments: const [
+                ButtonSegment(value: 4, label: Text('4 Digit')),
+                ButtonSegment(value: 6, label: Text('6 Digit')),
+              ],
+              selected: {_pinLength},
+              onSelectionChanged: (Set<int> newSelection) {
+                setState(() {
+                  _pinLength = newSelection.first;
+                  _pinController.clear();
+                  _errorText = null;
+                });
+                _pinFocus.requestFocus();
+              },
+            ),
+            const SizedBox(height: 16),
             TextField(
               controller: _pinController,
+              focusNode: _pinFocus,
               keyboardType: TextInputType.number,
-              maxLength: 6,
+              maxLength: _pinLength,
               obscureText: true,
               textAlign: TextAlign.center,
               autofocus: true,
               style: const TextStyle(fontSize: 24, letterSpacing: 12),
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
-                hintText: '••••',
+                hintText: '•' * _pinLength,
                 counterText: '',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -101,19 +131,25 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
                   borderSide: BorderSide(color: colors.primary, width: 2),
                 ),
               ),
-            )
-          else
+              onChanged: (value) {
+                if (value.length == _pinLength) {
+                  _proceed();
+                }
+              },
+            ),
+          ] else
             TextField(
               controller: _confirmController,
+              focusNode: _confirmFocus,
               keyboardType: TextInputType.number,
-              maxLength: 6,
+              maxLength: _pinLength,
               obscureText: true,
               textAlign: TextAlign.center,
               autofocus: true,
               style: const TextStyle(fontSize: 24, letterSpacing: 12),
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: InputDecoration(
-                hintText: '••••',
+                hintText: '•' * _pinLength,
                 counterText: '',
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -123,6 +159,11 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
                   borderSide: BorderSide(color: colors.primary, width: 2),
                 ),
               ),
+              onChanged: (value) {
+                if (value.length == _pinLength) {
+                  _proceed();
+                }
+              },
               onSubmitted: (_) => _proceed(),
             ),
           if (_errorText != null) ...[
@@ -140,14 +181,11 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(LocaleKeys.securityCancel.tr()),
         ),
-        TextButton(
-          onPressed: _proceed,
-          child: Text(
-            _isConfirming
-                ? LocaleKeys.securitySave.tr()
-                : LocaleKeys.securityNext.tr(),
+        if (!_isConfirming)
+          TextButton(
+            onPressed: _proceed,
+            child: Text(LocaleKeys.securityNext.tr()),
           ),
-        ),
       ],
     );
   }

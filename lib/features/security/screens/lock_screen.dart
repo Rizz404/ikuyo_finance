@@ -246,7 +246,7 @@ class _LockScreenState extends State<LockScreen> {
           focusNode: _pinFocus,
           keyboardType: TextInputType.number,
           textAlign: TextAlign.center,
-          maxLength: 6,
+          maxLength: state.settings.pinLength,
           obscureText: true,
           style: TextStyle(
             fontSize: 24,
@@ -256,7 +256,7 @@ class _LockScreenState extends State<LockScreen> {
           ),
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
           decoration: InputDecoration(
-            hintText: '••••••',
+            hintText: '•' * state.settings.pinLength,
             hintStyle: TextStyle(color: colors.textTertiary),
             counterText: '',
             filled: true,
@@ -274,28 +274,12 @@ class _LockScreenState extends State<LockScreen> {
               vertical: 16,
             ),
           ),
+          onChanged: (value) {
+            if (value.length == state.settings.pinLength) {
+              _submitPin();
+            }
+          },
           onSubmitted: (_) => _submitPin(),
-        ),
-        const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          height: 52,
-          child: ElevatedButton(
-            onPressed: _submitPin,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colors.primary,
-              foregroundColor: colors.textOnPrimary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-            ),
-            child: AppText(
-              LocaleKeys.securityUnlock.tr(),
-              style: AppTextStyle.bodyLarge,
-              fontWeight: FontWeight.w600,
-              color: colors.textOnPrimary,
-            ),
-          ),
         ),
       ],
     );

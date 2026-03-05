@@ -257,6 +257,7 @@ class SecurityCubit extends Cubit<SecurityState> {
     final newSettings = state.settings.copyWith(
       pinEnabled: true,
       pinHash: hash,
+      pinLength: pin.length,
     );
     await updateSettings(newSettings);
     this.logInfo('PIN set successfully');
@@ -272,6 +273,7 @@ class SecurityCubit extends Cubit<SecurityState> {
       passwordHash: state.settings.passwordHash,
       lockTrigger: state.settings.lockTrigger,
       autoLockMinutes: state.settings.autoLockMinutes,
+      pinLength: 6,
     );
     await updateSettings(newSettings);
     this.logInfo('PIN removed');
@@ -298,6 +300,7 @@ class SecurityCubit extends Cubit<SecurityState> {
       passwordEnabled: false,
       lockTrigger: state.settings.lockTrigger,
       autoLockMinutes: state.settings.autoLockMinutes,
+      pinLength: state.settings.pinLength,
     );
     await updateSettings(newSettings);
     this.logInfo('Password removed');
