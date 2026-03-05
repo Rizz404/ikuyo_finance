@@ -226,6 +226,80 @@
       "title": "Settings"
     }
   },
+  "security": {
+    "autoLock": {
+      "custom": "Custom...",
+      "customHint": "Enter time in minutes",
+      "customTitle": "Custom Auto Lock Time",
+      "immediate": "Immediately",
+      "minutes": "minutes",
+      "nMin": "After {} minutes",
+      "oneMin": "After 1 minute"
+    },
+    "common": {
+      "cancel": "Cancel",
+      "next": "Next",
+      "save": "Save"
+    },
+    "lock": {
+      "authenticating": "Authenticating...",
+      "biometricFailed": "Biometric authentication failed",
+      "enterPassword": "Enter your password",
+      "passwordIncorrect": "Incorrect password",
+      "pinIncorrect": "Incorrect PIN",
+      "subtitle": "Please authenticate to continue",
+      "title": "App Locked",
+      "unlock": "Unlock",
+      "useBiometric": "Use Biometric",
+      "usePassword": "Use Password",
+      "usePin": "Use PIN"
+    },
+    "password": {
+      "confirmLabel": "Confirm Password",
+      "label": "Password",
+      "mismatch": "Passwords do not match",
+      "setSuccess": "Password set successfully",
+      "setup": "Set Up Password",
+      "setupDesc": "Create a password to secure your app",
+      "tooShort": "Password is too short"
+    },
+    "pin": {
+      "confirm": "Confirm PIN",
+      "confirmDesc": "Re-enter your PIN to confirm",
+      "mismatch": "PINs do not match",
+      "setSuccess": "PIN set successfully",
+      "setup": "Set Up PIN",
+      "setupDesc": "Create a PIN to secure your app",
+      "tooShort": "PIN is too short"
+    },
+    "settings": {
+      "autoLock": "Auto Lock Time",
+      "biometric": "Biometric Lock",
+      "biometricDesc": "Unlock with fingerprint or face recognition",
+      "biometricUnavailable": "Biometric authentication not available on this device",
+      "changePassword": "Change Password",
+      "changePin": "Change PIN",
+      "enable": "Enable App Lock",
+      "enableDesc": "Require authentication to open the app",
+      "general": "General",
+      "lockBehavior": "Lock Behavior",
+      "lockTrigger": "Lock Trigger",
+      "manage": "Manage Security",
+      "methods": "Authentication Methods",
+      "password": "Password Lock",
+      "passwordActive": "Password is active",
+      "passwordDesc": "Use an alphanumeric password to unlock",
+      "pin": "PIN Lock",
+      "pinActive": "PIN is active",
+      "pinDesc": "Use a numeric PIN to unlock",
+      "title": "Security Settings"
+    },
+    "trigger": {
+      "appClose": "When App Closed",
+      "both": "Both",
+      "screenOff": "When Screen Turned Off"
+    }
+  },
   "sharedWidgets": {
     "colorPicker": {
       "customColorLabel": "Custom Color (Hex)"
@@ -330,20 +404,18 @@
       "assetRequired": "Asset must be selected",
       "categoryHint": "Select category",
       "categoryLabel": "Category",
-      "checkInvalidData": "{count} form(s) have invalid data — scroll down to see the highlighted errors",
+      "checkInvalidData": "Please check invalid data",
       "clearAll": "Clear All",
       "copyFromHint": "Select one or more transactions",
       "copyFromLabel": "Copy from Transactions",
       "dateLabel": "Date",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Add a note (optional)",
-      "formInvalid": "This form has errors, please fix them before saving",
       "mainCategory": "Main Category",
       "noCategory": "No category",
       "noDescription": "No description",
       "noTransactions": "No transactions found",
-      "original": "Original",
-      "originalValue": "Original: {name}",
+      "original": "Original: {name}",
       "partialSuccess": "{success} succeeded, {failure} failed",
       "remove": "Remove",
       "saveCount": "Save {count} Transactions",

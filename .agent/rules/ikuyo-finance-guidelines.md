@@ -28,7 +28,7 @@ Follow these rules strictly and consistently.
 
 ## 3) Logging (replace all print)
 - Never use print().
-- Use: import 'package:ikuyo_finance/core/utils/logging.dart';
+- Use: import 'package:ikuyo_finance/core/utils/logger.dart';
 - Use the available helpers on `this`:
   - logInfo, logError, logData, logDomain, logPresentation, logService
 - For failures: logError('message', e, s)

@@ -1,0 +1,76 @@
+{
+  "security": {
+    "lock": {
+      "title": "App Locked",
+      "subtitle": "Please authenticate to continue",
+      "useBiometric": "Use Biometric",
+      "usePin": "Use PIN",
+      "usePassword": "Use Password",
+      "unlock": "Unlock",
+      "authenticating": "Authenticating...",
+      "biometricFailed": "Biometric authentication failed",
+      "pinIncorrect": "Incorrect PIN",
+      "passwordIncorrect": "Incorrect password",
+      "enterPassword": "Enter your password"
+    },
+    "settings": {
+      "title": "Security Settings",
+      "general": "General",
+      "enable": "Enable App Lock",
+      "enableDesc": "Require authentication to open the app",
+      "methods": "Authentication Methods",
+      "biometric": "Biometric Lock",
+      "biometricDesc": "Unlock with fingerprint or face recognition",
+      "biometricUnavailable": "Biometric authentication not available on this device",
+      "pin": "PIN Lock",
+      "pinDesc": "Use a numeric PIN to unlock",
+      "pinActive": "PIN is active",
+      "password": "Password Lock",
+      "passwordDesc": "Use an alphanumeric password to unlock",
+      "passwordActive": "Password is active",
+      "lockBehavior": "Lock Behavior",
+      "lockTrigger": "Lock Trigger",
+      "autoLock": "Auto Lock Time",
+      "manage": "Manage Security",
+      "changePin": "Change PIN",
+      "changePassword": "Change Password"
+    },
+    "trigger": {
+      "appClose": "When App Closed",
+      "screenOff": "When Screen Turned Off",
+      "both": "Both"
+    },
+    "autoLock": {
+      "immediate": "Immediately",
+      "oneMin": "After 1 minute",
+      "nMin": "After {} minutes",
+      "custom": "Custom...",
+      "customTitle": "Custom Auto Lock Time",
+      "customHint": "Enter time in minutes",
+      "minutes": "minutes"
+    },
+    "pin": {
+      "setup": "Set Up PIN",
+      "setupDesc": "Create a PIN to secure your app",
+      "confirm": "Confirm PIN",
+      "confirmDesc": "Re-enter your PIN to confirm",
+      "tooShort": "PIN is too short",
+      "mismatch": "PINs do not match",
+      "setSuccess": "PIN set successfully"
+    },
+    "password": {
+      "setup": "Set Up Password",
+      "setupDesc": "Create a password to secure your app",
+      "label": "Password",
+      "confirmLabel": "Confirm Password",
+      "tooShort": "Password is too short",
+      "mismatch": "Passwords do not match",
+      "setSuccess": "Password set successfully"
+    },
+    "common": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "next": "Next"
+    }
+  }
+}

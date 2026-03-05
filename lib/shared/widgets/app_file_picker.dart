@@ -89,12 +89,13 @@ class AppFilePickerState extends State<AppFilePicker> {
               ToastHelper.instance.showWarning(
                 context: context,
                 title: LocaleKeys.sharedWidgetsFilePickerFileSizeError.tr(),
-                description: LocaleKeys.sharedWidgetsFilePickerFileSizeErrorDesc.tr(
-                  namedArgs: {
-                    'name': file.name,
-                    'size': widget.maxSizeInMB.toString(),
-                  },
-                ),
+                description: LocaleKeys.sharedWidgetsFilePickerFileSizeErrorDesc
+                    .tr(
+                      namedArgs: {
+                        'name': file.name,
+                        'size': widget.maxSizeInMB.toString(),
+                      },
+                    ),
               );
               return;
             }
@@ -419,7 +420,9 @@ class _FilePreviewDialog extends StatelessWidget {
         ],
       );
     } else {
-      return AppText(LocaleKeys.sharedWidgetsFilePickerPreviewNotAvailable.tr());
+      return AppText(
+        LocaleKeys.sharedWidgetsFilePickerPreviewNotAvailable.tr(),
+      );
     }
   }
 }

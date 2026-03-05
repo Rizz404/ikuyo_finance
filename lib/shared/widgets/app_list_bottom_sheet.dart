@@ -78,7 +78,8 @@ class AppListOptionsBottomSheet extends StatelessWidget {
                   LocaleKeys.sharedWidgetsListBottomSheetSelectManyTitle.tr(),
               subtitle:
                   selectManySubtitle ??
-                  LocaleKeys.sharedWidgetsListBottomSheetSelectManySubtitle.tr(),
+                  LocaleKeys.sharedWidgetsListBottomSheetSelectManySubtitle
+                      .tr(),
               onTap: onSelectMany,
             ),
             const SizedBox(height: 12),
@@ -89,7 +90,8 @@ class AppListOptionsBottomSheet extends StatelessWidget {
                   LocaleKeys.sharedWidgetsListBottomSheetFilterSortTitle.tr(),
               subtitle:
                   filterSortSubtitle ??
-                  LocaleKeys.sharedWidgetsListBottomSheetFilterSortSubtitle.tr(),
+                  LocaleKeys.sharedWidgetsListBottomSheetFilterSortSubtitle
+                      .tr(),
               onTap: () {
                 Navigator.pop(context);
                 showModalBottomSheet(

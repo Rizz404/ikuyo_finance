@@ -212,7 +212,8 @@ class _CurrencyMigrationDialogState extends State<CurrencyMigrationDialog> {
               const SizedBox(width: 8),
               Expanded(
                 child: AppText(
-                  LocaleKeys.sharedWidgetsCurrencyMigrationIrreversibleWarning.tr(),
+                  LocaleKeys.sharedWidgetsCurrencyMigrationIrreversibleWarning
+                      .tr(),
                   style: AppTextStyle.bodySmall,
                   color: context.semantic.warning,
                 ),

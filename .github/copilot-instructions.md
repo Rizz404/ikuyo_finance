@@ -11,7 +11,7 @@ import 'package:ikuyo_finance/core/extensions/localization_extension.dart';
 // ❌ DON'T: Color(0xFF...), Colors.red, hardcoded colors
 
 // 3) Logging (replace all print!)
-import 'package:ikuyo_finance/core/utils/logging.dart';
+import 'package:ikuyo_finance/core/utils/logger.dart';
 // Use: logInfo|logError|logData|logDomain|logPresentation|logService
 // Example: logService('Process started'); logError('Failed', e, s);
 // ❌ DON'T: Add logging in widgets/screens unless explicitly requested

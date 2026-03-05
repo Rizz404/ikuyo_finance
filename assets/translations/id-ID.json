@@ -226,6 +226,80 @@
       "title": "Pengaturan"
     }
   },
+  "security": {
+    "autoLock": {
+      "custom": "Kustom...",
+      "customHint": "Masukkan waktu dalam menit",
+      "customTitle": "Waktu Kunci Otomatis Kustom",
+      "immediate": "Segera",
+      "minutes": "menit",
+      "nMin": "Setelah {} menit",
+      "oneMin": "Setelah 1 menit"
+    },
+    "common": {
+      "cancel": "Batal",
+      "next": "Lanjut",
+      "save": "Simpan"
+    },
+    "lock": {
+      "authenticating": "Mengautentikasi...",
+      "biometricFailed": "Autentikasi biometrik gagal",
+      "enterPassword": "Masukkan kata sandi Anda",
+      "passwordIncorrect": "Kata sandi salah",
+      "pinIncorrect": "PIN salah",
+      "subtitle": "Silakan autentikasi untuk melanjutkan",
+      "title": "Aplikasi Terkunci",
+      "unlock": "Buka Kunci",
+      "useBiometric": "Gunakan Biometrik",
+      "usePassword": "Gunakan Kata Sandi",
+      "usePin": "Gunakan PIN"
+    },
+    "password": {
+      "confirmLabel": "Konfirmasi Kata Sandi",
+      "label": "Kata Sandi",
+      "mismatch": "Kata sandi tidak cocok",
+      "setSuccess": "Kata sandi berhasil diatur",
+      "setup": "Atur Kata Sandi",
+      "setupDesc": "Buat kata sandi untuk mengamankan aplikasi Anda",
+      "tooShort": "Kata sandi terlalu pendek"
+    },
+    "pin": {
+      "confirm": "Konfirmasi PIN",
+      "confirmDesc": "Masukkan kembali PIN Anda untuk mengonfirmasi",
+      "mismatch": "PIN tidak cocok",
+      "setSuccess": "PIN berhasil diatur",
+      "setup": "Atur PIN",
+      "setupDesc": "Buat PIN untuk mengamankan aplikasi Anda",
+      "tooShort": "PIN terlalu pendek"
+    },
+    "settings": {
+      "autoLock": "Waktu Kunci Otomatis",
+      "biometric": "Kunci Biometrik",
+      "biometricDesc": "Buka kunci dengan sidik jari atau pengenalan wajah",
+      "biometricUnavailable": "Autentikasi biometrik tidak tersedia di perangkat ini",
+      "changePassword": "Ubah Kata Sandi",
+      "changePin": "Ubah PIN",
+      "enable": "Aktifkan Kunci Aplikasi",
+      "enableDesc": "Wajibkan autentikasi untuk membuka aplikasi",
+      "general": "Umum",
+      "lockBehavior": "Perilaku Kunci",
+      "lockTrigger": "Pemicu Kunci",
+      "manage": "Kelola Keamanan",
+      "methods": "Metode Autentikasi",
+      "password": "Kunci Kata Sandi",
+      "passwordActive": "Kata sandi aktif",
+      "passwordDesc": "Gunakan kata sandi alfanumerik untuk membuka kunci",
+      "pin": "Kunci PIN",
+      "pinActive": "PIN aktif",
+      "pinDesc": "Gunakan PIN numerik untuk membuka kunci",
+      "title": "Pengaturan Keamanan"
+    },
+    "trigger": {
+      "appClose": "Saat Aplikasi Ditutup",
+      "both": "Keduanya",
+      "screenOff": "Saat Layar Dimatikan"
+    }
+  },
   "sharedWidgets": {
     "colorPicker": {
       "customColorLabel": "Warna Custom (Hex)"
@@ -330,20 +404,18 @@
       "assetRequired": "Aset harus dipilih",
       "categoryHint": "Pilih kategori",
       "categoryLabel": "Kategori",
-      "checkInvalidData": "{count} form memiliki data yang belum valid — gulir ke bawah untuk melihat form yang ditandai",
+      "checkInvalidData": "Periksa kembali data yang belum valid",
       "clearAll": "Hapus Semua",
       "copyFromHint": "Pilih satu atau banyak transaksi",
       "copyFromLabel": "Copy dari Transaksi",
       "dateLabel": "Tanggal",
       "descriptionLabel": "Deskripsi",
       "descriptionPlaceholder": "Tambahkan catatan (opsional)",
-      "formInvalid": "Form ini memiliki error, harap perbaiki sebelum menyimpan",
       "mainCategory": "Kategori Utama",
       "noCategory": "Tanpa kategori",
       "noDescription": "Tanpa deskripsi",
       "noTransactions": "Tidak ada transaksi ditemukan",
-      "original": "Asli",
-      "originalValue": "Asli: {name}",
+      "original": "Original: {name}",
       "partialSuccess": "{success} berhasil, {failure} gagal",
       "remove": "Hapus",
       "saveCount": "Simpan {count} Transaksi",

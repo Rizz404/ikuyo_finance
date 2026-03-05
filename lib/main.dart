@@ -152,12 +152,12 @@ class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
         cubit.onAppClose();
         break;
       case AppLifecycleState.inactive:
-        cubit.onScreenOff();
         break;
       case AppLifecycleState.resumed:
         cubit.onAppResumed();
         break;
       case AppLifecycleState.hidden:
+        cubit.onScreenOff();
         break;
     }
   }

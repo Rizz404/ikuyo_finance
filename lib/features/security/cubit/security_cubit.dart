@@ -108,7 +108,12 @@ class SecurityCubit extends Cubit<SecurityState> {
   Future<void> authenticateWithBiometric() async {
     if (!state.canUseBiometric) return;
 
-    emit(state.copyWith(status: SecurityStatus.authenticating));
+    emit(
+      state.copyWith(
+        status: SecurityStatus.authenticating,
+        authResult: SecurityAuthResult.idle,
+      ),
+    );
 
     final success = await _biometricService.authenticate(
       reason: 'Verify to unlock Ikuyo Finance',
@@ -124,14 +129,16 @@ class SecurityCubit extends Cubit<SecurityState> {
       );
       this.logInfo('Biometric auth success');
     } else {
+      // local_auth returns false when user cancels or fails max attempts.
+      // We return to locked/idle state so user can retry or use PIN,
+      // without showing a red error banner for cancellation.
       emit(
         state.copyWith(
           status: SecurityStatus.locked,
-          authResult: SecurityAuthResult.failed,
-          failedAttempts: state.failedAttempts + 1,
+          authResult: SecurityAuthResult.idle,
         ),
       );
-      this.logInfo('Biometric auth failed');
+      this.logInfo('Biometric auth canceled or failed');
     }
   }
 
@@ -139,7 +146,12 @@ class SecurityCubit extends Cubit<SecurityState> {
   void authenticateWithPin(String pin) {
     if (!state.canUsePin) return;
 
-    emit(state.copyWith(status: SecurityStatus.authenticating));
+    emit(
+      state.copyWith(
+        status: SecurityStatus.authenticating,
+        authResult: SecurityAuthResult.idle,
+      ),
+    );
 
     final isValid = SecurityHasher.verify(pin, state.settings.pinHash!);
 
@@ -169,7 +181,12 @@ class SecurityCubit extends Cubit<SecurityState> {
   void authenticateWithPassword(String password) {
     if (!state.canUsePassword) return;
 
-    emit(state.copyWith(status: SecurityStatus.authenticating));
+    emit(
+      state.copyWith(
+        status: SecurityStatus.authenticating,
+        authResult: SecurityAuthResult.idle,
+      ),
+    );
 
     final isValid = SecurityHasher.verify(
       password,

@@ -1,0 +1,76 @@
+{
+  "security": {
+    "lock": {
+      "title": "Aplikasi Terkunci",
+      "subtitle": "Silakan autentikasi untuk melanjutkan",
+      "useBiometric": "Gunakan Biometrik",
+      "usePin": "Gunakan PIN",
+      "usePassword": "Gunakan Kata Sandi",
+      "unlock": "Buka Kunci",
+      "authenticating": "Mengautentikasi...",
+      "biometricFailed": "Autentikasi biometrik gagal",
+      "pinIncorrect": "PIN salah",
+      "passwordIncorrect": "Kata sandi salah",
+      "enterPassword": "Masukkan kata sandi Anda"
+    },
+    "settings": {
+      "title": "Pengaturan Keamanan",
+      "general": "Umum",
+      "enable": "Aktifkan Kunci Aplikasi",
+      "enableDesc": "Wajibkan autentikasi untuk membuka aplikasi",
+      "methods": "Metode Autentikasi",
+      "biometric": "Kunci Biometrik",
+      "biometricDesc": "Buka kunci dengan sidik jari atau pengenalan wajah",
+      "biometricUnavailable": "Autentikasi biometrik tidak tersedia di perangkat ini",
+      "pin": "Kunci PIN",
+      "pinDesc": "Gunakan PIN numerik untuk membuka kunci",
+      "pinActive": "PIN aktif",
+      "password": "Kunci Kata Sandi",
+      "passwordDesc": "Gunakan kata sandi alfanumerik untuk membuka kunci",
+      "passwordActive": "Kata sandi aktif",
+      "lockBehavior": "Perilaku Kunci",
+      "lockTrigger": "Pemicu Kunci",
+      "autoLock": "Waktu Kunci Otomatis",
+      "manage": "Kelola Keamanan",
+      "changePin": "Ubah PIN",
+      "changePassword": "Ubah Kata Sandi"
+    },
+    "trigger": {
+      "appClose": "Saat Aplikasi Ditutup",
+      "screenOff": "Saat Layar Dimatikan",
+      "both": "Keduanya"
+    },
+    "autoLock": {
+      "immediate": "Segera",
+      "oneMin": "Setelah 1 menit",
+      "nMin": "Setelah {} menit",
+      "custom": "Kustom...",
+      "customTitle": "Waktu Kunci Otomatis Kustom",
+      "customHint": "Masukkan waktu dalam menit",
+      "minutes": "menit"
+    },
+    "pin": {
+      "setup": "Atur PIN",
+      "setupDesc": "Buat PIN untuk mengamankan aplikasi Anda",
+      "confirm": "Konfirmasi PIN",
+      "confirmDesc": "Masukkan kembali PIN Anda untuk mengonfirmasi",
+      "tooShort": "PIN terlalu pendek",
+      "mismatch": "PIN tidak cocok",
+      "setSuccess": "PIN berhasil diatur"
+    },
+    "password": {
+      "setup": "Atur Kata Sandi",
+      "setupDesc": "Buat kata sandi untuk mengamankan aplikasi Anda",
+      "label": "Kata Sandi",
+      "confirmLabel": "Konfirmasi Kata Sandi",
+      "tooShort": "Kata sandi terlalu pendek",
+      "mismatch": "Kata sandi tidak cocok",
+      "setSuccess": "Kata sandi berhasil diatur"
+    },
+    "common": {
+      "cancel": "Batal",
+      "save": "Simpan",
+      "next": "Lanjut"
+    }
+  }
+}

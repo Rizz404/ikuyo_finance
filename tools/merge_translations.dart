@@ -34,7 +34,9 @@ void main() async {
     final parentDir = parts[parts.length - 2];
     if (parentDir != 'translations') continue;
 
-    final locale = parts.last; // e.g. en-US.json
+    final locale = parts.last
+        .split('_')
+        .last; // e.g. asset_en-US.json → en-US.json
     byLocale.putIfAbsent(locale, () => []).add(entity);
   }
 
