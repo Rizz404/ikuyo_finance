@@ -216,7 +216,10 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       final name = values['name'] as String;
       final type = CategoryType.values[values['type'] as int];
       final color = values['color'] as String?;
-      final parentUlid = values['parentUlid'] as String?;
+      final parentUlidRaw = values['parentUlid'] as String?;
+      final parentUlid = (parentUlidRaw?.isEmpty ?? true)
+          ? null
+          : parentUlidRaw;
 
       // * Get icon path from file picker
       String? iconPath;

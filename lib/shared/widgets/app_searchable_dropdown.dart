@@ -169,11 +169,6 @@ class _AppSearchableDropdownState<T> extends State<AppSearchableDropdown<T>>
     // * Trigger search for empty query to ensure data context matches this specific field
     widget.onSearch('');
 
-    // * Request focus ke search field
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _searchFocusNode.requestFocus();
-    });
-
     setState(() {});
   }
 
