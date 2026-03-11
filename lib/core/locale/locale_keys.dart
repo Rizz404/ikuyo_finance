@@ -728,6 +728,162 @@ abstract class LocaleKeys {
   static const securitySettingsLockBehavior = 'security.settings.lockBehavior';
   static const securitySettingsLockTrigger = 'security.settings.lockTrigger';
   static const securitySettingsAutoLock = 'security.settings.autoLock';
+
+  // * AutoTransaction — Validator
+  static const autoTransactionValidatorNameRequired =
+      'autoTransaction.validator.nameRequired';
+  static const autoTransactionValidatorFrequencyRequired =
+      'autoTransaction.validator.frequencyRequired';
+  static const autoTransactionValidatorScheduleHourInvalid =
+      'autoTransaction.validator.scheduleHourInvalid';
+  static const autoTransactionValidatorScheduleMinuteInvalid =
+      'autoTransaction.validator.scheduleMinuteInvalid';
+  static const autoTransactionValidatorDayOfWeekRequired =
+      'autoTransaction.validator.dayOfWeekRequired';
+  static const autoTransactionValidatorDayOfMonthRequired =
+      'autoTransaction.validator.dayOfMonthRequired';
+  static const autoTransactionValidatorDayOfMonthInvalid =
+      'autoTransaction.validator.dayOfMonthInvalid';
+  static const autoTransactionValidatorMonthOfYearRequired =
+      'autoTransaction.validator.monthOfYearRequired';
+  static const autoTransactionValidatorStartDateRequired =
+      'autoTransaction.validator.startDateRequired';
+  static const autoTransactionValidatorTransactionRequired =
+      'autoTransaction.validator.transactionRequired';
+
+  // * AutoTransaction — Screen
+  static const autoTransactionScreenTitle = 'autoTransaction.screen.title';
+  static const autoTransactionScreenEmptyTitle =
+      'autoTransaction.screen.emptyTitle';
+  static const autoTransactionScreenEmptySubtitle =
+      'autoTransaction.screen.emptySubtitle';
+  static const autoTransactionScreenErrorOccurred =
+      'autoTransaction.screen.errorOccurred';
+
+  // * AutoTransaction — GroupUpsert
+  static const autoTransactionGroupUpsertAddTitle =
+      'autoTransaction.groupUpsert.addTitle';
+  static const autoTransactionGroupUpsertEditTitle =
+      'autoTransaction.groupUpsert.editTitle';
+  static const autoTransactionGroupUpsertNameLabel =
+      'autoTransaction.groupUpsert.nameLabel';
+  static const autoTransactionGroupUpsertNameHint =
+      'autoTransaction.groupUpsert.nameHint';
+  static const autoTransactionGroupUpsertDescriptionLabel =
+      'autoTransaction.groupUpsert.descriptionLabel';
+  static const autoTransactionGroupUpsertDescriptionHint =
+      'autoTransaction.groupUpsert.descriptionHint';
+  static const autoTransactionGroupUpsertFrequencyLabel =
+      'autoTransaction.groupUpsert.frequencyLabel';
+  static const autoTransactionGroupUpsertScheduleTimeLabel =
+      'autoTransaction.groupUpsert.scheduleTimeLabel';
+  static const autoTransactionGroupUpsertDayOfWeekLabel =
+      'autoTransaction.groupUpsert.dayOfWeekLabel';
+  static const autoTransactionGroupUpsertDayOfMonthLabel =
+      'autoTransaction.groupUpsert.dayOfMonthLabel';
+  static const autoTransactionGroupUpsertDayOfMonthHint =
+      'autoTransaction.groupUpsert.dayOfMonthHint';
+  static const autoTransactionGroupUpsertMonthOfYearLabel =
+      'autoTransaction.groupUpsert.monthOfYearLabel';
+  static const autoTransactionGroupUpsertStartDateLabel =
+      'autoTransaction.groupUpsert.startDateLabel';
+  static const autoTransactionGroupUpsertEndDateLabel =
+      'autoTransaction.groupUpsert.endDateLabel';
+  static const autoTransactionGroupUpsertSave =
+      'autoTransaction.groupUpsert.save';
+  static const autoTransactionGroupUpsertCancel =
+      'autoTransaction.groupUpsert.cancel';
+  static const autoTransactionGroupUpsertDelete =
+      'autoTransaction.groupUpsert.delete';
+  static const autoTransactionGroupUpsertDeleteTitle =
+      'autoTransaction.groupUpsert.deleteTitle';
+  static const autoTransactionGroupUpsertDeleteConfirm =
+      'autoTransaction.groupUpsert.deleteConfirm';
+  static const autoTransactionGroupUpsertUpsertSuccess =
+      'autoTransaction.groupUpsert.upsertSuccess';
+  static const autoTransactionGroupUpsertUpsertError =
+      'autoTransaction.groupUpsert.upsertError';
+  static const autoTransactionGroupUpsertPauseTitle =
+      'autoTransaction.groupUpsert.pauseTitle';
+  static const autoTransactionGroupUpsertPauseUntilLabel =
+      'autoTransaction.groupUpsert.pauseUntilLabel';
+  static const autoTransactionGroupUpsertPauseManual =
+      'autoTransaction.groupUpsert.pauseManual';
+  static const autoTransactionGroupUpsertPauseButton =
+      'autoTransaction.groupUpsert.pauseButton';
+  static const autoTransactionGroupUpsertResumeButton =
+      'autoTransaction.groupUpsert.resumeButton';
+
+  // * AutoTransaction — ItemList
+  static const autoTransactionItemListTitle = 'autoTransaction.itemList.title';
+  static const autoTransactionItemListEmptyTitle =
+      'autoTransaction.itemList.emptyTitle';
+  static const autoTransactionItemListEmptySubtitle =
+      'autoTransaction.itemList.emptySubtitle';
+  static const autoTransactionItemListReorderHint =
+      'autoTransaction.itemList.reorderHint';
+
+  // * AutoTransaction — ItemUpsert
+  static const autoTransactionItemUpsertAddTitle =
+      'autoTransaction.itemUpsert.addTitle';
+  static const autoTransactionItemUpsertEditTitle =
+      'autoTransaction.itemUpsert.editTitle';
+  static const autoTransactionItemUpsertTransactionLabel =
+      'autoTransaction.itemUpsert.transactionLabel';
+  static const autoTransactionItemUpsertTransactionHint =
+      'autoTransaction.itemUpsert.transactionHint';
+  static const autoTransactionItemUpsertSave =
+      'autoTransaction.itemUpsert.save';
+  static const autoTransactionItemUpsertDelete =
+      'autoTransaction.itemUpsert.delete';
+  static const autoTransactionItemUpsertDeleteTitle =
+      'autoTransaction.itemUpsert.deleteTitle';
+  static const autoTransactionItemUpsertDeleteConfirm =
+      'autoTransaction.itemUpsert.deleteConfirm';
+  static const autoTransactionItemUpsertUpsertSuccess =
+      'autoTransaction.itemUpsert.upsertSuccess';
+  static const autoTransactionItemUpsertUpsertError =
+      'autoTransaction.itemUpsert.upsertError';
+
+  // * AutoTransaction — Log
+  static const autoTransactionLogTitle = 'autoTransaction.log.title';
+  static const autoTransactionLogEmptyTitle = 'autoTransaction.log.emptyTitle';
+  static const autoTransactionLogStatusSuccess =
+      'autoTransaction.log.statusSuccess';
+  static const autoTransactionLogStatusPartial =
+      'autoTransaction.log.statusPartial';
+  static const autoTransactionLogStatusFailed =
+      'autoTransaction.log.statusFailed';
+  static const autoTransactionLogStatusSkipped =
+      'autoTransaction.log.statusSkipped';
+  static const autoTransactionLogScheduledAt =
+      'autoTransaction.log.scheduledAt';
+  static const autoTransactionLogExecutedAt = 'autoTransaction.log.executedAt';
+  static const autoTransactionLogSuccessCount =
+      'autoTransaction.log.successCount';
+  static const autoTransactionLogFailureCount =
+      'autoTransaction.log.failureCount';
+
+  // * AutoTransaction — Tile
+  static const autoTransactionTileActive = 'autoTransaction.tile.active';
+  static const autoTransactionTileInactive = 'autoTransaction.tile.inactive';
+  static const autoTransactionTileRunning = 'autoTransaction.tile.running';
+  static const autoTransactionTileItems = 'autoTransaction.tile.items';
+  static const autoTransactionTileNextRun = 'autoTransaction.tile.nextRun';
+  static const autoTransactionTilePausedManually =
+      'autoTransaction.tile.pausedManually';
+  static const autoTransactionTilePausedUntil =
+      'autoTransaction.tile.pausedUntil';
+
+  // * AutoTransaction — Frequency
+  static const autoTransactionFrequencyDaily =
+      'autoTransaction.frequency.daily';
+  static const autoTransactionFrequencyWeekly =
+      'autoTransaction.frequency.weekly';
+  static const autoTransactionFrequencyMonthly =
+      'autoTransaction.frequency.monthly';
+  static const autoTransactionFrequencyYearly =
+      'autoTransaction.frequency.yearly';
   static const securitySettingsManage = 'security.settings.manage';
   static const securitySettingsChangePin = 'security.settings.changePin';
   static const securitySettingsChangePassword =

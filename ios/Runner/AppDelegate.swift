@@ -1,5 +1,7 @@
 import Flutter
 import UIKit
+import UserNotifications
+import workmanager
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -7,7 +9,20 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
+    // * Register Flutter plugins for the main app context
     GeneratedPluginRegistrant.register(with: self)
+
+    // * Workmanager: register Flutter plugins in background isolate context
+    WorkmanagerPlugin.setPluginRegistrantCallback { registry in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
+
+    // * Workmanager: set minimum background fetch interval (15 minutes)
+    UIApplication.shared.setMinimumBackgroundFetchInterval(TimeInterval(60 * 15))
+
+    // * Notifications: set delegate for foreground notification handling
+    UNUserNotificationCenter.current().delegate = self
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }

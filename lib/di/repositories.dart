@@ -3,6 +3,8 @@ import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
 import 'package:ikuyo_finance/features/auth/repositories/auth_repository.dart';
 import 'package:ikuyo_finance/features/auth/repositories/auth_repository_impl.dart';
+import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
+import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository_impl.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository_impl.dart';
 import 'package:ikuyo_finance/features/budget/repositories/budget_repository.dart';
@@ -40,5 +42,8 @@ void setupRepositories() {
     )
     ..registerLazySingleton<BackupRepository>(
       () => BackupRepositoryImpl(getIt<ObjectBoxStorage>()),
+    )
+    ..registerLazySingleton<AutoTransactionRepository>(
+      () => AutoTransactionRepositoryImpl(getIt<ObjectBoxStorage>()),
     );
 }

@@ -90,6 +90,99 @@
       "title": "Sign Up"
     }
   },
+  "autoTransaction": {
+    "frequency": {
+      "daily": "Daily",
+      "monthly": "Monthly",
+      "weekly": "Weekly",
+      "yearly": "Yearly"
+    },
+    "groupUpsert": {
+      "addTitle": "Add Auto Group",
+      "cancel": "Cancel",
+      "dayOfMonthHint": "1–28",
+      "dayOfMonthLabel": "Day of Month",
+      "dayOfWeekLabel": "Day of Week",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this group? All items and logs will also be removed.",
+      "deleteTitle": "Delete Group",
+      "descriptionHint": "Optional description",
+      "descriptionLabel": "Description",
+      "editTitle": "Edit Auto Group",
+      "endDateLabel": "End Date (optional)",
+      "frequencyLabel": "Frequency",
+      "monthOfYearLabel": "Month",
+      "nameHint": "e.g. Monthly Bills",
+      "nameLabel": "Group Name",
+      "pauseButton": "Pause",
+      "pauseManual": "Manual (no end date)",
+      "pauseTitle": "Pause Group",
+      "pauseUntilLabel": "Pause Until",
+      "resumeButton": "Resume",
+      "save": "Save",
+      "scheduleTimeLabel": "Schedule Time",
+      "startDateLabel": "Start Date",
+      "upsertError": "Failed to save group",
+      "upsertSuccess": "Group saved"
+    },
+    "itemList": {
+      "emptySubtitle": "Press + to add a transaction template",
+      "emptyTitle": "No items yet",
+      "reorderHint": "Hold and drag to reorder",
+      "title": "Group Items"
+    },
+    "itemUpsert": {
+      "addTitle": "Add Item",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to remove this item?",
+      "deleteTitle": "Remove Item",
+      "editTitle": "Edit Item",
+      "save": "Save",
+      "transactionHint": "Select a transaction as template",
+      "transactionLabel": "Transaction Template",
+      "upsertError": "Failed to save item",
+      "upsertSuccess": "Item saved"
+    },
+    "log": {
+      "emptyTitle": "No execution logs yet",
+      "executedAt": "Executed: {time}",
+      "failureCount": "{count} failed",
+      "scheduledAt": "Scheduled: {time}",
+      "statusFailed": "Failed",
+      "statusPartial": "Partial",
+      "statusSkipped": "Skipped",
+      "statusSuccess": "Success",
+      "successCount": "{count} success",
+      "title": "Execution Log"
+    },
+    "screen": {
+      "emptySubtitle": "Press + to create a new auto transaction group",
+      "emptyTitle": "No auto transaction groups",
+      "errorOccurred": "An error occurred",
+      "title": "Auto Transactions"
+    },
+    "tile": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "items": "{count} items",
+      "nextRun": "Next: {time}",
+      "pausedManually": "Paused manually",
+      "pausedUntil": "Paused until {date}",
+      "running": "Running"
+    },
+    "validator": {
+      "dayOfMonthInvalid": "Day must be between 1 and 28",
+      "dayOfMonthRequired": "Day of month is required",
+      "dayOfWeekRequired": "Day of week is required",
+      "frequencyRequired": "Frequency is required",
+      "monthOfYearRequired": "Month is required",
+      "nameRequired": "Group name is required",
+      "scheduleHourInvalid": "Hour must be 0–23",
+      "scheduleMinuteInvalid": "Minute must be 0–59",
+      "startDateRequired": "Start date is required",
+      "transactionRequired": "Please select a transaction"
+    }
+  },
   "backup": {
     "screen": {
       "assets": "Assets",

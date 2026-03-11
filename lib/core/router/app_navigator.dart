@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/router/app_routes.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
@@ -63,6 +65,34 @@ extension AppNavigator on BuildContext {
   );
   void pushToSearchBudget() =>
       push('${AppRoutes.budgetPath}/${AppRoutes.budgetSearchPath}');
+
+  // * Auto Transaction Navigation
+  void pushToAutoTransaction() => push(AppRoutes.autoTransactionPath);
+  void pushToAddAutoGroup() =>
+      push('${AppRoutes.autoTransactionPath}/${AppRoutes.autoGroupAddPath}');
+  void pushToEditAutoGroup(AutoTransactionGroup group) => push(
+    '${AppRoutes.autoTransactionPath}/${AppRoutes.autoGroupEditPath}',
+    extra: group,
+  );
+  void pushToAutoItemList(AutoTransactionGroup group) => push(
+    '${AppRoutes.autoTransactionPath}/${AppRoutes.autoItemListPath}',
+    extra: group,
+  );
+  void pushToAddAutoItem(AutoTransactionGroup group) => push(
+    '${AppRoutes.autoTransactionPath}/${AppRoutes.autoItemListPath}/${AppRoutes.autoItemAddPath}',
+    extra: group,
+  );
+  void pushToEditAutoItem(
+    AutoTransactionGroup group,
+    AutoTransactionItem item,
+  ) => push(
+    '${AppRoutes.autoTransactionPath}/${AppRoutes.autoItemListPath}/${AppRoutes.autoItemEditPath}',
+    extra: {'group': group, 'item': item},
+  );
+  void pushToAutoLog(AutoTransactionGroup group) => push(
+    '${AppRoutes.autoTransactionPath}/${AppRoutes.autoLogPath}',
+    extra: group,
+  );
 
   // * Named Navigation (alternative using route names)
   void goToNamed(String name, {Object? extra, Map<String, String>? params}) =>

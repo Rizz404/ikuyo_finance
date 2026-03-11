@@ -90,6 +90,99 @@
       "title": "Daftar"
     }
   },
+  "autoTransaction": {
+    "frequency": {
+      "daily": "Harian",
+      "monthly": "Bulanan",
+      "weekly": "Mingguan",
+      "yearly": "Tahunan"
+    },
+    "groupUpsert": {
+      "addTitle": "Tambah Grup Otomatis",
+      "cancel": "Batal",
+      "dayOfMonthHint": "1–28",
+      "dayOfMonthLabel": "Tanggal dalam Bulan",
+      "dayOfWeekLabel": "Hari dalam Minggu",
+      "delete": "Hapus",
+      "deleteConfirm": "Yakin ingin menghapus grup ini? Semua item dan log juga akan dihapus.",
+      "deleteTitle": "Hapus Grup",
+      "descriptionHint": "Deskripsi opsional",
+      "descriptionLabel": "Deskripsi",
+      "editTitle": "Edit Grup Otomatis",
+      "endDateLabel": "Tanggal Selesai (opsional)",
+      "frequencyLabel": "Frekuensi",
+      "monthOfYearLabel": "Bulan",
+      "nameHint": "contoh: Tagihan Bulanan",
+      "nameLabel": "Nama Grup",
+      "pauseButton": "Jeda",
+      "pauseManual": "Manual (tanpa tanggal berakhir)",
+      "pauseTitle": "Jeda Grup",
+      "pauseUntilLabel": "Jeda Hingga",
+      "resumeButton": "Lanjutkan",
+      "save": "Simpan",
+      "scheduleTimeLabel": "Waktu Jadwal",
+      "startDateLabel": "Tanggal Mulai",
+      "upsertError": "Gagal menyimpan grup",
+      "upsertSuccess": "Grup berhasil disimpan"
+    },
+    "itemList": {
+      "emptySubtitle": "Tekan + untuk menambah template transaksi",
+      "emptyTitle": "Belum ada item",
+      "reorderHint": "Tahan dan seret untuk mengurutkan",
+      "title": "Item Grup"
+    },
+    "itemUpsert": {
+      "addTitle": "Tambah Item",
+      "delete": "Hapus",
+      "deleteConfirm": "Yakin ingin menghapus item ini?",
+      "deleteTitle": "Hapus Item",
+      "editTitle": "Edit Item",
+      "save": "Simpan",
+      "transactionHint": "Pilih transaksi sebagai template",
+      "transactionLabel": "Template Transaksi",
+      "upsertError": "Gagal menyimpan item",
+      "upsertSuccess": "Item berhasil disimpan"
+    },
+    "log": {
+      "emptyTitle": "Belum ada log eksekusi",
+      "executedAt": "Dieksekusi: {time}",
+      "failureCount": "{count} gagal",
+      "scheduledAt": "Dijadwalkan: {time}",
+      "statusFailed": "Gagal",
+      "statusPartial": "Sebagian",
+      "statusSkipped": "Dilewati",
+      "statusSuccess": "Berhasil",
+      "successCount": "{count} berhasil",
+      "title": "Log Eksekusi"
+    },
+    "screen": {
+      "emptySubtitle": "Tekan + untuk membuat grup transaksi otomatis baru",
+      "emptyTitle": "Belum ada grup transaksi otomatis",
+      "errorOccurred": "Terjadi kesalahan",
+      "title": "Transaksi Otomatis"
+    },
+    "tile": {
+      "active": "Aktif",
+      "inactive": "Tidak Aktif",
+      "items": "{count} item",
+      "nextRun": "Berikutnya: {time}",
+      "pausedManually": "Dijeda manual",
+      "pausedUntil": "Dijeda hingga {date}",
+      "running": "Berjalan"
+    },
+    "validator": {
+      "dayOfMonthInvalid": "Tanggal harus antara 1 dan 28",
+      "dayOfMonthRequired": "Tanggal dalam bulan wajib diisi",
+      "dayOfWeekRequired": "Hari dalam minggu wajib dipilih",
+      "frequencyRequired": "Frekuensi wajib dipilih",
+      "monthOfYearRequired": "Bulan wajib dipilih",
+      "nameRequired": "Nama grup wajib diisi",
+      "scheduleHourInvalid": "Jam harus 0–23",
+      "scheduleMinuteInvalid": "Menit harus 0–59",
+      "startDateRequired": "Tanggal mulai wajib diisi",
+      "transactionRequired": "Pilih transaksi terlebih dahulu"
+    }
+  },
   "backup": {
     "screen": {
       "assets": "Aset",

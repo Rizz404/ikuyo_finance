@@ -1,0 +1,66 @@
+Analyzing ikuyo_finance...                                      
+
+   info - Unnecessary 'this.' qualifier - lib\core\currency\cubit\currency_cubit.dart:21:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\currency\cubit\currency_cubit.dart:67:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\currency\cubit\currency_cubit.dart:71:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\currency\cubit\currency_cubit.dart:82:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\currency\cubit\currency_cubit.dart:84:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\currency\cubit\currency_cubit.dart:117:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\currency\cubit\currency_cubit.dart:119:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\locale\cubit\locale_cubit.dart:17:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\locale\cubit\locale_cubit.dart:32:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\locale\cubit\locale_cubit.dart:34:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\storage\database_seeder.dart:25:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\storage\database_seeder.dart:29:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\storage\database_seeder.dart:146:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\storage\database_seeder.dart:155:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\storage\database_seeder.dart:159:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\storage\database_seeder.dart:219:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\theme\cubit\theme_cubit.dart:21:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\theme\cubit\theme_cubit.dart:36:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\core\theme\cubit\theme_cubit.dart:38:7 - unnecessary_this
+   info - 'isInDebugMode' is deprecated and shouldn't be used. Use WorkmanagerDebug handlers instead. This parameter has no effect - lib\di\commons.dart:158:5 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\asset\screens\asset_upsert_screen.dart:317:62 - deprecated_member_use
+   info - 'userDeleted' is deprecated and shouldn't be used. Was never in use and might be removed in the future - lib\features\auth\bloc\auth_bloc.dart:159:37 - deprecated_member_use
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\auto_transaction\widgets\auto_group_tile.dart:7:8 - unnecessary_import
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\backup\screens\backup_screen.dart:16:8 - unnecessary_import
+   info - Statements in an if should be enclosed in a block - lib\features\budget\repositories\budget_repository_impl.dart:273:11 - curly_braces_in_flow_control_structures
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\category\screens\category_upsert_screen.dart:175:63 - deprecated_member_use
+   info - 'withOpacity' is deprecated and shouldn't be used. Use .withValues() to avoid precision loss - lib\features\category\screens\category_upsert_screen.dart:391:62 - deprecated_member_use
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:38:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:43:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:53:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:70:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:81:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:91:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:130:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:141:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:166:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:176:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:204:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:214:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:233:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:235:7 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:263:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:279:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:290:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:306:5 - unnecessary_this
+   info - Unnecessary 'this.' qualifier - lib\features\security\cubit\security_cubit.dart:331:5 - unnecessary_this
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\security\screens\security_settings_screen.dart:307:17 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\security\screens\security_settings_screen.dart:310:17 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\security\screens\security_settings_screen.dart:387:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\security\screens\security_settings_screen.dart:390:19 - deprecated_member_use
+   info - 'groupValue' is deprecated and shouldn't be used. Use a RadioGroup ancestor to manage group value instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\security\screens\security_settings_screen.dart:400:19 - deprecated_member_use
+   info - 'onChanged' is deprecated and shouldn't be used. Use RadioGroup to handle value change instead. This feature was deprecated after v3.32.0-0.0.pre - lib\features\security\screens\security_settings_screen.dart:404:19 - deprecated_member_use
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\statistic\widgets\statistic_period_navigator.dart:7:8 - unnecessary_import
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\transaction\screens\transaction_screen.dart:17:8 - unnecessary_import
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\transaction\widgets\calendar_transaction_view.dart:11:8 - unnecessary_import
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\transaction\widgets\daily_transaction_view.dart:11:8 - unnecessary_import
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\transaction\widgets\monthly_transaction_view.dart:10:8 - unnecessary_import
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\transaction\widgets\transaction_active_filters.dart:5:8 - unnecessary_import
+   info - The import of 'package:intl/intl.dart' is unnecessary because all of the used elements are also provided by the import of 'package:easy_localization/easy_localization.dart' - lib\features\transaction\widgets\transaction_tile.dart:13:8 - unnecessary_import
+   info - 'onPopPage' is deprecated and shouldn't be used. Use onDidRemovePage instead. This feature was deprecated after v3.16.0-17.0.pre - lib\main.dart:188:19 - deprecated_member_use
+   info - The local variable '_getColorProps' starts with an underscore - lib\shared\widgets\app_button.dart:40:5 - no_leading_underscores_for_local_identifiers
+   info - The local variable '_getSizingProps' starts with an underscore - lib\shared\widgets\app_button.dart:94:5 - no_leading_underscores_for_local_identifiers
+
+62 issues found. (ran in 3.6s)

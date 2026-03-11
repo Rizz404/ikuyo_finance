@@ -13,13 +13,20 @@ import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
+import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/workmanager_dispatcher.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
 import 'package:ikuyo_finance/features/security/service/biometric_service.dart';
 import 'package:ikuyo_finance/features/security/service/security_storage_service.dart';
+import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
 import 'package:talker_flutter/talker_flutter.dart';
+import 'package:workmanager/workmanager.dart';
 
 Future<void> setupCommons() async {
   _setupLogger();
@@ -123,5 +130,39 @@ Future<void> setupCurrency() async {
   getIt.registerSingleton<ExchangeRateService>(exchangeRateService);
   getIt.registerLazySingleton<CurrencyCubit>(
     () => CurrencyCubit(prefs, migrationService, exchangeRateService),
+  );
+}
+
+/// * Init notification service + Workmanager — dipanggil setelah setupRepositories & setupBlocs
+Future<void> setupAutoTransactionServices() async {
+  // * Register notification service singleton
+  getIt.registerLazySingleton<AutoTransactionNotificationService>(
+    () => AutoTransactionNotificationService(),
+  );
+
+  // * Register scheduler singleton (depends on repos + notif service)
+  getIt.registerLazySingleton<AutoTransactionScheduler>(
+    () => AutoTransactionScheduler(
+      repo: getIt<AutoTransactionRepository>(),
+      transactionRepo: getIt<TransactionRepository>(),
+      notifService: getIt<AutoTransactionNotificationService>(),
+    ),
+  );
+
+  // * Init notification channels + permission request
+  await getIt<AutoTransactionNotificationService>().initialize();
+
+  // * Init Workmanager dengan callback dispatcher
+  await Workmanager().initialize(
+    autoTransactionCallbackDispatcher,
+    isInDebugMode: kDebugMode,
+  );
+
+  // * Register periodic task — existingWorkPolicy.keep agar tidak tumpang tindih
+  await Workmanager().registerPeriodicTask(
+    autoTransactionTaskUniqueName,
+    autoTransactionTaskName,
+    frequency: const Duration(minutes: 15),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
   );
 }

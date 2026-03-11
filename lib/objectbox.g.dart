@@ -15,6 +15,9 @@ import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
 import 'features/asset/models/asset.dart';
+import 'features/auto_transaction/models/auto_transaction_group.dart';
+import 'features/auto_transaction/models/auto_transaction_item.dart';
+import 'features/auto_transaction/models/auto_transaction_log.dart';
 import 'features/budget/models/budget.dart';
 import 'features/category/models/category.dart';
 import 'features/transaction/models/transaction.dart';
@@ -294,6 +297,293 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(6, 1819148253403484607),
+    name: 'AutoTransactionGroup',
+    lastPropertyId: const obx_int.IdUid(20, 972203873915686380),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 4049699562522165602),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 2774900556630885400),
+        name: 'ulid',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(10, 6738410072007056482),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 7062891189457531265),
+        name: 'name',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 7495421854651394913),
+        name: 'description',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 1640626125460947336),
+        name: 'isActive',
+        type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 726352773514670189),
+        name: 'isPaused',
+        type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 8442099675877328185),
+        name: 'pauseStartAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 4148254527554707573),
+        name: 'pauseEndAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(9, 8006613745263671169),
+        name: 'frequency',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(10, 7067456052490013084),
+        name: 'scheduleHour',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(11, 5019655525954510075),
+        name: 'scheduleMinute',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(12, 2283261315841480701),
+        name: 'dayOfWeek',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(13, 8639502259774485420),
+        name: 'dayOfMonth',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(14, 4546290292701434513),
+        name: 'monthOfYear',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(15, 8211177722797987380),
+        name: 'startDate',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(16, 3127876792741073700),
+        name: 'endDate',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(17, 4785917195965185377),
+        name: 'nextExecutedAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(18, 3230571001397643879),
+        name: 'lastExecutedAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(19, 922032855795804878),
+        name: 'createdAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(20, 972203873915686380),
+        name: 'updatedAt',
+        type: 10,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[
+      obx_int.ModelBacklink(
+        name: 'items',
+        srcEntity: 'AutoTransactionItem',
+        srcField: 'group',
+      ),
+      obx_int.ModelBacklink(
+        name: 'logs',
+        srcEntity: 'AutoTransactionLog',
+        srcField: 'group',
+      ),
+    ],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(7, 2198093558901010144),
+    name: 'AutoTransactionItem',
+    lastPropertyId: const obx_int.IdUid(8, 655396411649182557),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 6286412283042676581),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 128010526822400173),
+        name: 'ulid',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(11, 6443265635946174138),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 3528113257245332246),
+        name: 'isActive',
+        type: 1,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 4199051378591016209),
+        name: 'sortOrder',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 4037145007695259417),
+        name: 'transactionId',
+        type: 11,
+        flags: 520,
+        indexId: const obx_int.IdUid(12, 3007308561722312123),
+        relationField: 'transaction',
+        relationTarget: 'Transaction',
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 772629789609418952),
+        name: 'groupId',
+        type: 11,
+        flags: 520,
+        indexId: const obx_int.IdUid(13, 5435071361407395518),
+        relationField: 'group',
+        relationTarget: 'AutoTransactionGroup',
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 7596626544780581656),
+        name: 'createdAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 655396411649182557),
+        name: 'updatedAt',
+        type: 10,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(8, 1359876197900263379),
+    name: 'AutoTransactionLog',
+    lastPropertyId: const obx_int.IdUid(11, 8684794403950824017),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 7800480907940077665),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 3551204789914745912),
+        name: 'ulid',
+        type: 9,
+        flags: 2080,
+        indexId: const obx_int.IdUid(14, 9178220577228193215),
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 9191860138929500558),
+        name: 'groupId',
+        type: 11,
+        flags: 520,
+        indexId: const obx_int.IdUid(15, 3441781257507516496),
+        relationField: 'group',
+        relationTarget: 'AutoTransactionGroup',
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(4, 6057661972367168609),
+        name: 'scheduledAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(5, 629224272009980787),
+        name: 'executedAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(6, 6686800765264938701),
+        name: 'status',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(7, 6085272984888698185),
+        name: 'successCount',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(8, 8225078832749997815),
+        name: 'failureCount',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(9, 1274290335190062198),
+        name: 'errorMessage',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(10, 2700640348397671042),
+        name: 'createdAt',
+        type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(11, 8684794403950824017),
+        name: 'updatedAt',
+        type: 10,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -334,8 +624,8 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(5, 2126497104281392313),
-    lastIndexId: const obx_int.IdUid(9, 2245890334099763199),
+    lastEntityId: const obx_int.IdUid(8, 1359876197900263379),
+    lastIndexId: const obx_int.IdUid(15, 3441781257507516496),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
     retiredEntityUids: const [6220704968165888936],
@@ -703,6 +993,385 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    AutoTransactionGroup: obx_int.EntityDefinition<AutoTransactionGroup>(
+      model: _entities[4],
+      toOneRelations: (AutoTransactionGroup object) => [],
+      toManyRelations: (AutoTransactionGroup object) => {
+        obx_int.RelInfo<AutoTransactionItem>.toOneBacklink(
+          6,
+          object.id,
+          (AutoTransactionItem srcObject) => srcObject.group,
+        ): object.items,
+        obx_int.RelInfo<AutoTransactionLog>.toOneBacklink(
+          3,
+          object.id,
+          (AutoTransactionLog srcObject) => srcObject.group,
+        ): object.logs,
+      },
+      getId: (AutoTransactionGroup object) => object.id,
+      setId: (AutoTransactionGroup object, int id) {
+        object.id = id;
+      },
+      objectToFB: (AutoTransactionGroup object, fb.Builder fbb) {
+        final ulidOffset = fbb.writeString(object.ulid);
+        final nameOffset = fbb.writeString(object.name);
+        final descriptionOffset = object.description == null
+            ? null
+            : fbb.writeString(object.description!);
+        fbb.startTable(21);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, ulidOffset);
+        fbb.addOffset(2, nameOffset);
+        fbb.addOffset(3, descriptionOffset);
+        fbb.addBool(4, object.isActive);
+        fbb.addBool(5, object.isPaused);
+        fbb.addInt64(6, object.pauseStartAt?.millisecondsSinceEpoch);
+        fbb.addInt64(7, object.pauseEndAt?.millisecondsSinceEpoch);
+        fbb.addInt64(8, object.frequency);
+        fbb.addInt64(9, object.scheduleHour);
+        fbb.addInt64(10, object.scheduleMinute);
+        fbb.addInt64(11, object.dayOfWeek);
+        fbb.addInt64(12, object.dayOfMonth);
+        fbb.addInt64(13, object.monthOfYear);
+        fbb.addInt64(14, object.startDate.millisecondsSinceEpoch);
+        fbb.addInt64(15, object.endDate?.millisecondsSinceEpoch);
+        fbb.addInt64(16, object.nextExecutedAt?.millisecondsSinceEpoch);
+        fbb.addInt64(17, object.lastExecutedAt?.millisecondsSinceEpoch);
+        fbb.addInt64(18, object.createdAt.millisecondsSinceEpoch);
+        fbb.addInt64(19, object.updatedAt.millisecondsSinceEpoch);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final pauseStartAtValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          16,
+        );
+        final pauseEndAtValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          18,
+        );
+        final endDateValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          34,
+        );
+        final nextExecutedAtValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          36,
+        );
+        final lastExecutedAtValue = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          38,
+        );
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final ulidParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final nameParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 8, '');
+        final descriptionParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 10);
+        final isActiveParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          false,
+        );
+        final isPausedParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          false,
+        );
+        final pauseStartAtParam = pauseStartAtValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(pauseStartAtValue);
+        final pauseEndAtParam = pauseEndAtValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(pauseEndAtValue);
+        final frequencyParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          20,
+          0,
+        );
+        final scheduleHourParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          22,
+          0,
+        );
+        final scheduleMinuteParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          24,
+          0,
+        );
+        final dayOfWeekParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          26,
+        );
+        final dayOfMonthParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          28,
+        );
+        final monthOfYearParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          30,
+        );
+        final startDateParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 32, 0),
+        );
+        final endDateParam = endDateValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(endDateValue);
+        final nextExecutedAtParam = nextExecutedAtValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(nextExecutedAtValue);
+        final lastExecutedAtParam = lastExecutedAtValue == null
+            ? null
+            : DateTime.fromMillisecondsSinceEpoch(lastExecutedAtValue);
+        final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 40, 0),
+        );
+        final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 42, 0),
+        );
+        final object = AutoTransactionGroup(
+          id: idParam,
+          ulid: ulidParam,
+          name: nameParam,
+          description: descriptionParam,
+          isActive: isActiveParam,
+          isPaused: isPausedParam,
+          pauseStartAt: pauseStartAtParam,
+          pauseEndAt: pauseEndAtParam,
+          frequency: frequencyParam,
+          scheduleHour: scheduleHourParam,
+          scheduleMinute: scheduleMinuteParam,
+          dayOfWeek: dayOfWeekParam,
+          dayOfMonth: dayOfMonthParam,
+          monthOfYear: monthOfYearParam,
+          startDate: startDateParam,
+          endDate: endDateParam,
+          nextExecutedAt: nextExecutedAtParam,
+          lastExecutedAt: lastExecutedAtParam,
+          createdAt: createdAtParam,
+          updatedAt: updatedAtParam,
+        );
+        obx_int.InternalToManyAccess.setRelInfo<AutoTransactionGroup>(
+          object.items,
+          store,
+          obx_int.RelInfo<AutoTransactionItem>.toOneBacklink(
+            6,
+            object.id,
+            (AutoTransactionItem srcObject) => srcObject.group,
+          ),
+        );
+        obx_int.InternalToManyAccess.setRelInfo<AutoTransactionGroup>(
+          object.logs,
+          store,
+          obx_int.RelInfo<AutoTransactionLog>.toOneBacklink(
+            3,
+            object.id,
+            (AutoTransactionLog srcObject) => srcObject.group,
+          ),
+        );
+        return object;
+      },
+    ),
+    AutoTransactionItem: obx_int.EntityDefinition<AutoTransactionItem>(
+      model: _entities[5],
+      toOneRelations: (AutoTransactionItem object) => [
+        object.transaction,
+        object.group,
+      ],
+      toManyRelations: (AutoTransactionItem object) => {},
+      getId: (AutoTransactionItem object) => object.id,
+      setId: (AutoTransactionItem object, int id) {
+        object.id = id;
+      },
+      objectToFB: (AutoTransactionItem object, fb.Builder fbb) {
+        final ulidOffset = fbb.writeString(object.ulid);
+        fbb.startTable(9);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, ulidOffset);
+        fbb.addBool(2, object.isActive);
+        fbb.addInt64(3, object.sortOrder);
+        fbb.addInt64(4, object.transaction.targetId);
+        fbb.addInt64(5, object.group.targetId);
+        fbb.addInt64(6, object.createdAt.millisecondsSinceEpoch);
+        fbb.addInt64(7, object.updatedAt.millisecondsSinceEpoch);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final ulidParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final isActiveParam = const fb.BoolReader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          false,
+        );
+        final sortOrderParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          10,
+          0,
+        );
+        final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 16, 0),
+        );
+        final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 18, 0),
+        );
+        final object = AutoTransactionItem(
+          id: idParam,
+          ulid: ulidParam,
+          isActive: isActiveParam,
+          sortOrder: sortOrderParam,
+          createdAt: createdAtParam,
+          updatedAt: updatedAtParam,
+        );
+        object.transaction.targetId = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          12,
+          0,
+        );
+        object.transaction.attach(store);
+        object.group.targetId = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        object.group.attach(store);
+        return object;
+      },
+    ),
+    AutoTransactionLog: obx_int.EntityDefinition<AutoTransactionLog>(
+      model: _entities[6],
+      toOneRelations: (AutoTransactionLog object) => [object.group],
+      toManyRelations: (AutoTransactionLog object) => {},
+      getId: (AutoTransactionLog object) => object.id,
+      setId: (AutoTransactionLog object, int id) {
+        object.id = id;
+      },
+      objectToFB: (AutoTransactionLog object, fb.Builder fbb) {
+        final ulidOffset = fbb.writeString(object.ulid);
+        final errorMessageOffset = object.errorMessage == null
+            ? null
+            : fbb.writeString(object.errorMessage!);
+        fbb.startTable(12);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, ulidOffset);
+        fbb.addInt64(2, object.group.targetId);
+        fbb.addInt64(3, object.scheduledAt.millisecondsSinceEpoch);
+        fbb.addInt64(4, object.executedAt.millisecondsSinceEpoch);
+        fbb.addInt64(5, object.status);
+        fbb.addInt64(6, object.successCount);
+        fbb.addInt64(7, object.failureCount);
+        fbb.addOffset(8, errorMessageOffset);
+        fbb.addInt64(9, object.createdAt.millisecondsSinceEpoch);
+        fbb.addInt64(10, object.updatedAt.millisecondsSinceEpoch);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final ulidParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final scheduledAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 10, 0),
+        );
+        final executedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 12, 0),
+        );
+        final statusParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          14,
+          0,
+        );
+        final successCountParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          16,
+          0,
+        );
+        final failureCountParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          18,
+          0,
+        );
+        final errorMessageParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGetNullable(buffer, rootOffset, 20);
+        final createdAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 22, 0),
+        );
+        final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 24, 0),
+        );
+        final object = AutoTransactionLog(
+          id: idParam,
+          ulid: ulidParam,
+          scheduledAt: scheduledAtParam,
+          executedAt: executedAtParam,
+          status: statusParam,
+          successCount: successCountParam,
+          failureCount: failureCountParam,
+          errorMessage: errorMessageParam,
+          createdAt: createdAtParam,
+          updatedAt: updatedAtParam,
+        );
+        object.group.targetId = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          8,
+          0,
+        );
+        object.group.attach(store);
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -895,5 +1564,224 @@ class Asset_ {
   /// See [Asset.updatedAt].
   static final updatedAt = obx.QueryDateProperty<Asset>(
     _entities[3].properties[7],
+  );
+}
+
+/// [AutoTransactionGroup] entity fields to define ObjectBox queries.
+class AutoTransactionGroup_ {
+  /// See [AutoTransactionGroup.id].
+  static final id = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[0],
+  );
+
+  /// See [AutoTransactionGroup.ulid].
+  static final ulid = obx.QueryStringProperty<AutoTransactionGroup>(
+    _entities[4].properties[1],
+  );
+
+  /// See [AutoTransactionGroup.name].
+  static final name = obx.QueryStringProperty<AutoTransactionGroup>(
+    _entities[4].properties[2],
+  );
+
+  /// See [AutoTransactionGroup.description].
+  static final description = obx.QueryStringProperty<AutoTransactionGroup>(
+    _entities[4].properties[3],
+  );
+
+  /// See [AutoTransactionGroup.isActive].
+  static final isActive = obx.QueryBooleanProperty<AutoTransactionGroup>(
+    _entities[4].properties[4],
+  );
+
+  /// See [AutoTransactionGroup.isPaused].
+  static final isPaused = obx.QueryBooleanProperty<AutoTransactionGroup>(
+    _entities[4].properties[5],
+  );
+
+  /// See [AutoTransactionGroup.pauseStartAt].
+  static final pauseStartAt = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[6],
+  );
+
+  /// See [AutoTransactionGroup.pauseEndAt].
+  static final pauseEndAt = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[7],
+  );
+
+  /// See [AutoTransactionGroup.frequency].
+  static final frequency = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[8],
+  );
+
+  /// See [AutoTransactionGroup.scheduleHour].
+  static final scheduleHour = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[9],
+  );
+
+  /// See [AutoTransactionGroup.scheduleMinute].
+  static final scheduleMinute = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[10],
+  );
+
+  /// See [AutoTransactionGroup.dayOfWeek].
+  static final dayOfWeek = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[11],
+  );
+
+  /// See [AutoTransactionGroup.dayOfMonth].
+  static final dayOfMonth = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[12],
+  );
+
+  /// See [AutoTransactionGroup.monthOfYear].
+  static final monthOfYear = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[13],
+  );
+
+  /// See [AutoTransactionGroup.startDate].
+  static final startDate = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[14],
+  );
+
+  /// See [AutoTransactionGroup.endDate].
+  static final endDate = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[15],
+  );
+
+  /// See [AutoTransactionGroup.nextExecutedAt].
+  static final nextExecutedAt = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[16],
+  );
+
+  /// See [AutoTransactionGroup.lastExecutedAt].
+  static final lastExecutedAt = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[17],
+  );
+
+  /// See [AutoTransactionGroup.createdAt].
+  static final createdAt = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[18],
+  );
+
+  /// See [AutoTransactionGroup.updatedAt].
+  static final updatedAt = obx.QueryDateProperty<AutoTransactionGroup>(
+    _entities[4].properties[19],
+  );
+
+  /// see [AutoTransactionGroup.items]
+  static final items =
+      obx.QueryBacklinkToMany<AutoTransactionItem, AutoTransactionGroup>(
+        AutoTransactionItem_.group,
+      );
+
+  /// see [AutoTransactionGroup.logs]
+  static final logs =
+      obx.QueryBacklinkToMany<AutoTransactionLog, AutoTransactionGroup>(
+        AutoTransactionLog_.group,
+      );
+}
+
+/// [AutoTransactionItem] entity fields to define ObjectBox queries.
+class AutoTransactionItem_ {
+  /// See [AutoTransactionItem.id].
+  static final id = obx.QueryIntegerProperty<AutoTransactionItem>(
+    _entities[5].properties[0],
+  );
+
+  /// See [AutoTransactionItem.ulid].
+  static final ulid = obx.QueryStringProperty<AutoTransactionItem>(
+    _entities[5].properties[1],
+  );
+
+  /// See [AutoTransactionItem.isActive].
+  static final isActive = obx.QueryBooleanProperty<AutoTransactionItem>(
+    _entities[5].properties[2],
+  );
+
+  /// See [AutoTransactionItem.sortOrder].
+  static final sortOrder = obx.QueryIntegerProperty<AutoTransactionItem>(
+    _entities[5].properties[3],
+  );
+
+  /// See [AutoTransactionItem.transaction].
+  static final transaction =
+      obx.QueryRelationToOne<AutoTransactionItem, Transaction>(
+        _entities[5].properties[4],
+      );
+
+  /// See [AutoTransactionItem.group].
+  static final group =
+      obx.QueryRelationToOne<AutoTransactionItem, AutoTransactionGroup>(
+        _entities[5].properties[5],
+      );
+
+  /// See [AutoTransactionItem.createdAt].
+  static final createdAt = obx.QueryDateProperty<AutoTransactionItem>(
+    _entities[5].properties[6],
+  );
+
+  /// See [AutoTransactionItem.updatedAt].
+  static final updatedAt = obx.QueryDateProperty<AutoTransactionItem>(
+    _entities[5].properties[7],
+  );
+}
+
+/// [AutoTransactionLog] entity fields to define ObjectBox queries.
+class AutoTransactionLog_ {
+  /// See [AutoTransactionLog.id].
+  static final id = obx.QueryIntegerProperty<AutoTransactionLog>(
+    _entities[6].properties[0],
+  );
+
+  /// See [AutoTransactionLog.ulid].
+  static final ulid = obx.QueryStringProperty<AutoTransactionLog>(
+    _entities[6].properties[1],
+  );
+
+  /// See [AutoTransactionLog.group].
+  static final group =
+      obx.QueryRelationToOne<AutoTransactionLog, AutoTransactionGroup>(
+        _entities[6].properties[2],
+      );
+
+  /// See [AutoTransactionLog.scheduledAt].
+  static final scheduledAt = obx.QueryDateProperty<AutoTransactionLog>(
+    _entities[6].properties[3],
+  );
+
+  /// See [AutoTransactionLog.executedAt].
+  static final executedAt = obx.QueryDateProperty<AutoTransactionLog>(
+    _entities[6].properties[4],
+  );
+
+  /// See [AutoTransactionLog.status].
+  static final status = obx.QueryIntegerProperty<AutoTransactionLog>(
+    _entities[6].properties[5],
+  );
+
+  /// See [AutoTransactionLog.successCount].
+  static final successCount = obx.QueryIntegerProperty<AutoTransactionLog>(
+    _entities[6].properties[6],
+  );
+
+  /// See [AutoTransactionLog.failureCount].
+  static final failureCount = obx.QueryIntegerProperty<AutoTransactionLog>(
+    _entities[6].properties[7],
+  );
+
+  /// See [AutoTransactionLog.errorMessage].
+  static final errorMessage = obx.QueryStringProperty<AutoTransactionLog>(
+    _entities[6].properties[8],
+  );
+
+  /// See [AutoTransactionLog.createdAt].
+  static final createdAt = obx.QueryDateProperty<AutoTransactionLog>(
+    _entities[6].properties[9],
+  );
+
+  /// See [AutoTransactionLog.updatedAt].
+  static final updatedAt = obx.QueryDateProperty<AutoTransactionLog>(
+    _entities[6].properties[10],
   );
 }

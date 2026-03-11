@@ -5,10 +5,13 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/locale/cubit/locale_cubit.dart';
+import 'package:ikuyo_finance/core/router/app_routes.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/utils/logger.dart';
 import 'package:ikuyo_finance/di/injection.dart';
 import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
+import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bloc.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -26,6 +29,11 @@ void main() async {
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
   await setupDependencies();
+
+  // * Route to auto transaction screen when a notification is tapped
+  AutoTransactionNotificationService.onNotificationTap = (groupUlid) {
+    getIt<GoRouter>().push(AppRoutes.autoTransactionPath);
+  };
 
   talker.logInfo('Ikuyo Finance started');
 
@@ -68,6 +76,10 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => getIt<CurrencyCubit>()),
         BlocProvider(create: (_) => getIt<LocaleCubit>()),
         BlocProvider(create: (_) => getIt<SecurityCubit>()),
+        BlocProvider(
+          create: (_) =>
+              getIt<AutoTransactionBloc>()..add(const AutoGroupFetched()),
+        ),
       ],
       // * Use BlocListener for loose coupling between blocs (best practice)
       child: MultiBlocListener(

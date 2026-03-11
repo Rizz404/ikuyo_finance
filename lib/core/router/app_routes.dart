@@ -95,4 +95,26 @@ final class AppRoutes {
 
   static const String lockName = 'lock';
   static const String lockPath = '/lock';
+
+  // * Auto Transaction Routes
+  static const String autoTransactionName = 'auto-transaction';
+  static const String autoTransactionPath = '/auto-transaction';
+
+  static const String autoGroupAddName = 'auto-group-add';
+  static const String autoGroupAddPath = 'add';
+
+  static const String autoGroupEditName = 'auto-group-edit';
+  static const String autoGroupEditPath = 'edit';
+
+  static const String autoItemListName = 'auto-item-list';
+  static const String autoItemListPath = 'items';
+
+  static const String autoItemAddName = 'auto-item-add';
+  static const String autoItemAddPath = 'add';
+
+  static const String autoItemEditName = 'auto-item-edit';
+  static const String autoItemEditPath = 'edit';
+
+  static const String autoLogName = 'auto-log';
+  static const String autoLogPath = 'logs';
 }

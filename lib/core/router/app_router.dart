@@ -8,6 +8,13 @@ import 'package:ikuyo_finance/features/asset/screens/asset_search_screen.dart';
 import 'package:ikuyo_finance/features/asset/screens/asset_upsert_screen.dart';
 import 'package:ikuyo_finance/features/auth/screens/sign_in_screen.dart';
 import 'package:ikuyo_finance/features/auth/screens/sign_up_screen.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
+import 'package:ikuyo_finance/features/auto_transaction/screens/auto_transaction_group_upsert_screen.dart';
+import 'package:ikuyo_finance/features/auto_transaction/screens/auto_transaction_item_list_screen.dart';
+import 'package:ikuyo_finance/features/auto_transaction/screens/auto_transaction_item_upsert_screen.dart';
+import 'package:ikuyo_finance/features/auto_transaction/screens/auto_transaction_log_screen.dart';
+import 'package:ikuyo_finance/features/auto_transaction/screens/auto_transaction_screen.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/budget/screens/budget_screen.dart';
 import 'package:ikuyo_finance/features/budget/screens/budget_search_screen.dart';
@@ -321,6 +328,88 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
           key: state.pageKey,
           child: const SecuritySettingsScreen(),
         ),
+      ),
+      // * Auto Transaction routes - outside shell (fullscreen)
+      GoRoute(
+        name: AppRoutes.autoTransactionName,
+        path: AppRoutes.autoTransactionPath,
+        pageBuilder: (context, state) => AppPageTransitions.slideRight(
+          key: state.pageKey,
+          child: const AutoTransactionScreen(),
+        ),
+        routes: [
+          // * Add group - slide from bottom
+          GoRoute(
+            name: AppRoutes.autoGroupAddName,
+            path: AppRoutes.autoGroupAddPath,
+            pageBuilder: (context, state) => AppPageTransitions.slideBottom(
+              key: state.pageKey,
+              child: const AutoTransactionGroupUpsertScreen(),
+            ),
+          ),
+          // * Edit group - slide from right
+          GoRoute(
+            name: AppRoutes.autoGroupEditName,
+            path: AppRoutes.autoGroupEditPath,
+            pageBuilder: (context, state) => AppPageTransitions.slideRight(
+              key: state.pageKey,
+              child: AutoTransactionGroupUpsertScreen(
+                group: state.extra as AutoTransactionGroup?,
+              ),
+            ),
+          ),
+          // * Item list for a group - slide from right
+          GoRoute(
+            name: AppRoutes.autoItemListName,
+            path: AppRoutes.autoItemListPath,
+            pageBuilder: (context, state) => AppPageTransitions.slideRight(
+              key: state.pageKey,
+              child: AutoTransactionItemListScreen(
+                group: state.extra as AutoTransactionGroup,
+              ),
+            ),
+            routes: [
+              // * Add item - slide from bottom
+              GoRoute(
+                name: AppRoutes.autoItemAddName,
+                path: AppRoutes.autoItemAddPath,
+                pageBuilder: (context, state) => AppPageTransitions.slideBottom(
+                  key: state.pageKey,
+                  child: AutoTransactionItemUpsertScreen(
+                    group: state.extra as AutoTransactionGroup,
+                  ),
+                ),
+              ),
+              // * Edit item - slide from right
+              GoRoute(
+                name: AppRoutes.autoItemEditName,
+                path: AppRoutes.autoItemEditPath,
+                pageBuilder: (context, state) => AppPageTransitions.slideRight(
+                  key: state.pageKey,
+                  child: AutoTransactionItemUpsertScreen(
+                    group:
+                        (state.extra as Map<String, dynamic>)['group']
+                            as AutoTransactionGroup,
+                    item:
+                        (state.extra as Map<String, dynamic>)['item']
+                            as AutoTransactionItem,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // * Log screen for a group - slide from right
+          GoRoute(
+            name: AppRoutes.autoLogName,
+            path: AppRoutes.autoLogPath,
+            pageBuilder: (context, state) => AppPageTransitions.slideRight(
+              key: state.pageKey,
+              child: AutoTransactionLogScreen(
+                group: state.extra as AutoTransactionGroup,
+              ),
+            ),
+          ),
+        ],
       ),
     ],
   );

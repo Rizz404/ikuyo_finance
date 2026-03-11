@@ -99,6 +99,15 @@ class OtherScreen extends StatelessWidget {
                     onTap: () => context.pushToBackup(),
                   ),
                   OtherCard(
+                    icon: Icons.repeat_outlined,
+                    text: 'Auto Transaction',
+                    iconColor: colors.secondary,
+                    iconBackgroundColor: colors.secondaryContainer.withValues(
+                      alpha: 0.5,
+                    ),
+                    onTap: () => context.pushToAutoTransaction(),
+                  ),
+                  OtherCard(
                     icon: Icons.help_outline,
                     text: LocaleKeys.otherScreenHelp.tr(),
                     iconColor: colors.secondary,

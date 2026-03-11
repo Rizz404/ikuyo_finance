@@ -22,6 +22,9 @@ Future<void> setupDependencies() async {
   // * Setup blocs (depends on repositories)
   setupBlocs();
 
+  // * Setup auto transaction services (notification + workmanager)
+  await setupAutoTransactionServices();
+
   // * Setup router (depends on supabase auth)
   setupRouter();
 }
