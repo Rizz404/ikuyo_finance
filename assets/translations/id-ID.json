@@ -626,6 +626,8 @@
       "cancel": "Batal",
       "categoryHint": "Pilih kategori",
       "categoryLabel": "Kategori",
+      "copyTitle": "Salin Transaksi",
+      "copyTransaction": "Salin Transaksi Ini",
       "dateTimeLabel": "Tanggal & Waktu",
       "delete": "Hapus",
       "deleteConfirm": "Apakah Anda yakin ingin menghapus transaksi ini?",

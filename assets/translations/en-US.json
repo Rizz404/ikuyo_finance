@@ -626,6 +626,8 @@
       "cancel": "Cancel",
       "categoryHint": "Select category",
       "categoryLabel": "Category",
+      "copyTitle": "Copy Transaction",
+      "copyTransaction": "Copy This Transaction",
       "dateTimeLabel": "Date & Time",
       "delete": "Delete",
       "deleteConfirm": "Are you sure you want to delete this transaction?",

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
@@ -26,10 +27,17 @@ import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
 class TransactionUpsertScreen extends StatefulWidget {
   final Transaction? transaction;
+  final bool isCopy;
 
-  const TransactionUpsertScreen({super.key, this.transaction});
+  const TransactionUpsertScreen({
+    super.key,
+    this.transaction,
+    this.isCopy = false,
+  });
 
-  bool get isEdit => transaction != null;
+  bool get isEdit => transaction != null && !isCopy;
+
+  bool get hasSourceTransaction => transaction != null;
 
   @override
   State<TransactionUpsertScreen> createState() =>
@@ -50,7 +58,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.isEdit) {
+    if (widget.hasSourceTransaction) {
       final category = widget.transaction!.category.target;
       if (category != null) {
         _selectedType = category.categoryType;
@@ -102,6 +110,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
   }
 
   void _handleWriteStatus(BuildContext context, TransactionState state) {
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+
     if (state.writeStatus == TransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
@@ -110,7 +120,11 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
             LocaleKeys.transactionUpsertSuccess.tr(),
       );
       context.read<TransactionBloc>().add(const TransactionWriteStatusReset());
-      context.pop(true);
+      if (widget.isCopy) {
+        context.goToTransaction();
+      } else {
+        context.pop(true);
+      }
     } else if (state.writeStatus == TransactionWriteStatus.failure) {
       ToastHelper.instance.showError(
         context: context,
@@ -125,7 +139,11 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
   void _onSubmit() {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final values = _formKey.currentState!.value;
-      final amountStr = (values['amount'] as String).replaceAll('.', '');
+      final currency = context.read<CurrencyCubit>().state.currency;
+      final amountRaw = values['amount'] as String?;
+      final amountStr = (amountRaw ?? '')
+          .replaceAll(currency.thousandSeparator, '')
+          .replaceAll(currency.decimalSeparator, '.');
       final amount = double.tryParse(amountStr) ?? 0;
 
       if (widget.isEdit) {
@@ -155,6 +173,25 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
         );
       }
     }
+  }
+
+  void _onCopyTransaction() {
+    final transaction = widget.transaction;
+    if (transaction == null) return;
+
+    context.pushToAddTransaction(sourceTransaction: transaction);
+  }
+
+  String? _buildInitialAmountValue() {
+    final amount = widget.transaction?.amount;
+    if (amount == null) return null;
+
+    final decimalDigits = context
+        .read<CurrencyCubit>()
+        .state
+        .currency
+        .decimalDigits;
+    return amount.toStringAsFixed(decimalDigits);
   }
 
   void _onDelete() {
@@ -230,7 +267,9 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: AppText(
-            widget.isEdit
+            widget.isCopy
+                ? LocaleKeys.transactionUpsertCopyTitle.tr()
+                : widget.isEdit
                 ? LocaleKeys.transactionUpsertEditTitle.tr()
                 : LocaleKeys.transactionUpsertAddTitle.tr(),
             style: AppTextStyle.titleLarge,
@@ -279,7 +318,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               name: 'amount',
               label: LocaleKeys.transactionUpsertAmountLabel.tr(),
               type: AppTextFieldType.currency,
-              initialValue: widget.transaction?.amount.toString(),
+              initialValue: _buildInitialAmountValue(),
               validator: (value) => widget.isEdit
                   ? UpdateTransactionValidator.amount(value)
                   : CreateTransactionValidator.amount(value),
@@ -409,6 +448,16 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
                   : CreateTransactionValidator.description(value),
             ),
             const SizedBox(height: 32),
+
+            if (widget.isEdit) ...[
+              AppButton(
+                text: LocaleKeys.transactionUpsertCopyTransaction.tr(),
+                variant: AppButtonVariant.outlined,
+                onPressed: _onCopyTransaction,
+                leadingIcon: const Icon(Icons.copy_outlined),
+              ),
+              const SizedBox(height: 16),
+            ],
 
             // * Submit Button
             BlocBuilder<TransactionBloc, TransactionState>(

@@ -551,6 +551,7 @@ abstract class LocaleKeys {
 
   // * Transaction — Upsert
   static const transactionUpsertAddTitle = 'transaction.upsert.addTitle';
+  static const transactionUpsertCopyTitle = 'transaction.upsert.copyTitle';
   static const transactionUpsertEditTitle = 'transaction.upsert.editTitle';
   static const transactionUpsertSuccess = 'transaction.upsert.success';
   static const transactionUpsertErrorOccurred =
@@ -590,6 +591,8 @@ abstract class LocaleKeys {
   static const transactionUpsertSaveChanges = 'transaction.upsert.saveChanges';
   static const transactionUpsertAddTransaction =
       'transaction.upsert.addTransaction';
+  static const transactionUpsertCopyTransaction =
+      'transaction.upsert.copyTransaction';
   static const transactionUpsertDeleteTransaction =
       'transaction.upsert.deleteTransaction';
 

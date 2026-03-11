@@ -84,11 +84,16 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                   GoRoute(
                     name: AppRoutes.transactionAddName,
                     path: AppRoutes.transactionAddPath,
-                    pageBuilder: (context, state) =>
-                        AppPageTransitions.slideBottom(
-                          key: state.pageKey,
-                          child: const TransactionUpsertScreen(),
+                    pageBuilder: (context, state) {
+                      final transactionToCopy = state.extra as Transaction?;
+                      return AppPageTransitions.slideBottom(
+                        key: state.pageKey,
+                        child: TransactionUpsertScreen(
+                          transaction: transactionToCopy,
+                          isCopy: transactionToCopy != null,
                         ),
+                      );
+                    },
                   ),
                   // * Bulk copy transactions - slide from bottom
                   GoRoute(

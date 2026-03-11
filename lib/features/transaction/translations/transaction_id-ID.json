@@ -22,6 +22,7 @@
     },
     "upsert": {
       "addTitle": "Tambah Transaksi",
+      "copyTitle": "Salin Transaksi",
       "editTitle": "Edit Transaksi",
       "success": "Berhasil",
       "errorOccurred": "Terjadi kesalahan",
@@ -47,6 +48,7 @@
       "descriptionLabel": "Deskripsi",
       "descriptionPlaceholder": "Tambahkan catatan (opsional)",
       "saveChanges": "Simpan Perubahan",
+      "copyTransaction": "Salin Transaksi Ini",
       "addTransaction": "Tambah Transaksi",
       "deleteTransaction": "Hapus Transaksi"
     },
