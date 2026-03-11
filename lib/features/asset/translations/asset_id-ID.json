@@ -58,6 +58,7 @@
     },
     "upsert": {
       "addTitle": "Tambah Aset",
+      "copyTitle": "Salin Aset",
       "editTitle": "Edit Aset",
       "success": "Berhasil",
       "errorOccurred": "Terjadi kesalahan",
@@ -71,11 +72,13 @@
       "namePlaceholder": "Contoh: BCA, GoPay, Dompet",
       "balanceLabel": "Saldo Awal",
       "currentIconLabel": "Ikon Saat Ini",
+      "originalIconLabel": "Ikon Asli",
       "changeIcon": "Ganti Ikon",
       "iconLabel": "Ikon Aset",
       "iconHint": "Pilih gambar ikon (opsional)",
       "saveChanges": "Simpan Perubahan",
       "addAsset": "Tambah Aset",
+      "copyAsset": "Salin Aset",
       "deleteAsset": "Hapus Aset"
     }
   }

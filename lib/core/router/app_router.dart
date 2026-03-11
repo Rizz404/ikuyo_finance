@@ -156,11 +156,16 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                   GoRoute(
                     name: AppRoutes.assetAddName,
                     path: AppRoutes.assetAddPath,
-                    pageBuilder: (context, state) =>
-                        AppPageTransitions.slideBottom(
-                          key: state.pageKey,
-                          child: const AssetUpsertScreen(),
+                    pageBuilder: (context, state) {
+                      final assetToCopy = state.extra as Asset?;
+                      return AppPageTransitions.slideBottom(
+                        key: state.pageKey,
+                        child: AssetUpsertScreen(
+                          asset: assetToCopy,
+                          isCopy: assetToCopy != null,
                         ),
+                      );
+                    },
                   ),
                   // * Edit asset - slide from right
                   GoRoute(

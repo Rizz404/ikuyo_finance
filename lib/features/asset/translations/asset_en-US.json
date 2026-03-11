@@ -58,6 +58,7 @@
     },
     "upsert": {
       "addTitle": "Add Asset",
+      "copyTitle": "Copy Asset",
       "editTitle": "Edit Asset",
       "success": "Success",
       "errorOccurred": "An error occurred",
@@ -71,11 +72,13 @@
       "namePlaceholder": "Example: BCA, GoPay, Wallet",
       "balanceLabel": "Initial Balance",
       "currentIconLabel": "Current Icon",
+      "originalIconLabel": "Original Icon",
       "changeIcon": "Change Icon",
       "iconLabel": "Asset Icon",
       "iconHint": "Choose icon image (optional)",
       "saveChanges": "Save Changes",
       "addAsset": "Add Asset",
+      "copyAsset": "Copy Asset",
       "deleteAsset": "Delete Asset"
     }
   }

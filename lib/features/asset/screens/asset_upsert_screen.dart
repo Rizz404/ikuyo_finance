@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/currency/models/currency.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+import 'package:ikuyo_finance/core/router/app_routes.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -27,10 +28,11 @@ import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
 class AssetUpsertScreen extends StatefulWidget {
   final Asset? asset;
+  final bool isCopy;
 
-  const AssetUpsertScreen({super.key, this.asset});
+  const AssetUpsertScreen({super.key, this.asset, this.isCopy = false});
 
-  bool get isEdit => asset != null;
+  bool get isEdit => asset != null && !isCopy;
 
   @override
   State<AssetUpsertScreen> createState() => _AssetUpsertScreenState();
@@ -99,7 +101,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
               name: name,
               type: type,
               balance: balance,
-              icon: iconPath,
+              icon: iconPath ?? (widget.isCopy ? widget.asset?.icon : null),
             ),
           ),
         );
@@ -176,7 +178,9 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
           title: AppText(
             widget.isEdit
                 ? LocaleKeys.assetUpsertEditTitle.tr()
-                : LocaleKeys.assetUpsertAddTitle.tr(),
+                : (widget.isCopy
+                      ? LocaleKeys.assetUpsertCopyTitle.tr()
+                      : LocaleKeys.assetUpsertAddTitle.tr()),
             style: AppTextStyle.titleLarge,
             fontWeight: FontWeight.bold,
           ),
@@ -296,9 +300,11 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                   const SizedBox(height: 24),
 
                   // * Icon File Picker with current preview
-                  if (widget.isEdit && widget.asset?.icon != null) ...[
+                  if (widget.asset?.icon != null) ...[
                     AppText(
-                      LocaleKeys.assetUpsertCurrentIconLabel.tr(),
+                      widget.isCopy
+                          ? LocaleKeys.assetUpsertOriginalIconLabel.tr()
+                          : LocaleKeys.assetUpsertCurrentIconLabel.tr(),
                       style: AppTextStyle.labelMedium,
                     ),
                     const SizedBox(height: 8),
@@ -361,6 +367,19 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
+
+                  if (widget.isEdit) ...[
+                    AppButton(
+                      text: LocaleKeys.assetUpsertCopyAsset.tr(),
+                      variant: AppButtonVariant.outlined,
+                      onPressed: () => context.pushNamed(
+                        AppRoutes.assetAddName,
+                        extra: widget.asset,
+                      ),
+                      leadingIcon: const Icon(Icons.copy_outlined),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
 
                   // * Delete Button (only for edit mode)
                   if (widget.isEdit) ...[

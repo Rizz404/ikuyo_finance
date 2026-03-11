@@ -636,6 +636,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
             const SizedBox(height: 16),
             AppDateTimePicker(
               key: Key('${uniqueFormKey}_date'),
+              inputType: InputType.both,
               name: 'transactionDate',
               label: LocaleKeys.transactionBulkCopyDateLabel.tr(),
               prefixIcon: const Icon(Icons.calendar_today_outlined),

@@ -209,6 +209,7 @@ abstract class LocaleKeys {
 
   // * Asset — Upsert
   static const assetUpsertAddTitle = 'asset.upsert.addTitle';
+  static const assetUpsertCopyTitle = 'asset.upsert.copyTitle';
   static const assetUpsertEditTitle = 'asset.upsert.editTitle';
   static const assetUpsertSuccess = 'asset.upsert.success';
   static const assetUpsertErrorOccurred = 'asset.upsert.errorOccurred';
@@ -223,10 +224,12 @@ abstract class LocaleKeys {
   static const assetUpsertTypeEWallet = 'asset.upsert.typeEWallet';
   static const assetUpsertTypeStock = 'asset.upsert.typeStock';
   static const assetUpsertTypeCrypto = 'asset.upsert.typeCrypto';
+  static const assetUpsertCopyAsset = 'asset.upsert.copyAsset';
   static const assetUpsertNameLabel = 'asset.upsert.nameLabel';
   static const assetUpsertNamePlaceholder = 'asset.upsert.namePlaceholder';
   static const assetUpsertBalanceLabel = 'asset.upsert.balanceLabel';
   static const assetUpsertCurrentIconLabel = 'asset.upsert.currentIconLabel';
+  static const assetUpsertOriginalIconLabel = 'asset.upsert.originalIconLabel';
   static const assetUpsertChangeIcon = 'asset.upsert.changeIcon';
   static const assetUpsertIconLabel = 'asset.upsert.iconLabel';
   static const assetUpsertIconHint = 'asset.upsert.iconHint';
