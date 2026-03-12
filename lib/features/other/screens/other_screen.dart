@@ -1,8 +1,8 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
-import 'package:ikuyo_finance/core/router/app_navigator.dart';
-import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
+import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/other/widgets/other_card.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';

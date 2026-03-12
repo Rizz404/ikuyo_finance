@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
-import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_frequency.dart';
 import 'package:ikuyo_finance/features/auto_transaction/validators/create_auto_group_validator.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';

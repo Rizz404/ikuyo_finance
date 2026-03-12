@@ -1,4 +1,4 @@
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_calculator.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_log.dart';

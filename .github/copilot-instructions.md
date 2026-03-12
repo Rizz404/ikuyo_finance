@@ -1,287 +1,249 @@
-// Copilot Guidelines - Ikuyo Finance
+# Ikuyo Finance — Copilot Instructions
 
-// 1) Extensions (mandatory)
+## Purpose
+
+These instructions apply to all Dart/Flutter files in this repository.
+They define coding standards, patterns, and constraints specific to Ikuyo Finance.
+Follow these rules on every suggestion, edit, or generation — no exceptions.
+
+---
+
+## 1. Imports & Extensions
+
+Always import these extensions at the top of any widget file:
+
+```dart
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/core/extensions/localization_extension.dart';
-// Access: context.theme|textTheme|colorScheme|colors|semantic|isDarkMode
-// Access: context.l10n|locale|isEnglish|isIndonesian|isJapanese
+```
 
-// 2) Theming (never hardcode colors!)
-// ✅ DO: context.colorScheme.primary, context.colors.surface, context.textTheme.bodyMedium
-// ❌ DON'T: Color(0xFF...), Colors.red, hardcoded colors
+- Use `context.theme`, `context.colorScheme`, `context.colors`, `context.textTheme`, `context.isDarkMode`
+- Use `context.l10n`, `context.locale`, `context.isEnglish`, `context.isIndonesian`, `context.isJapanese`
 
-// 3) Logging (replace all print!)
+---
+
+## 2. Theming — Never Hardcode Colors
+
+```dart
+// Avoid
+color: Color(0xFF1A1A2E)
+color: Colors.red
+
+// Prefer
+color: context.colorScheme.primary
+color: context.colors.surface
+```
+
+Never use `Color(0xFF...)`, `Colors.*`, or any hardcoded color value anywhere.
+
+---
+
+## 3. Logging
+
+Import logger and use the correct function per layer:
+
+```dart
 import 'package:ikuyo_finance/core/utils/logger.dart';
-// Use: logInfo|logError|logData|logDomain|logPresentation|logService
-// Example: logService('Process started'); logError('Failed', e, s);
-// ❌ DON'T: Add logging in widgets/screens unless explicitly requested
-// ✅ DO: Keep logging in BLoCs, Repositories, Services, Use Cases only
-// If unsure about UI logging, ask first before adding it
 
-// 4) Comments (Better Comments format)
-// TODO: | FIXME: | ! warning | ? question | \* important note
+logInfo('Starting process');
+logError('Something failed', e, stackTrace);
+```
 
-// 5) const everywhere possible
-// const SizedBox(height: 16), const Duration(milliseconds: 300)
+- Use: `logInfo`, `logError`, `logData`, `logDomain`, `logPresentation`, `logService`
+- Only add logging in: BLoCs, Repositories, Services, Use Cases
+- Never add logging inside widgets or screens unless explicitly asked
 
-// 6) Response: brief & to the point
-// Only mention what changed/added/removed, no lengthy explanations
+---
 
-// 7) Docs: NO .md files unless explicitly requested
-// Keep inline comments 1-2 lines max, code should be self-explanatory
+## 4. Comments
 
-// 8) Shared Widgets (use existing components first!)
-// Import from: 'package:ikuyo_finance/shared/widgets/...'
-// Available:
-// - AppButton (primary/secondary/text buttons)
-// - AppTextField, AppSearchField (text inputs)
-// - AppDropdown, AppCheckbox, AppRadioGroup (form controls)
-// - AppDateTimePicker, AppTimePicker (date/time)
-// - AppText (themed text widget)
-// - CustomAppBar, ScreenWrapper (layout)
-// - AdminShell, UserShell, AppEndDrawer (navigation shells)
-// ✅ DO: Use these widgets instead of raw Material/Cupertino widgets
-// ❌ DON'T: Create new TextField, Dropdown, Button when app widgets exist
+Use Better Comments format only:
 
-// 9) Text/Localization (IMPORTANT!)
-// ✅ DO: Use static text strings by default ('Submit', 'Cancel', etc.)
-// ❌ DON'T: Use context.l10n or edit .json files UNLESS explicitly asked
-// If unsure whether to localize, ask first: "Mau pakai translation atau static text?"
-//
-// ⚠️ IF EXPLICITLY REQUESTED to add translations, strictly follow this pattern:
-// - Add the new keys to ALL available .json files inside that feature's `translations` folder.
-// - Example: If editing `lib/features/appraisal/screens/appraisal_result_screen.dart`,
-// add translations to all .json files in `lib/features/appraisal/translations/`.
-// - After updating the .json files, you MUST run the following command:
-// dart run tools/merge_translations.dart
+```dart
+// TODO: implement pagination
+// FIXME: null check missing here
+// ! warning: this mutates shared state
+// ? should this use a stream instead?
+// * this is called on every frame
+```
 
-// 10) Widget Structure — Hybrid Approach
-//
-// Keep everything inline inside build() as long as it stays readable.
-// Only extract when there is a clear reason — not just to "organize".
-//
-// Scaffold-level slots (appBar, body, drawer, bottomNavigationBar, floatingActionButton)
-// must always be written inline. Never wrap them in \_buildAppBar(), \_buildBody(), etc.
-// Use shared components directly (CustomAppBar, AppEndDrawer, ScreenWrapper, etc.)
-//
-// Extract to TIER 1 / TIER 2 only for deep leaf content that has grown complex,
-// not for top-level scaffold slots.
-//
-// TIER 1 — Private Function (\_buildX)
-// When: a leaf subtree is complex enough to reduce nesting,
-// accesses parent scope directly (widget.x, state, controller),
-// no independent props needed — any length is fine
-//
-// TIER 2 — Private Class (\_MyWidget)
-// When: ONLY if one of these is needed:
-// - independent props (not from parent scope)
-// - const constructor for rebuild optimization
-// - own local state
-// - own lifecycle (initState, dispose, etc.)
-// ❌ DON'T: use just because a widget is long without the above needs
-//
-// TIER 3 — Public Class in /widgets
-// When: used across more than 1 screen/file
-// Location: feature/category/widgets/category_card.dart
-//
-// Decision tree:
-// Used in > 1 screen? → TIER 3
-// Needs independent props / own state / lifecycle? → TIER 2
-// Deep leaf content that reduces nesting? → TIER 1
-// Everything else (including scaffold slots) → inline in build()
-//
-// Feature structure:
-// lib/features/category/
-// ├── screens/
-// │ └── category_screen.dart ← inline build, TIER 1 & TIER 2 if needed
-// └── widgets/
-// └── category_card.dart ← TIER 3
+---
 
-// 11) Widget Member Ordering
-// Applies to: StatelessWidget, StatefulWidget, ConsumerWidget,
-// ConsumerStatefulWidget, HookWidget, HookConsumerWidget
-//
-// ── STATELESS / CONSUMER WIDGET ──────────────────────────────────────────
-// 1. Fields / final variables
-// 2. Constructor
-// 3. Override methods (except build)
-// 4. build()
-// 5. Private widget functions (\_buildX) ← always last, per rule 10
-//
-// ── STATEFUL / CONSUMER STATEFUL ─────────────────────────────────────────
-// StatefulWidget class:
-// 1. Fields / final variables (props)
-// 2. Constructor
-// 3. createState()
-//
-// State class:
-// 1. Variables (controllers, flags, notifiers, etc.)
-// 2. Override methods (initState, didChangeDependencies, dispose, etc.)
-// 3. Private logic functions (\_handleX, \_loadX, etc.)
-// 4. build() — widget tree only, no logic/vars inside
-// 5. Private widget functions (\_buildX) ← always last, per rule 10
-//
-// ❌ DON'T: declare variables or logic inside build()
-// Widget build(BuildContext context) {
-// final ctrl = TextEditingController(); // ❌
-// final isValid = value.isNotEmpty; // ❌
-// }
-// ✅ DO: move to class-level or initState
+## 5. Const
 
-// 12) Terminal: use modern CLI tools
-// Files: eza, fd, rg, bat, sd | Git: lazygit, gh, delta
-// Nav: z (zoxide), fzf, yazi | Dev: glow, jq, tldr, micro
-// Monitor: btm, procs, dust, duf
-// ❌ Avoid: dir, findstr, find, grep, cat, manual cd
+Use `const` everywhere it is valid:
 
-// ═══════════════════════════════════════════════════════════════════════════
-// EXAMPLES
-// ═══════════════════════════════════════════════════════════════════════════
+```dart
+const SizedBox(height: 16)
+const Duration(milliseconds: 300)
+const EdgeInsets.symmetric(horizontal: 16)
+```
 
-// ── Theming & Static Text ─────────────────────────────────────────────────
-Widget build(BuildContext context) => Container(
-color: context.colors.surface,
-child: AppText('Title', style: AppStyle.titleMedium),
-);
+---
 
-AppButton(
-text: 'Submit',
-onPressed: onSubmit,
-)
+## 6. Response Style
 
-// ── Scaffold slots inline, no wrapping functions ──────────────────────────
-// ❌ DON'T
-Widget build(BuildContext context) => Scaffold(
-appBar: \_buildAppBar(), // ❌
-body: \_buildBody(), // ❌
-drawer: \_buildDrawer(), // ❌
-);
+- Be brief and to the point
+- Only mention what changed, added, or removed
+- No lengthy explanations unless asked
 
-// ✅ DO: scaffold slots inline, shared components used directly
-Widget build(BuildContext context) => Scaffold(
-appBar: CustomAppBar(title: 'Category'),
-drawer: AppEndDrawer(),
-body: ListView.builder(
-itemCount: items.length,
-itemBuilder: (\_, i) => \_buildItem(items[i]), // ✅ \_buildX only at leaf
-),
-);
+---
 
-// ── TIER 1: Private Function (complex leaf, accesses parent scope) ────────
-class \_CategoryScreenState extends State<CategoryScreen> {
-Widget \_buildEmptyState() => Center(child: AppText('No categories'));
-Widget \_buildItemTile(CategoryModel item) => Column(
-children: [
-AppText(item.name),
-AppText(item.description),
-AppButton(text: 'Select', onPressed: () => _handleSelect(item)),
-],
-);
+## 7. Documentation
+
+- No `.md` files unless explicitly requested
+- Inline comments: 1–2 lines max
+- Code should be self-explanatory
+
+---
+
+## 8. Shared Widgets — Search Before Creating
+
+**Before writing any widget, check if a shared widget already exists.**
+
+Run: `rg "class App" lib/shared/widgets/` or `eza --tree lib/shared/widgets/`
+
+If a shared widget covers the use case → use it. Do not create a new one.
+
+Available shared widgets (import from `package:ikuyo_finance/shared/widgets/...`):
+
+| Widget | Purpose |
+|---|---|
+| `AppButton` | Primary / secondary / text buttons |
+| `AppTextField` | Standard text input |
+| `AppSearchField` | Search input with icon |
+| `AppDropdown` | Dropdown selector |
+| `AppCheckbox` | Checkbox input |
+| `AppRadioGroup` | Radio button group |
+| `AppDateTimePicker` | Date + time picker |
+| `AppTimePicker` | Time-only picker |
+| `AppText` | Themed text (replaces raw `Text()`) |
+| `CustomAppBar` | App bar (replaces raw `AppBar()`) |
+| `ScreenWrapper` | Screen-level layout wrapper |
+| `AdminShell` | Admin navigation shell |
+| `UserShell` | User navigation shell |
+| `AppEndDrawer` | End drawer |
+
+**Decision rule before using any raw Material/Cupertino widget:**
+1. Shared widget exists? → **Use it**
+2. Feature-local widget exists? → **Reuse it**
+3. Neither exists? → Create new, following widget tier rules below
+
+```dart
+// Avoid
+TextField(decoration: InputDecoration(...))
+ElevatedButton(onPressed: ..., child: Text('Submit'))
+
+// Prefer
+AppTextField(...)
+AppButton(text: 'Submit', onPressed: onSubmit)
+```
+
+---
+
+## 9. Text & Localization
+
+- Use static text strings by default: `'Submit'`, `'Cancel'`, `'Save'`
+- Do **not** use `context.l10n` or edit `.json` files unless explicitly asked
+- If unsure, ask: *"Mau pakai translation atau static text?"*
+
+**If localization is explicitly requested:**
+1. Add the new key to **all** `.json` files in the feature's `translations/` folder
+2. Run: `dart run tools/merge_translations.dart`
+
+---
+
+## 10. Widget Structure
+
+Keep everything inline in `build()` unless there is a clear reason to extract.
+
+### Scaffold slots are always inline
+
+```dart
+// Avoid
+appBar: _buildAppBar()
+body: _buildBody()
+
+// Prefer
+appBar: CustomAppBar(title: 'Screen Title')
+body: ListView.builder(...)
+```
+
+### Extraction tiers
+
+**Tier 1 — Private function `_buildX`**
+When: leaf content is complex, accesses parent scope, no independent props needed.
+
+```dart
+Widget _buildEmptyState() => Center(child: AppText('No items'));
+```
+
+**Tier 2 — Private class `_MyWidget`**
+Only when one of these is required:
+- Independent props (not from parent scope)
+- `const` constructor for rebuild optimization
+- Own local state
+- Own lifecycle (`initState`, `dispose`)
+
+**Tier 3 — Public class in `/widgets`**
+Only when used across more than one screen or file.
+Location: `lib/features/<feature>/widgets/<name>.dart`
+
+**Decision tree:**
+- Used in > 1 screen? → Tier 3
+- Needs independent props / own state / lifecycle? → Tier 2
+- Complex leaf that reduces nesting? → Tier 1
+- Everything else (including scaffold slots) → inline
+
+---
+
+## 11. Widget Member Ordering
+
+**StatelessWidget / ConsumerWidget:**
+1. Fields / final variables
+2. Constructor
+3. Override methods (except `build`)
+4. `build()`
+5. Private widget functions `_buildX`
+
+**StatefulWidget State class:**
+1. Variables (controllers, flags, notifiers)
+2. Override methods (`initState`, `dispose`, etc.)
+3. Private logic functions (`_handleX`, `_loadX`)
+4. `build()` — widget tree only, no logic or variable declarations inside
+5. Private widget functions `_buildX`
+
+```dart
+// Avoid
+Widget build(BuildContext context) {
+  final ctrl = TextEditingController(); // ❌ never declare here
 }
 
-// ── TIER 2: Private Class (independent props, rebuild optimization) ───────
-class \_CategoryItem extends StatelessWidget {
-final String title;
-final String subtitle;
-final VoidCallback onTap;
-
-const \_CategoryItem({
-required this.title,
-required this.subtitle,
-required this.onTap,
-});
-
-@override
-Widget build(BuildContext context) => ListTile(
-leading: \_buildLeading(),
-title: AppText(title),
-subtitle: AppText(subtitle),
-onTap: onTap,
-);
-
-Widget \_buildLeading() => Icon(Icons.car_repair, color: context.colors.primary);
-}
-
-// ── TIER 3: Public Class in /widgets (reusable across screens) ───────────
-// lib/features/category/widgets/category_card.dart
-class CategoryCard extends StatelessWidget {
-final String title;
-final VoidCallback onTap;
-
-const CategoryCard({super.key, required this.title, required this.onTap});
-
-@override
-Widget build(BuildContext context) => GestureDetector(
-onTap: onTap,
-child: Container(
-color: context.colors.surface,
-child: AppText(title),
-),
-);
-}
-
-// ── Stateful Widget ───────────────────────────────────────────────────────
-class CategoryScreen extends StatefulWidget {
-final String categoryId;
-final VoidCallback? onBack;
-
-const CategoryScreen({super.key, required this.categoryId, this.onBack});
-
-@override
-State<CategoryScreen> createState() => \_CategoryScreenState();
-}
-
-class \_CategoryScreenState extends State<CategoryScreen> {
-late final ScrollController \_scrollController;
-bool \_isLoading = false;
+// Prefer — declare at class level
+late final TextEditingController _ctrl;
 
 @override
 void initState() {
-super.initState();
-\_scrollController = ScrollController();
+  super.initState();
+  _ctrl = TextEditingController();
 }
+```
 
-@override
-void dispose() {
-\_scrollController.dispose();
-super.dispose();
-}
+---
 
-void \_handleRefresh() => setState(() => \_isLoading = false);
+## 12. Terminal Tools
 
-@override
-Widget build(BuildContext context) => Scaffold(
-appBar: CustomAppBar(title: widget.categoryId),
-body: _isLoading
-? const Center(child: CircularProgressIndicator())
-: ListView.builder(
-controller: \_scrollController,
-itemCount: 10,
-itemBuilder: (_, i) => CategoryCard(
-title: widget.categoryId,
-onTap: \_handleRefresh,
-),
-),
-);
-}
+Prefer modern CLI tools:
 
-// ── BLoC / Service Logging ────────────────────────────────────────────────
-class UserBloc extends Bloc<UserEvent, UserState> {
-Future<void> \_onLoad(UserLoad event, Emitter<UserState> emit) async {
-logInfo('Loading user data');
-try {
-final user = await repository.getUser();
-emit(UserLoaded(user));
-} catch (e, s) {
-logError('Failed to load user', e, s);
-}
-}
-}
+| Task | Tool |
+|---|---|
+| List files | `eza` |
+| Find files | `fd` |
+| Search content | `rg` |
+| Read files | `bat` |
+| Replace text | `sd` |
+| Git UI | `lazygit` |
+| Navigate | `z` (zoxide) |
+| Monitor | `btm`, `procs` |
 
-// ═══════════════════════════════════════════════════════════════════════════
-// TERMINAL WORKFLOWS
-// ═══════════════════════════════════════════════════════════════════════════
-// fd -e dart | rg "TODO" // find TODOs
-// eza --tree -L 3 lib/ // show structure
-// z sigma // jump to project
-// lazygit // interactive git
+Avoid: `dir`, `findstr`, `find`, `grep`, `cat`, manual `cd`

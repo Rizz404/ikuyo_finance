@@ -1,5 +1,5 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/security/models/security_settings.dart';
 
 /// Service untuk menyimpan & membaca pengaturan keamanan via FlutterSecureStorage

@@ -1,5 +1,5 @@
 import 'package:local_auth/local_auth.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 
 /// Service untuk biometric authentication via local_auth
 class BiometricService {

@@ -2,7 +2,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
-import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -142,37 +142,5 @@ class AppDropdown<T> extends StatelessWidget {
       return item.icon!;
     }
     return SizedBox(width: imageSize, height: imageSize);
-  }
-}
-
-// Extension to create common dropdown items
-extension AppDropdownExtensions on AppDropdown {
-  static List<AppDropdownItem<String>> createFilterItems({
-    required String allLabel,
-    required List<String> filterValues,
-    required List<String> filterLabels,
-    List<IconData>? filterIcons,
-  }) {
-    final items = <AppDropdownItem<String>>[
-      AppDropdownItem(
-        value: 'all',
-        label: allLabel,
-        icon: const Icon(Icons.list_alt, size: 18),
-      ),
-    ];
-
-    for (int i = 0; i < filterValues.length; i++) {
-      items.add(
-        AppDropdownItem(
-          value: filterValues[i],
-          label: filterLabels[i],
-          icon: filterIcons != null && i < filterIcons.length
-              ? Icon(filterIcons[i], size: 18)
-              : null,
-        ),
-      );
-    }
-
-    return items;
   }
 }

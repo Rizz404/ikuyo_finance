@@ -126,20 +126,3 @@ class CurrencyConverter {
     );
   }
 }
-
-/// Extension for easy currency formatting on double values
-extension CurrencyFormatExtension on double {
-  /// Format this amount in the given currency
-  String formatCurrency(Currency currency, {bool compact = false}) {
-    return CurrencyConverter.format(
-      amount: this,
-      currency: currency,
-      compact: compact,
-    );
-  }
-
-  /// Convert this amount from one currency to another
-  double convertTo(Currency from, Currency to) {
-    return CurrencyConverter.convert(amount: this, from: from, to: to);
-  }
-}

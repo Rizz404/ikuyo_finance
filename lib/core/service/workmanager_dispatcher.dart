@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:workmanager/workmanager.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository_impl.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';

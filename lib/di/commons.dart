@@ -12,7 +12,7 @@ import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
 import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ikuyo_finance/core/theme/app_theme.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:toastification/toastification.dart';
 
 /// Toast helper untuk menampilkan notifikasi dengan tema aplikasi

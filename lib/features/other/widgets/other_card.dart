@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 class OtherCard extends StatelessWidget {

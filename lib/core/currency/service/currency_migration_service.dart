@@ -1,6 +1,6 @@
 import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';

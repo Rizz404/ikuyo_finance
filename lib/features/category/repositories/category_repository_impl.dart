@@ -1,7 +1,7 @@
 import 'package:fpdart/fpdart.dart' hide Order;
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';

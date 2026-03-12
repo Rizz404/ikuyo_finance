@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
 
 /// * Sort options chip widget (pure UI, no bloc logic)

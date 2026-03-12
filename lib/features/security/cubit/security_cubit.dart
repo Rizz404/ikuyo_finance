@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/security/models/security_settings.dart';
 import 'package:ikuyo_finance/features/security/service/biometric_service.dart';
 import 'package:ikuyo_finance/features/security/service/security_storage_service.dart';

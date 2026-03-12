@@ -4,7 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:ikuyo_finance/core/currency/models/currency.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 
 /// Service to fetch real-time exchange rates from API
 /// Uses https://open.er-api.com (free, no API key required)

@@ -7,7 +7,7 @@ import 'package:ikuyo_finance/core/currency/service/currency_migration_service.d
 import 'package:ikuyo_finance/core/currency/service/exchange_rate_service.dart';
 import 'package:ikuyo_finance/core/currency/utils/currency_converter.dart';
 import 'package:ikuyo_finance/core/storage/storage_keys.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 
 part 'currency_state.dart';
 

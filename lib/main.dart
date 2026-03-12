@@ -7,7 +7,7 @@ import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/locale/cubit/locale_cubit.dart';
 import 'package:ikuyo_finance/core/router/app_routes.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
-import 'package:ikuyo_finance/core/utils/logger.dart';
+import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/di/injection.dart';
 import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
 import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bloc.dart';

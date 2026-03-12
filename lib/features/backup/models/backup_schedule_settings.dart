@@ -2,20 +2,6 @@ import 'dart:convert';
 
 enum BackupFrequency { daily, weekly, monthly }
 
-extension BackupFrequencyExtension on BackupFrequency {
-  String get label => switch (this) {
-    BackupFrequency.daily => 'Daily',
-    BackupFrequency.weekly => 'Weekly',
-    BackupFrequency.monthly => 'Monthly',
-  };
-
-  String get labelId => switch (this) {
-    BackupFrequency.daily => 'Setiap Hari',
-    BackupFrequency.weekly => 'Setiap Minggu',
-    BackupFrequency.monthly => 'Setiap Bulan',
-  };
-}
-
 class BackupScheduleSettings {
   final bool isEnabled;
   final int hour;
