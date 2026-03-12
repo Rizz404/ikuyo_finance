@@ -10,6 +10,7 @@ import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/update_auto_item_params.dart';
 import 'package:ikuyo_finance/features/auto_transaction/widgets/auto_item_tile.dart';
+import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
@@ -52,6 +53,34 @@ class _AutoTransactionItemListScreenState
       );
       context.read<AutoTransactionBloc>().add(const AutoWriteStatusReset());
     }
+  }
+
+  void _openBatchDeleteDialog(
+    BuildContext context,
+    List<AutoTransactionItem> items,
+    AutoTransactionItem initialSelected,
+  ) {
+    AppBatchDeleteDialog.show<AutoTransactionItem>(
+      context: context,
+      title: 'Hapus Auto Item',
+      items: items,
+      getId: (i) => i.ulid,
+      searchStringOf: (i) => i.transaction.target?.description ?? i.ulid,
+      initialSelectedId: initialSelected.ulid,
+      searchHint: 'Cari item...',
+      itemBuilder: (item, isSelected, onToggle) => AutoItemTile(
+        key: ValueKey(item.ulid),
+        item: item,
+        onTap: onToggle,
+        onToggle: (_) {},
+      ),
+      onDelete: (selected) {
+        final ulids = selected.map((i) => i.ulid).toList();
+        context.read<AutoTransactionBloc>().add(
+          AutoItemBatchDeleted(ulids: ulids),
+        );
+      },
+    );
   }
 
   void _onReorder(List<AutoTransactionItem> items, int oldIndex, int newIndex) {
@@ -145,6 +174,8 @@ class _AutoTransactionItemListScreenState
               params: UpdateAutoItemParams(ulid: item.ulid, isActive: isActive),
             ),
           ),
+          onLongPress: () =>
+              _openBatchDeleteDialog(context, state.currentItems, item),
         );
       },
     );

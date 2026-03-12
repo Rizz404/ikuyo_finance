@@ -13,8 +13,13 @@ import 'package:intl/intl.dart';
 
 class TransactionTile extends StatelessWidget {
   final Transaction transaction;
+  final VoidCallback? onLongPress;
 
-  const TransactionTile({super.key, required this.transaction});
+  const TransactionTile({
+    super.key,
+    required this.transaction,
+    this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,6 +29,7 @@ class TransactionTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: () => context.pushToEditTransaction(transaction),
+      onLongPress: onLongPress,
       child: Container(
         margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.all(16),

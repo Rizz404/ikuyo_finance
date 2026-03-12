@@ -28,6 +28,12 @@ final class AutoGroupDeleted extends AutoTransactionEvent {
   final String ulid;
 }
 
+final class AutoGroupBatchDeleted extends AutoTransactionEvent {
+  const AutoGroupBatchDeleted({required this.ulids});
+
+  final List<String> ulids;
+}
+
 final class AutoGroupToggled extends AutoTransactionEvent {
   const AutoGroupToggled({required this.ulid, required this.isActive});
 
@@ -88,6 +94,12 @@ final class AutoItemDeleted extends AutoTransactionEvent {
   final String ulid;
 }
 
+final class AutoItemBatchDeleted extends AutoTransactionEvent {
+  const AutoItemBatchDeleted({required this.ulids});
+
+  final List<String> ulids;
+}
+
 final class AutoItemReordered extends AutoTransactionEvent {
   const AutoItemReordered({
     required this.groupUlid,
@@ -103,6 +115,13 @@ final class AutoLogsFetched extends AutoTransactionEvent {
   const AutoLogsFetched({required this.groupUlid});
 
   final String groupUlid;
+}
+
+// * Log delete
+final class AutoLogBatchDeleted extends AutoTransactionEvent {
+  const AutoLogBatchDeleted({required this.ulids});
+
+  final List<String> ulids;
 }
 
 // * Reset write status setelah UI handle success/error

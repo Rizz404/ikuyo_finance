@@ -6,7 +6,9 @@ import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bloc.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/features/auto_transaction/widgets/auto_group_tile.dart';
+import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
@@ -22,6 +24,35 @@ class _AutoTransactionScreenState extends State<AutoTransactionScreen> {
   void initState() {
     super.initState();
     context.read<AutoTransactionBloc>().add(const AutoGroupFetched());
+  }
+
+  void _openBatchDeleteDialog(
+    BuildContext context,
+    List<AutoTransactionGroup> groups,
+    AutoTransactionGroup initialSelected,
+  ) {
+    AppBatchDeleteDialog.show<AutoTransactionGroup>(
+      context: context,
+      title: 'Hapus Auto Transaction',
+      items: groups,
+      getId: (g) => g.ulid,
+      searchStringOf: (g) => g.name,
+      initialSelectedId: initialSelected.ulid,
+      searchHint: 'Cari nama grup...',
+      itemBuilder: (group, isSelected, onToggle) => AutoGroupTile(
+        group: group,
+        onTap: onToggle,
+        onToggle: (_) {},
+        onItemsTap: () {},
+        onLogTap: () {},
+      ),
+      onDelete: (selected) {
+        final ulids = selected.map((g) => g.ulid).toList();
+        context.read<AutoTransactionBloc>().add(
+          AutoGroupBatchDeleted(ulids: ulids),
+        );
+      },
+    );
   }
 
   void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
@@ -131,6 +162,8 @@ class _AutoTransactionScreenState extends State<AutoTransactionScreen> {
           ),
           onItemsTap: () => context.pushToAutoItemList(group),
           onLogTap: () => context.pushToAutoLog(group),
+          onLongPress: () =>
+              _openBatchDeleteDialog(context, state.groups, group),
         );
       },
     );

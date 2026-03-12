@@ -4,14 +4,17 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/calendar_transaction_view.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/daily_transaction_view.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/monthly_transaction_view.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/transaction_active_filters.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/transaction_filter_sheet.dart';
+import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 import 'package:intl/intl.dart';
@@ -56,9 +59,58 @@ class _TransactionScreenState extends State<TransactionScreen>
   bool get _isDailyOrCalendarTab =>
       _currentTabIndex == 0 || _currentTabIndex == 2;
 
+  void _openBatchDeleteDialog(
+    BuildContext context,
+    List<Transaction> transactions,
+    Transaction initialSelected,
+  ) {
+    AppBatchDeleteDialog.show<Transaction>(
+      context: context,
+      title: 'Hapus Transaksi',
+      items: transactions,
+      getId: (t) => t.ulid,
+      searchStringOf: (t) => t.description ?? '',
+      initialSelectedId: initialSelected.ulid,
+      searchHint: 'Cari transaksi...',
+      itemBuilder: (transaction, isSelected, onToggle) => ListTile(
+        onTap: onToggle,
+        title: AppText(
+          transaction.description ?? '-',
+          style: AppTextStyle.bodyMedium,
+        ),
+      ),
+      onDelete: (selected) {
+        final ulids = selected.map((t) => t.ulid).toList();
+        context.read<TransactionBloc>().add(
+          TransactionBatchDeleted(ulids: ulids),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<TransactionBloc, TransactionState>(
+    return BlocConsumer<TransactionBloc, TransactionState>(
+      listenWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
+      listener: (context, state) {
+        if (state.writeStatus == TransactionWriteStatus.success) {
+          ToastHelper.instance.showSuccess(
+            context: context,
+            title: state.writeSuccessMessage ?? 'Berhasil dihapus',
+          );
+          context.read<TransactionBloc>().add(
+            const TransactionWriteStatusReset(),
+          );
+        } else if (state.writeStatus == TransactionWriteStatus.failure) {
+          ToastHelper.instance.showError(
+            context: context,
+            title: state.writeErrorMessage ?? 'Gagal menghapus',
+          );
+          context.read<TransactionBloc>().add(
+            const TransactionWriteStatusReset(),
+          );
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
@@ -262,6 +314,8 @@ class _TransactionScreenState extends State<TransactionScreen>
           ),
           hasReachedMax: state.hasReachedMax,
           isLoadingMore: state.isLoadingMore,
+          onTransactionLongPress: (transaction) =>
+              _openBatchDeleteDialog(context, state.transactions, transaction),
         ),
         MonthlyTransactionView(
           transactions: state.transactions,

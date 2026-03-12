@@ -9,12 +9,14 @@ class AutoItemTile extends StatelessWidget {
   final AutoTransactionItem item;
   final VoidCallback onTap;
   final ValueChanged<bool> onToggle;
+  final VoidCallback? onLongPress;
 
   const AutoItemTile({
     super.key,
     required this.item,
     required this.onTap,
     required this.onToggle,
+    this.onLongPress,
   });
 
   @override
@@ -27,6 +29,7 @@ class AutoItemTile extends StatelessWidget {
 
     return ListTile(
       onTap: onTap,
+      onLongPress: onLongPress,
       leading: ReorderableDragStartListener(
         index: item.sortOrder,
         child: const Icon(Icons.drag_handle),

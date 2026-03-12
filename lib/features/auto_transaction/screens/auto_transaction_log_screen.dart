@@ -3,11 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bloc.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_log.dart';
 import 'package:ikuyo_finance/features/auto_transaction/widgets/auto_log_tile.dart';
+import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
+import 'package:intl/intl.dart';
 
 class AutoTransactionLogScreen extends StatefulWidget {
   final AutoTransactionGroup group;
@@ -28,22 +32,71 @@ class _AutoTransactionLogScreenState extends State<AutoTransactionLogScreen> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AutoTransactionBloc, AutoTransactionState>(
-      builder: (context, state) {
-        return Scaffold(
-          appBar: AppBar(
-            title: AppText(
-              LocaleKeys.autoTransactionLogTitle.tr(),
-              style: AppTextStyle.titleLarge,
-              fontWeight: FontWeight.bold,
-            ),
-            centerTitle: true,
-          ),
-          body: ScreenWrapper(child: _buildBody(context, state)),
+  void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+
+    if (state.writeStatus == AutoTransactionWriteStatus.success) {
+      ToastHelper.instance.showSuccess(
+        context: context,
+        title: state.writeSuccessMessage ?? 'Berhasil dihapus',
+      );
+      context.read<AutoTransactionBloc>().add(const AutoWriteStatusReset());
+    } else if (state.writeStatus == AutoTransactionWriteStatus.failure) {
+      ToastHelper.instance.showError(
+        context: context,
+        title:
+            state.writeErrorMessage ??
+            LocaleKeys.autoTransactionScreenErrorOccurred.tr(),
+      );
+      context.read<AutoTransactionBloc>().add(const AutoWriteStatusReset());
+    }
+  }
+
+  void _openBatchDeleteDialog(
+    BuildContext context,
+    List<AutoTransactionLog> logs,
+    AutoTransactionLog initialSelected,
+  ) {
+    AppBatchDeleteDialog.show<AutoTransactionLog>(
+      context: context,
+      title: 'Hapus Log',
+      items: logs,
+      getId: (l) => l.ulid,
+      searchStringOf: (l) =>
+          DateFormat('dd MMM yyyy HH:mm').format(l.scheduledAt),
+      initialSelectedId: initialSelected.ulid,
+      searchHint: 'Cari log...',
+      itemBuilder: (log, isSelected, onToggle) =>
+          AutoLogTile(log: log, onLongPress: onToggle),
+      onDelete: (selected) {
+        final ulids = selected.map((l) => l.ulid).toList();
+        context.read<AutoTransactionBloc>().add(
+          AutoLogBatchDeleted(ulids: ulids),
         );
       },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AutoTransactionBloc, AutoTransactionState>(
+      listenWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
+      listener: _handleWriteStatus,
+      child: BlocBuilder<AutoTransactionBloc, AutoTransactionState>(
+        builder: (context, state) {
+          return Scaffold(
+            appBar: AppBar(
+              title: AppText(
+                LocaleKeys.autoTransactionLogTitle.tr(),
+                style: AppTextStyle.titleLarge,
+                fontWeight: FontWeight.bold,
+              ),
+              centerTitle: true,
+            ),
+            body: ScreenWrapper(child: _buildBody(context, state)),
+          );
+        },
+      ),
     );
   }
 
@@ -76,8 +129,14 @@ class _AutoTransactionLogScreenState extends State<AutoTransactionLogScreen> {
 
     return ListView.builder(
       itemCount: state.currentLogs.length,
-      itemBuilder: (context, index) =>
-          AutoLogTile(log: state.currentLogs[index]),
+      itemBuilder: (context, index) {
+        final log = state.currentLogs[index];
+        return AutoLogTile(
+          log: log,
+          onLongPress: () =>
+              _openBatchDeleteDialog(context, state.currentLogs, log),
+        );
+      },
     );
   }
 }

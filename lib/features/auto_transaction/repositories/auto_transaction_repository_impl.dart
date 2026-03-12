@@ -670,4 +670,30 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
       },
     );
   }
+
+  @override
+  TaskEither<Failure, ActionSuccess> deleteLog({required String ulid}) {
+    return TaskEither.tryCatch(
+      () async {
+        logService('Hapus auto transaction log', 'ulid: $ulid');
+
+        final log = _logBox
+            .query(AutoTransactionLog_.ulid.equals(ulid))
+            .build()
+            .findFirst();
+
+        if (log == null) {
+          throw Exception('Log tidak ditemukan');
+        }
+
+        _logBox.remove(log.id);
+        logInfo('Auto transaction log berhasil dihapus: $ulid');
+        return const ActionSuccess(message: 'Log berhasil dihapus');
+      },
+      (error, stackTrace) {
+        logError('Gagal hapus auto transaction log', error, stackTrace);
+        return Failure(message: error.toString());
+      },
+    );
+  }
 }

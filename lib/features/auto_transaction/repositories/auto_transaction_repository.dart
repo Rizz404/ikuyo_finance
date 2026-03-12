@@ -71,4 +71,5 @@ abstract class AutoTransactionRepository {
   TaskEither<Failure, Success<List<AutoTransactionLog>>> getLogsByGroup({
     required String groupUlid,
   });
+  TaskEither<Failure, ActionSuccess> deleteLog({required String ulid});
 }

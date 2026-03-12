@@ -14,6 +14,7 @@ class AutoGroupTile extends StatelessWidget {
   final ValueChanged<bool> onToggle;
   final VoidCallback onItemsTap;
   final VoidCallback onLogTap;
+  final VoidCallback? onLongPress;
 
   const AutoGroupTile({
     super.key,
@@ -22,6 +23,7 @@ class AutoGroupTile extends StatelessWidget {
     required this.onToggle,
     required this.onItemsTap,
     required this.onLogTap,
+    this.onLongPress,
   });
 
   bool get _isSingleItem => group.items.length == 1;
@@ -34,6 +36,7 @@ class AutoGroupTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
+      onLongPress: onLongPress,
       child: Stack(
         children: [
           Container(

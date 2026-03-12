@@ -22,6 +22,7 @@ class AutoTransactionBloc
     on<AutoGroupCreated>(_onGroupCreated);
     on<AutoGroupUpdated>(_onGroupUpdated);
     on<AutoGroupDeleted>(_onGroupDeleted);
+    on<AutoGroupBatchDeleted>(_onGroupBatchDeleted);
     on<AutoGroupToggled>(_onGroupToggled);
     on<AutoGroupPaused>(_onGroupPaused);
     on<AutoGroupResumed>(_onGroupResumed);
@@ -36,10 +37,14 @@ class AutoTransactionBloc
     on<AutoItemCreated>(_onItemCreated);
     on<AutoItemUpdated>(_onItemUpdated);
     on<AutoItemDeleted>(_onItemDeleted);
+    on<AutoItemBatchDeleted>(_onItemBatchDeleted);
     on<AutoItemReordered>(_onItemReordered);
 
     // * Log read
     on<AutoLogsFetched>(_onLogsFetched);
+
+    // * Log write
+    on<AutoLogBatchDeleted>(_onLogBatchDeleted);
 
     // * Reset
     on<AutoWriteStatusReset>(_onWriteStatusReset);
@@ -514,6 +519,111 @@ class AutoTransactionBloc
           currentLogs: success.data ?? [],
           errorMessage: () => null,
         ),
+      ),
+    );
+  }
+
+  // ─── Batch delete ─────────────────────────────────────────────────────────
+
+  Future<void> _onGroupBatchDeleted(
+    AutoGroupBatchDeleted event,
+    Emitter<AutoTransactionState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
+
+    final results = await Future.wait(
+      event.ulids.map((ulid) => _repo.deleteGroup(ulid: ulid).run()),
+    );
+
+    final deleted = <String>[];
+    String? errorMsg;
+    for (var i = 0; i < event.ulids.length; i++) {
+      results[i].fold(
+        (failure) => errorMsg = failure.message,
+        (_) => deleted.add(event.ulids[i]),
+      );
+    }
+
+    emit(
+      state.copyWith(
+        writeStatus: deleted.length == event.ulids.length
+            ? AutoTransactionWriteStatus.success
+            : AutoTransactionWriteStatus.failure,
+        writeSuccessMessage: deleted.isNotEmpty
+            ? () => '${deleted.length} group berhasil dihapus'
+            : null,
+        writeErrorMessage: errorMsg != null ? () => errorMsg : null,
+        groups: state.groups.where((g) => !deleted.contains(g.ulid)).toList(),
+      ),
+    );
+  }
+
+  Future<void> _onItemBatchDeleted(
+    AutoItemBatchDeleted event,
+    Emitter<AutoTransactionState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
+
+    final results = await Future.wait(
+      event.ulids.map((ulid) => _repo.deleteItem(ulid: ulid).run()),
+    );
+
+    final deleted = <String>[];
+    String? errorMsg;
+    for (var i = 0; i < event.ulids.length; i++) {
+      results[i].fold(
+        (failure) => errorMsg = failure.message,
+        (_) => deleted.add(event.ulids[i]),
+      );
+    }
+
+    emit(
+      state.copyWith(
+        writeStatus: deleted.length == event.ulids.length
+            ? AutoTransactionWriteStatus.success
+            : AutoTransactionWriteStatus.failure,
+        writeSuccessMessage: deleted.isNotEmpty
+            ? () => '${deleted.length} item berhasil dihapus'
+            : null,
+        writeErrorMessage: errorMsg != null ? () => errorMsg : null,
+        currentItems: state.currentItems
+            .where((i) => !deleted.contains(i.ulid))
+            .toList(),
+      ),
+    );
+  }
+
+  Future<void> _onLogBatchDeleted(
+    AutoLogBatchDeleted event,
+    Emitter<AutoTransactionState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
+
+    final results = await Future.wait(
+      event.ulids.map((ulid) => _repo.deleteLog(ulid: ulid).run()),
+    );
+
+    final deleted = <String>[];
+    String? errorMsg;
+    for (var i = 0; i < event.ulids.length; i++) {
+      results[i].fold(
+        (failure) => errorMsg = failure.message,
+        (_) => deleted.add(event.ulids[i]),
+      );
+    }
+
+    emit(
+      state.copyWith(
+        writeStatus: deleted.length == event.ulids.length
+            ? AutoTransactionWriteStatus.success
+            : AutoTransactionWriteStatus.failure,
+        writeSuccessMessage: deleted.isNotEmpty
+            ? () => '${deleted.length} log berhasil dihapus'
+            : null,
+        writeErrorMessage: errorMsg != null ? () => errorMsg : null,
+        currentLogs: state.currentLogs
+            .where((l) => !deleted.contains(l.ulid))
+            .toList(),
       ),
     );
   }

@@ -38,6 +38,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     on<TransactionBulkCreated>(_onTransactionBulkCreated);
     on<TransactionUpdated>(_onTransactionUpdated);
     on<TransactionDeleted>(_onTransactionDeleted);
+    on<TransactionBatchDeleted>(_onTransactionBatchDeleted);
     on<TransactionWriteStatusReset>(_onWriteStatusReset);
   }
 
@@ -665,6 +666,44 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
               .where((transaction) => transaction.ulid != event.ulid)
               .toList(),
         ),
+      ),
+    );
+  }
+
+  // * Batch delete transactions by ulids
+  Future<void> _onTransactionBatchDeleted(
+    TransactionBatchDeleted event,
+    Emitter<TransactionState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: TransactionWriteStatus.loading));
+
+    final results = await Future.wait(
+      event.ulids.map(
+        (ulid) => _transactionRepository.deleteTransaction(ulid: ulid).run(),
+      ),
+    );
+
+    final deleted = <String>[];
+    String? errorMsg;
+    for (var i = 0; i < event.ulids.length; i++) {
+      results[i].fold(
+        (failure) => errorMsg = failure.message,
+        (_) => deleted.add(event.ulids[i]),
+      );
+    }
+
+    emit(
+      state.copyWith(
+        writeStatus: deleted.length == event.ulids.length
+            ? TransactionWriteStatus.success
+            : TransactionWriteStatus.failure,
+        writeSuccessMessage: deleted.isNotEmpty
+            ? () => '${deleted.length} transaksi berhasil dihapus'
+            : null,
+        writeErrorMessage: errorMsg != null ? () => errorMsg : null,
+        transactions: state.transactions
+            .where((t) => !deleted.contains(t.ulid))
+            .toList(),
       ),
     );
   }

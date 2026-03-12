@@ -119,6 +119,12 @@ final class TransactionDeleted extends TransactionEvent {
   final String ulid;
 }
 
+final class TransactionBatchDeleted extends TransactionEvent {
+  const TransactionBatchDeleted({required this.ulids});
+
+  final List<String> ulids;
+}
+
 // * Reset write status setelah UI handle
 final class TransactionWriteStatusReset extends TransactionEvent {
   const TransactionWriteStatusReset();

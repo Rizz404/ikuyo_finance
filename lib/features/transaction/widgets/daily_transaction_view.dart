@@ -18,6 +18,7 @@ class DailyTransactionView extends StatefulWidget {
   final VoidCallback onLoadMore;
   final bool hasReachedMax;
   final bool isLoadingMore;
+  final void Function(Transaction)? onTransactionLongPress;
 
   const DailyTransactionView({
     super.key,
@@ -26,6 +27,7 @@ class DailyTransactionView extends StatefulWidget {
     required this.onLoadMore,
     this.hasReachedMax = false,
     this.isLoadingMore = false,
+    this.onTransactionLongPress,
   });
 
   @override
@@ -175,7 +177,12 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
         ),
         // * Transaction items
         ...transactions.map(
-          (transaction) => TransactionTile(transaction: transaction),
+          (transaction) => TransactionTile(
+            transaction: transaction,
+            onLongPress: widget.onTransactionLongPress != null
+                ? () => widget.onTransactionLongPress!(transaction)
+                : null,
+          ),
         ),
         const SizedBox(height: 16),
       ],
