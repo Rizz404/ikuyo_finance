@@ -17,6 +17,7 @@ import 'package:ikuyo_finance/shared/widgets/app_file_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class BackupScreen extends StatefulWidget {
@@ -46,16 +47,60 @@ class _BackupScreenState extends State<BackupScreen> {
       if (mounted) setState(() => _exportDirectory = saved);
       return;
     }
-    final dir = await getApplicationDocumentsDirectory();
-    if (mounted) setState(() => _exportDirectory = dir.path);
+    final dir = await _resolveDefaultDirectory();
+    if (mounted) setState(() => _exportDirectory = dir);
+  }
+
+  Future<String> _resolveDefaultDirectory() async {
+    try {
+      // * Prefer external app-specific directory (visible in file manager, no special permission needed)
+      final external = await getExternalStorageDirectory();
+      if (external != null) return external.path;
+    } catch (_) {}
+    final internal = await getApplicationDocumentsDirectory();
+    return internal.path;
   }
 
   Future<void> _pickExportDirectory() async {
+    // * On Android 11+, MANAGE_EXTERNAL_STORAGE is required to write
+    // * to user-chosen directories outside the app sandbox.
+    if (Platform.isAndroid) {
+      final status = await Permission.manageExternalStorage.status;
+      if (!status.isGranted) {
+        final requested = await Permission.manageExternalStorage.request();
+        if (!requested.isGranted && mounted) {
+          ToastHelper.instance.showError(
+            context: context,
+            title: 'Izin diperlukan',
+            description:
+                'Izin akses semua file diperlukan untuk menyimpan ke direktori yang dipilih.',
+          );
+          return;
+        }
+      }
+    }
+
     final result = await FilePicker.platform.getDirectoryPath(
       dialogTitle: 'Pilih direktori ekspor',
       initialDirectory: _exportDirectory.isNotEmpty ? _exportDirectory : null,
     );
     if (result == null || !mounted) return;
+
+    // * Validate that the picked directory is actually writable
+    final testFile = File('$result/.ikuyo_test');
+    try {
+      await testFile.writeAsString('');
+      await testFile.delete();
+    } catch (_) {
+      if (!mounted) return;
+      ToastHelper.instance.showError(
+        context: context,
+        title: 'Tidak bisa diakses',
+        description: 'Direktori ini tidak dapat ditulis. Pilih direktori lain.',
+      );
+      return;
+    }
+
     setState(() => _exportDirectory = result);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_exportDirPrefKey, result);
@@ -180,10 +225,15 @@ class _BackupScreenState extends State<BackupScreen> {
     try {
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final fileName = 'ikuyo_backup_$timestamp.json';
-      final filePath = '$_exportDirectory/$fileName';
 
-      final file = File(filePath);
-      await file.writeAsString(backupData.toJsonString());
+      // * Ensure the target directory exists
+      final dir = Directory(_exportDirectory);
+      if (!await dir.exists()) {
+        await dir.create(recursive: true);
+      }
+
+      final filePath = '$_exportDirectory/$fileName';
+      await File(filePath).writeAsString(backupData.toJsonString());
 
       if (!mounted) return;
       ToastHelper.instance.showSuccess(
@@ -194,14 +244,37 @@ class _BackupScreenState extends State<BackupScreen> {
         ),
       );
     } catch (e) {
-      if (!mounted) return;
-      ToastHelper.instance.showError(
-        context: context,
-        title: LocaleKeys.backupScreenError.tr(),
-        description: LocaleKeys.backupScreenSaveFileFailed.tr(
-          namedArgs: {'error': e.toString()},
-        ),
-      );
+      // * If the selected directory is not writable, fall back to internal storage
+      try {
+        final fallbackDir = await getApplicationDocumentsDirectory();
+        final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+        final fileName = 'ikuyo_backup_$timestamp.json';
+        final filePath = '${fallbackDir.path}/$fileName';
+        await File(filePath).writeAsString(backupData.toJsonString());
+
+        if (!mounted) return;
+        // * Reset saved directory to fallback so next export works
+        setState(() => _exportDirectory = fallbackDir.path);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_exportDirPrefKey, fallbackDir.path);
+
+        ToastHelper.instance.showSuccess(
+          context: context,
+          title: LocaleKeys.backupScreenSuccess.tr(),
+          description: LocaleKeys.backupScreenBackupSavedTo.tr(
+            namedArgs: {'path': filePath},
+          ),
+        );
+      } catch (fallbackError) {
+        if (!mounted) return;
+        ToastHelper.instance.showError(
+          context: context,
+          title: LocaleKeys.backupScreenError.tr(),
+          description: LocaleKeys.backupScreenSaveFileFailed.tr(
+            namedArgs: {'error': fallbackError.toString()},
+          ),
+        );
+      }
     }
   }
 
