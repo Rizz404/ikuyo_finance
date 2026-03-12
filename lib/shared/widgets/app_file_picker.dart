@@ -26,6 +26,7 @@ class AppFilePicker extends StatefulWidget {
   final String? Function(List<PlatformFile>?)? validator;
   final List<PlatformFile>? initialFiles;
   final FileType fileType;
+  final ValueChanged<List<PlatformFile>?>? onChanged;
 
   const AppFilePicker({
     super.key,
@@ -40,6 +41,7 @@ class AppFilePicker extends StatefulWidget {
     this.validator,
     this.initialFiles,
     this.fileType = FileType.any,
+    this.onChanged,
   });
 
   @override
@@ -48,6 +50,7 @@ class AppFilePicker extends StatefulWidget {
 
 class AppFilePickerState extends State<AppFilePicker> {
   List<PlatformFile> _selectedFiles = [];
+  bool _isPickerActive = false;
 
   @override
   void initState() {
@@ -58,6 +61,8 @@ class AppFilePickerState extends State<AppFilePicker> {
   }
 
   Future<void> _pickFiles() async {
+    if (_isPickerActive) return;
+    _isPickerActive = true;
     try {
       // * Only use allowedExtensions with FileType.custom
       final result = await FilePicker.platform.pickFiles(
@@ -115,6 +120,7 @@ class AppFilePickerState extends State<AppFilePicker> {
           return;
         }
         FormBuilder.of(context)?.fields[widget.name]?.didChange(_selectedFiles);
+        widget.onChanged?.call(_selectedFiles);
         logData('Files selected: ${_selectedFiles.length}');
       }
     } catch (e, s) {
@@ -125,19 +131,21 @@ class AppFilePickerState extends State<AppFilePicker> {
         title: LocaleKeys.sharedWidgetsFilePickerPickFailed.tr(),
         description: e.toString(),
       );
+    } finally {
+      _isPickerActive = false;
     }
   }
 
   void _removeFile(int index) {
-    setState(() {
-      _selectedFiles.removeAt(index);
-      FormBuilder.of(context)?.fields[widget.name]?.didChange(_selectedFiles);
-    });
+    setState(() => _selectedFiles.removeAt(index));
+    FormBuilder.of(context)?.fields[widget.name]?.didChange(_selectedFiles);
+    widget.onChanged?.call(_selectedFiles);
   }
 
   void reset() {
     setState(() => _selectedFiles = []);
     FormBuilder.of(context)?.fields[widget.name]?.didChange(_selectedFiles);
+    widget.onChanged?.call(_selectedFiles);
   }
 
   void _previewFile(PlatformFile file) {

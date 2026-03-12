@@ -12,6 +12,7 @@ import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
+import 'package:ikuyo_finance/shared/widgets/app_file_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 import 'package:path_provider/path_provider.dart';
@@ -24,6 +25,8 @@ class BackupScreen extends StatefulWidget {
 }
 
 class _BackupScreenState extends State<BackupScreen> {
+  List<PlatformFile> _importFiles = [];
+
   @override
   void initState() {
     super.initState();
@@ -36,17 +39,9 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _handleImport() async {
+    if (_importFiles.isEmpty) return;
     try {
-      // * Pick JSON file
-      final result = await FilePicker.platform.pickFiles(
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-        allowMultiple: false,
-      );
-
-      if (result == null || result.files.isEmpty) return;
-
-      final file = File(result.files.single.path!);
+      final file = File(_importFiles.first.path!);
       final jsonString = await file.readAsString();
 
       // * Parse backup data
@@ -233,7 +228,8 @@ class _BackupScreenState extends State<BackupScreen> {
             // * Export success - save file
             _saveExportedFile(state.exportedData!);
           } else {
-            // * Import success
+            // * Import success - reset selected file
+            setState(() => _importFiles = []);
             ToastHelper.instance.showSuccess(
               context: context,
               title: LocaleKeys.backupScreenSuccess.tr(),
@@ -385,15 +381,7 @@ class _BackupScreenState extends State<BackupScreen> {
                 const SizedBox(height: 16),
 
                 // * Import Section
-                _buildActionCard(
-                  icon: Icons.cloud_download_outlined,
-                  title: LocaleKeys.backupScreenImportTitle.tr(),
-                  description: LocaleKeys.backupScreenImportDescription.tr(),
-                  buttonText: LocaleKeys.backupScreenImportButton.tr(),
-                  buttonColor: AppButtonColor.secondary,
-                  onPressed: _handleImport,
-                  isWarning: true,
-                ),
+                _buildImportCard(),
                 const SizedBox(height: 24),
 
                 // * Auto Backup Schedule Section
@@ -418,6 +406,77 @@ class _BackupScreenState extends State<BackupScreen> {
           fontWeight: FontWeight.bold,
         ),
       ],
+    );
+  }
+
+  Widget _buildImportCard() {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: context.semantic.warning.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.cloud_download_outlined,
+                  color: context.semantic.warning,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppText(
+                  LocaleKeys.backupScreenImportTitle.tr(),
+                  style: AppTextStyle.titleSmall,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          AppText(
+            LocaleKeys.backupScreenImportDescription.tr(),
+            style: AppTextStyle.bodySmall,
+            color: colors.textSecondary,
+          ),
+          const SizedBox(height: 16),
+          AppFilePicker(
+            name: 'import_backup',
+            fileType: FileType.custom,
+            allowedExtensions: const ['json'],
+            maxFiles: 1,
+            hintText: 'Choose backup file (.json)',
+            onChanged: (files) => setState(() => _importFiles = files ?? []),
+          ),
+          const SizedBox(height: 12),
+          BlocBuilder<BackupBloc, BackupState>(
+            builder: (context, state) {
+              return AppButton(
+                text: LocaleKeys.backupScreenImportButton.tr(),
+                color: AppButtonColor.secondary,
+                isLoading: state.status == BackupStatus.loading,
+                onPressed:
+                    (state.status == BackupStatus.loading ||
+                        _importFiles.isEmpty)
+                    ? null
+                    : _handleImport,
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 
