@@ -472,6 +472,8 @@ abstract class LocaleKeys {
   static const otherScreenPassword = 'other.screen.password';
   static const otherScreenBackup = 'other.screen.backup';
   static const otherScreenHelp = 'other.screen.help';
+  static const otherScreenBrandTagline = 'other.screen.brandTagline';
+  static const otherScreenBrandSubtitle = 'other.screen.brandSubtitle';
 
   // * Other — Setting
   static const otherSettingTitle = 'other.setting.title';

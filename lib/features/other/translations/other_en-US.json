@@ -9,7 +9,9 @@
       "manageCategories": "Manage Categories",
       "password": "Password",
       "backup": "Backup",
-      "help": "Help"
+      "help": "Help",
+      "brandTagline": "Smart Personal Finance",
+      "brandSubtitle": "Track, manage, and grow your finances with ease."
     },
     "setting": {
       "title": "Settings",

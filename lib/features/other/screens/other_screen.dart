@@ -42,6 +42,22 @@ class OtherScreen extends StatelessWidget {
                 fit: BoxFit.cover,
                 showBorder: false,
               ),
+              const SizedBox(height: 16),
+              Text(
+                LocaleKeys.otherScreenBrandTagline.tr(),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                LocaleKeys.otherScreenBrandSubtitle.tr(),
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colors.surface.withValues(alpha: 0.6),
+                ),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 32),
 
               // * Settings Grid
