@@ -11,8 +11,14 @@ import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 class CategoryCard extends StatelessWidget {
   final Category category;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
-  const CategoryCard({super.key, required this.category, this.onTap});
+  const CategoryCard({
+    super.key,
+    required this.category,
+    this.onTap,
+    this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +27,7 @@ class CategoryCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap ?? () => context.pushToEditCategory(category),
+      onLongPress: onLongPress,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

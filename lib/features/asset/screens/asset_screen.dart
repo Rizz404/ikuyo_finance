@@ -4,9 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
+import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/widgets/asset_card.dart';
 import 'package:ikuyo_finance/features/asset/widgets/asset_filter_sheet.dart';
+import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
@@ -35,7 +38,23 @@ class _AssetScreenState extends State<AssetScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AssetBloc, AssetState>(
+    return BlocConsumer<AssetBloc, AssetState>(
+      listenWhen: (prev, curr) => curr.writeStatus != prev.writeStatus,
+      listener: (context, state) {
+        if (state.writeStatus == AssetWriteStatus.success) {
+          ToastHelper.instance.showSuccess(
+            context: context,
+            title: state.writeSuccessMessage ?? 'Berhasil dihapus',
+          );
+          context.read<AssetBloc>().add(const AssetWriteStatusReset());
+        } else if (state.writeStatus == AssetWriteStatus.failure) {
+          ToastHelper.instance.showError(
+            context: context,
+            title: state.writeErrorMessage ?? 'Gagal menghapus',
+          );
+          context.read<AssetBloc>().add(const AssetWriteStatusReset());
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
@@ -149,9 +168,35 @@ class _AssetScreenState extends State<AssetScreen>
         separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final asset = state.assets[index];
-          return AssetCard(asset: asset);
+          return AssetCard(
+            asset: asset,
+            onLongPress: () =>
+                _openBatchDeleteDialog(context, state.assets, asset),
+          );
         },
       ),
+    );
+  }
+
+  void _openBatchDeleteDialog(
+    BuildContext context,
+    List<Asset> assets,
+    Asset initialSelected,
+  ) {
+    AppBatchDeleteDialog.show<Asset>(
+      context: context,
+      title: 'Hapus Aset',
+      items: assets,
+      getId: (a) => a.ulid,
+      searchStringOf: (a) => a.name,
+      initialSelectedId: initialSelected.ulid,
+      searchHint: 'Cari aset...',
+      itemBuilder: (asset, isSelected, onToggle) =>
+          AssetCard(asset: asset, onTap: onToggle),
+      onDelete: (selected) {
+        final ulids = selected.map((a) => a.ulid).toList();
+        context.read<AssetBloc>().add(AssetBatchDeleted(ulids: ulids));
+      },
     );
   }
 

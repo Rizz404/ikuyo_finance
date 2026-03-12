@@ -35,6 +35,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     on<AssetCreated>(_onAssetCreated);
     on<AssetUpdated>(_onAssetUpdated);
     on<AssetDeleted>(_onAssetDeleted);
+    on<AssetBatchDeleted>(_onAssetBatchDeleted);
     on<AssetWriteStatusReset>(_onWriteStatusReset);
   }
 
@@ -443,6 +444,40 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
               .where((asset) => asset.ulid != event.ulid)
               .toList(),
         ),
+      ),
+    );
+  }
+
+  // * Batch delete assets by ulids
+  Future<void> _onAssetBatchDeleted(
+    AssetBatchDeleted event,
+    Emitter<AssetState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: AssetWriteStatus.loading));
+
+    final results = await Future.wait(
+      event.ulids.map((ulid) => _assetRepository.deleteAsset(ulid: ulid).run()),
+    );
+
+    final deleted = <String>[];
+    String? errorMsg;
+    for (var i = 0; i < event.ulids.length; i++) {
+      results[i].fold(
+        (failure) => errorMsg = failure.message,
+        (_) => deleted.add(event.ulids[i]),
+      );
+    }
+
+    emit(
+      state.copyWith(
+        writeStatus: deleted.length == event.ulids.length
+            ? AssetWriteStatus.success
+            : AssetWriteStatus.failure,
+        writeSuccessMessage: deleted.isNotEmpty
+            ? () => '${deleted.length} aset berhasil dihapus'
+            : null,
+        writeErrorMessage: errorMsg != null ? () => errorMsg : null,
+        assets: state.assets.where((a) => !deleted.contains(a.ulid)).toList(),
       ),
     );
   }

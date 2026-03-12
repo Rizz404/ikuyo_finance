@@ -4,10 +4,12 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/widgets/category_card.dart';
 import 'package:ikuyo_finance/features/category/widgets/category_filter_sheet.dart';
+import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
@@ -55,7 +57,23 @@ class _CategoryScreenState extends State<CategoryScreen>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<CategoryBloc, CategoryState>(
+    return BlocConsumer<CategoryBloc, CategoryState>(
+      listenWhen: (prev, curr) => curr.writeStatus != prev.writeStatus,
+      listener: (context, state) {
+        if (state.writeStatus == CategoryWriteStatus.success) {
+          ToastHelper.instance.showSuccess(
+            context: context,
+            title: state.writeSuccessMessage ?? 'Berhasil dihapus',
+          );
+          context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
+        } else if (state.writeStatus == CategoryWriteStatus.failure) {
+          ToastHelper.instance.showError(
+            context: context,
+            title: state.writeErrorMessage ?? 'Gagal menghapus',
+          );
+          context.read<CategoryBloc>().add(const CategoryWriteStatusReset());
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
@@ -167,9 +185,35 @@ class _CategoryScreenState extends State<CategoryScreen>
         itemCount: state.categories.length,
         itemBuilder: (context, index) {
           final category = state.categories[index];
-          return CategoryCard(category: category);
+          return CategoryCard(
+            category: category,
+            onLongPress: () =>
+                _openBatchDeleteDialog(context, state.categories, category),
+          );
         },
       ),
+    );
+  }
+
+  void _openBatchDeleteDialog(
+    BuildContext context,
+    List<Category> categories,
+    Category initialSelected,
+  ) {
+    AppBatchDeleteDialog.show<Category>(
+      context: context,
+      title: 'Hapus Kategori',
+      items: categories,
+      getId: (c) => c.ulid,
+      searchStringOf: (c) => c.name,
+      initialSelectedId: initialSelected.ulid,
+      searchHint: 'Cari kategori...',
+      itemBuilder: (category, isSelected, onToggle) =>
+          CategoryCard(category: category, onTap: onToggle),
+      onDelete: (selected) {
+        final ulids = selected.map((c) => c.ulid).toList();
+        context.read<CategoryBloc>().add(CategoryBatchDeleted(ulids: ulids));
+      },
     );
   }
 

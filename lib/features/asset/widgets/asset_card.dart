@@ -12,8 +12,14 @@ import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 class AssetCard extends StatelessWidget {
   final Asset asset;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
 
-  const AssetCard({super.key, required this.asset, this.onTap});
+  const AssetCard({
+    super.key,
+    required this.asset,
+    this.onTap,
+    this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +29,7 @@ class AssetCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap ?? () => context.pushToEditAsset(asset),
+      onLongPress: onLongPress,
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(

@@ -35,6 +35,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     on<CategoryCreated>(_onCategoryCreated);
     on<CategoryUpdated>(_onCategoryUpdated);
     on<CategoryDeleted>(_onCategoryDeleted);
+    on<CategoryBatchDeleted>(_onCategoryBatchDeleted);
     on<CategoryWriteStatusReset>(_onWriteStatusReset);
 
     // * Parent categories event
@@ -449,6 +450,44 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
               .where((cat) => cat.ulid != event.ulid)
               .toList(),
         ),
+      ),
+    );
+  }
+
+  // * Batch delete categories by ulids
+  Future<void> _onCategoryBatchDeleted(
+    CategoryBatchDeleted event,
+    Emitter<CategoryState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: CategoryWriteStatus.loading));
+
+    final results = await Future.wait(
+      event.ulids.map(
+        (ulid) => _categoryRepository.deleteCategory(ulid: ulid).run(),
+      ),
+    );
+
+    final deleted = <String>[];
+    String? errorMsg;
+    for (var i = 0; i < event.ulids.length; i++) {
+      results[i].fold(
+        (failure) => errorMsg = failure.message,
+        (_) => deleted.add(event.ulids[i]),
+      );
+    }
+
+    emit(
+      state.copyWith(
+        writeStatus: deleted.length == event.ulids.length
+            ? CategoryWriteStatus.success
+            : CategoryWriteStatus.failure,
+        writeSuccessMessage: deleted.isNotEmpty
+            ? () => '${deleted.length} kategori berhasil dihapus'
+            : null,
+        writeErrorMessage: errorMsg != null ? () => errorMsg : null,
+        categories: state.categories
+            .where((c) => !deleted.contains(c.ulid))
+            .toList(),
       ),
     );
   }

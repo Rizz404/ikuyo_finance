@@ -82,6 +82,12 @@ final class AssetDeleted extends AssetEvent {
   final String ulid;
 }
 
+final class AssetBatchDeleted extends AssetEvent {
+  const AssetBatchDeleted({required this.ulids});
+
+  final List<String> ulids;
+}
+
 // * Reset write status setelah UI handle
 final class AssetWriteStatusReset extends AssetEvent {
   const AssetWriteStatusReset();

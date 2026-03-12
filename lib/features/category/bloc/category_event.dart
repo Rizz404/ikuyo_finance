@@ -82,6 +82,12 @@ final class CategoryDeleted extends CategoryEvent {
   final String ulid;
 }
 
+final class CategoryBatchDeleted extends CategoryEvent {
+  const CategoryBatchDeleted({required this.ulids});
+
+  final List<String> ulids;
+}
+
 // * Reset write status setelah UI handle
 final class CategoryWriteStatusReset extends CategoryEvent {
   const CategoryWriteStatusReset();
