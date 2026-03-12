@@ -1,1 +1,1 @@
-enum AutoScheduleFrequency { daily, weekly, monthly, yearly }
+enum AutoScheduleFrequency { daily, everyNDays, weekly, monthly, yearly }

@@ -56,6 +56,19 @@ class CreateAutoGroupValidator {
     return null;
   }
 
+  static String? intervalDays(String? value, AutoScheduleFrequency frequency) {
+    if (frequency == AutoScheduleFrequency.everyNDays) {
+      if (value == null || value.trim().isEmpty) {
+        return LocaleKeys.autoTransactionValidatorIntervalDaysRequired.tr();
+      }
+      final parsed = int.tryParse(value.trim());
+      if (parsed == null || parsed < 1) {
+        return LocaleKeys.autoTransactionValidatorIntervalDaysInvalid.tr();
+      }
+    }
+    return null;
+  }
+
   static String? startDate(DateTime? value) {
     if (value == null) {
       return LocaleKeys.autoTransactionValidatorStartDateRequired.tr();

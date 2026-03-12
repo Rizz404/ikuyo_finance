@@ -241,7 +241,7 @@
     },
     {
       "id": "6:1819148253403484607",
-      "lastPropertyId": "20:972203873915686380",
+      "lastPropertyId": "22:6650204367973282538",
       "name": "AutoTransactionGroup",
       "properties": [
         {
@@ -346,6 +346,16 @@
           "id": "20:972203873915686380",
           "name": "updatedAt",
           "type": 10
+        },
+        {
+          "id": "21:5041171992777948423",
+          "name": "intervalDays",
+          "type": 6
+        },
+        {
+          "id": "22:6650204367973282538",
+          "name": "activeDaysMask",
+          "type": 6
         }
       ],
       "relations": []

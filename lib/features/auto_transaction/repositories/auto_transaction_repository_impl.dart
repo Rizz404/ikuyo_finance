@@ -66,6 +66,8 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
           dayOfWeek: params.dayOfWeek,
           dayOfMonth: params.dayOfMonth,
           monthOfYear: params.monthOfYear,
+          intervalDays: params.intervalDays,
+          activeDaysMask: params.activeDaysMask,
           startDate: params.startDate,
           endDate: params.endDate,
         );
@@ -143,6 +145,10 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
         if (params.monthOfYear != null) {
           group.monthOfYear = params.monthOfYear!();
         }
+        if (params.intervalDays != null)
+          group.intervalDays = params.intervalDays!;
+        if (params.activeDaysMask != null)
+          group.activeDaysMask = params.activeDaysMask!;
         if (params.startDate != null) group.startDate = params.startDate!;
         if (params.endDate != null) group.endDate = params.endDate!();
         if (params.isActive != null) group.isActive = params.isActive!;
@@ -155,6 +161,8 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
             params.dayOfWeek != null ||
             params.dayOfMonth != null ||
             params.monthOfYear != null ||
+            params.intervalDays != null ||
+            params.activeDaysMask != null ||
             params.startDate != null;
         if (scheduleChanged) {
           group.nextExecutedAt = AutoScheduleCalculator.calculateFirst(group);

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_frequency.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -323,10 +324,23 @@ class AutoGroupTile extends StatelessWidget {
   }
 
   String _scheduleLabel() {
-    final freq = group.scheduleFrequency.name;
     final time =
         '${group.scheduleHour.toString().padLeft(2, '0')}:${group.scheduleMinute.toString().padLeft(2, '0')}';
-    return '$freq · $time';
+    final freqLabel = switch (group.scheduleFrequency) {
+      AutoScheduleFrequency.daily =>
+        LocaleKeys.autoTransactionFrequencyDaily.tr(),
+      AutoScheduleFrequency.everyNDays =>
+        LocaleKeys.autoTransactionTileEveryNDays.tr(
+          namedArgs: {'n': group.intervalDays.toString()},
+        ),
+      AutoScheduleFrequency.weekly =>
+        LocaleKeys.autoTransactionFrequencyWeekly.tr(),
+      AutoScheduleFrequency.monthly =>
+        LocaleKeys.autoTransactionFrequencyMonthly.tr(),
+      AutoScheduleFrequency.yearly =>
+        LocaleKeys.autoTransactionFrequencyYearly.tr(),
+    };
+    return '$freqLabel · $time';
   }
 
   String? _pauseNote(bool isPaused) {

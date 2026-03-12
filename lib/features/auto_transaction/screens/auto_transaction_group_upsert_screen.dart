@@ -53,6 +53,19 @@ class _AutoTransactionGroupUpsertScreenState
     }
   }
 
+  static List<int> _maskToDays(int mask) {
+    if (mask == 0) return [];
+    return [
+      for (int i = 0; i < 7; i++)
+        if ((mask >> i) & 1 == 1) i + 1,
+    ];
+  }
+
+  static int _daysToMask(List<int> days) {
+    if (days.isEmpty) return 0;
+    return days.fold(0, (acc, d) => acc | (1 << (d - 1)));
+  }
+
   void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
     if (state.writeStatus == AutoTransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(
@@ -93,6 +106,10 @@ class _AutoTransactionGroupUpsertScreenState
         ? int.tryParse(dayOfMonthStr.trim())
         : null;
     final monthOfYear = values['monthOfYear'] as int?;
+    final activeDaysRaw = values['activeDays'] as List<int>? ?? [];
+    final activeDaysMask = _daysToMask(activeDaysRaw);
+    final intervalDaysStr = values['intervalDays'] as String?;
+    final intervalDays = int.tryParse(intervalDaysStr?.trim() ?? '') ?? 1;
     final startDate = values['startDate'] as DateTime?;
     final endDate = values['endDate'] as DateTime?;
 
@@ -109,6 +126,8 @@ class _AutoTransactionGroupUpsertScreenState
             dayOfWeek: () => dayOfWeek,
             dayOfMonth: () => dayOfMonth,
             monthOfYear: () => monthOfYear,
+            intervalDays: intervalDays,
+            activeDaysMask: activeDaysMask,
             startDate: startDate,
             endDate: () => endDate,
           ),
@@ -143,6 +162,8 @@ class _AutoTransactionGroupUpsertScreenState
               dayOfWeek: dayOfWeek,
               dayOfMonth: dayOfMonth,
               monthOfYear: monthOfYear,
+              intervalDays: intervalDays,
+              activeDaysMask: activeDaysMask,
               startDate: startDate,
               endDate: endDate,
             ),
@@ -161,6 +182,8 @@ class _AutoTransactionGroupUpsertScreenState
               dayOfWeek: dayOfWeek,
               dayOfMonth: dayOfMonth,
               monthOfYear: monthOfYear,
+              intervalDays: intervalDays,
+              activeDaysMask: activeDaysMask,
               startDate: startDate,
               endDate: endDate,
             ),
@@ -368,6 +391,10 @@ class _AutoTransactionGroupUpsertScreenState
                         initialDayOfWeek: group?.dayOfWeek,
                         initialDayOfMonth: group?.dayOfMonth,
                         initialMonthOfYear: group?.monthOfYear,
+                        initialActiveDays: group != null
+                            ? _maskToDays(group.activeDaysMask)
+                            : const [],
+                        initialIntervalDays: group?.intervalDays,
                       ),
                       const SizedBox(height: 16),
                       AppDateTimePicker(

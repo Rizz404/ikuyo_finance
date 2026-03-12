@@ -12,7 +12,17 @@ class AutoScheduleCalculator {
 
     switch (group.scheduleFrequency) {
       case AutoScheduleFrequency.daily:
-        return DateTime(from.year, from.month, from.day + 1, h, m);
+        var next = DateTime(from.year, from.month, from.day + 1, h, m);
+        if (group.activeDaysMask != 0) {
+          while (!_isDayActive(next.weekday, group.activeDaysMask)) {
+            next = next.add(const Duration(days: 1));
+          }
+        }
+        return next;
+
+      case AutoScheduleFrequency.everyNDays:
+        final interval = group.intervalDays.clamp(1, 365);
+        return DateTime(from.year, from.month, from.day + interval, h, m);
 
       case AutoScheduleFrequency.weekly:
         return DateTime(from.year, from.month, from.day + 7, h, m);
@@ -38,6 +48,18 @@ class AutoScheduleCalculator {
 
     switch (group.scheduleFrequency) {
       case AutoScheduleFrequency.daily:
+        if (group.activeDaysMask != 0) {
+          // * Cari hari aktif pertama mulai dari ref (inklusif)
+          final prev = ref.subtract(const Duration(days: 1));
+          candidate = calculateNext(
+            group,
+            DateTime(prev.year, prev.month, prev.day, h, m),
+          );
+        } else {
+          candidate = DateTime(ref.year, ref.month, ref.day, h, m);
+        }
+
+      case AutoScheduleFrequency.everyNDays:
         candidate = DateTime(ref.year, ref.month, ref.day, h, m);
 
       case AutoScheduleFrequency.weekly:
@@ -62,6 +84,11 @@ class AutoScheduleCalculator {
 
     return candidate;
   }
+
+  // * weekday: 1=Senin, 7=Minggu (Dart convention)
+  // * mask:    bit 0 = Senin, bit 6 = Minggu
+  static bool _isDayActive(int weekday, int mask) =>
+      (mask >> (weekday - 1)) & 1 == 1;
 
   static DateTime _addMonths(
     int year,

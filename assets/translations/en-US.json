@@ -93,11 +93,16 @@
   "autoTransaction": {
     "frequency": {
       "daily": "Daily",
+      "everyNDays": "Every N days",
       "monthly": "Monthly",
       "weekly": "Weekly",
       "yearly": "Yearly"
     },
     "groupUpsert": {
+      "activeDaysAll": "Every day",
+      "activeDaysLabel": "Active Days",
+      "activeDaysWeekdays": "Weekdays",
+      "activeDaysWeekends": "Weekends",
       "addTitle": "Add Auto Group",
       "cancel": "Cancel",
       "dayOfMonthHint": "1–28",
@@ -111,6 +116,8 @@
       "editTitle": "Edit Auto Group",
       "endDateLabel": "End Date (optional)",
       "frequencyLabel": "Frequency",
+      "intervalDaysHint": "e.g. 3",
+      "intervalDaysLabel": "Repeat every (days)",
       "monthOfYearLabel": "Month",
       "nameHint": "e.g. Monthly Bills",
       "nameLabel": "Group Name",
@@ -169,6 +176,7 @@
     },
     "tile": {
       "active": "Active",
+      "everyNDays": "Every {n} days",
       "inactive": "Inactive",
       "items": "{count} items",
       "nextRun": "Next: {time}",
@@ -182,6 +190,8 @@
       "dayOfMonthRequired": "Day of month is required",
       "dayOfWeekRequired": "Day of week is required",
       "frequencyRequired": "Frequency is required",
+      "intervalDaysInvalid": "Interval must be at least 1 day",
+      "intervalDaysRequired": "Interval is required",
       "monthOfYearRequired": "Month is required",
       "nameRequired": "Group name is required",
       "scheduleHourInvalid": "Hour must be 0–23",
@@ -393,7 +403,7 @@
       "manageCategories": "Manage Categories",
       "password": "Password",
       "settings": "Settings",
-      "title": "Settings"
+      "title": "Others"
     },
     "setting": {
       "appearance": "APPEARANCE",
@@ -570,7 +580,7 @@
     "userShell": {
       "assets": "Assets",
       "backToExit": "Press again to exit",
-      "settings": "Settings",
+      "others": "Others",
       "statistics": "Statistics",
       "transactions": "Transactions"
     }

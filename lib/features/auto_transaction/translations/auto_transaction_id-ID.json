@@ -2,11 +2,16 @@
   "autoTransaction": {
     "frequency": {
       "daily": "Harian",
+      "everyNDays": "Setiap N hari",
       "monthly": "Bulanan",
       "weekly": "Mingguan",
       "yearly": "Tahunan"
     },
     "groupUpsert": {
+      "activeDaysAll": "Setiap hari",
+      "activeDaysLabel": "Hari Aktif",
+      "activeDaysWeekdays": "Hari kerja",
+      "activeDaysWeekends": "Akhir pekan",
       "addTitle": "Tambah Grup Otomatis",
       "cancel": "Batal",
       "dayOfMonthHint": "1–28",
@@ -20,6 +25,8 @@
       "editTitle": "Edit Grup Otomatis",
       "endDateLabel": "Tanggal Selesai (opsional)",
       "frequencyLabel": "Frekuensi",
+      "intervalDaysHint": "misal: 3",
+      "intervalDaysLabel": "Ulangi setiap (hari)",
       "monthOfYearLabel": "Bulan",
       "nameHint": "contoh: Tagihan Bulanan",
       "nameLabel": "Nama Grup",
@@ -83,6 +90,7 @@
       "nextRun": "Berikutnya: {time}",
       "pausedManually": "Dijeda manual",
       "pausedUntil": "Dijeda hingga {date}",
+      "everyNDays": "Setiap {n} hari",
       "running": "Berjalan",
       "singleItem": "Solo"
     },
@@ -91,6 +99,8 @@
       "dayOfMonthRequired": "Tanggal dalam bulan wajib diisi",
       "dayOfWeekRequired": "Hari dalam minggu wajib dipilih",
       "frequencyRequired": "Frekuensi wajib dipilih",
+      "intervalDaysInvalid": "Interval minimal 1 hari",
+      "intervalDaysRequired": "Interval wajib diisi",
       "monthOfYearRequired": "Bulan wajib dipilih",
       "nameRequired": "Nama grup wajib diisi",
       "scheduleHourInvalid": "Jam harus 0–23",

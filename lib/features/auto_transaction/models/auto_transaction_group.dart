@@ -43,6 +43,12 @@ class AutoTransactionGroup {
   // * 1-12, hanya untuk yearly
   int? monthOfYear;
 
+  // * Interval hari untuk frequency everyNDays
+  int intervalDays;
+
+  // * Bitmask hari aktif untuk frequency daily (0=semua hari, bit0=Senin..bit6=Minggu)
+  int activeDaysMask;
+
   @Property(type: PropertyType.date)
   DateTime startDate;
 
@@ -86,6 +92,8 @@ class AutoTransactionGroup {
     this.dayOfWeek,
     this.dayOfMonth,
     this.monthOfYear,
+    this.intervalDays = 1,
+    this.activeDaysMask = 0,
     required this.startDate,
     this.endDate,
     this.nextExecutedAt,

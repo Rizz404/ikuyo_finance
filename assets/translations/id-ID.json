@@ -93,11 +93,16 @@
   "autoTransaction": {
     "frequency": {
       "daily": "Harian",
+      "everyNDays": "Setiap N hari",
       "monthly": "Bulanan",
       "weekly": "Mingguan",
       "yearly": "Tahunan"
     },
     "groupUpsert": {
+      "activeDaysAll": "Setiap hari",
+      "activeDaysLabel": "Hari Aktif",
+      "activeDaysWeekdays": "Hari kerja",
+      "activeDaysWeekends": "Akhir pekan",
       "addTitle": "Tambah Grup Otomatis",
       "cancel": "Batal",
       "dayOfMonthHint": "1–28",
@@ -111,6 +116,8 @@
       "editTitle": "Edit Grup Otomatis",
       "endDateLabel": "Tanggal Selesai (opsional)",
       "frequencyLabel": "Frekuensi",
+      "intervalDaysHint": "misal: 3",
+      "intervalDaysLabel": "Ulangi setiap (hari)",
       "monthOfYearLabel": "Bulan",
       "nameHint": "contoh: Tagihan Bulanan",
       "nameLabel": "Nama Grup",
@@ -169,6 +176,7 @@
     },
     "tile": {
       "active": "Aktif",
+      "everyNDays": "Setiap {n} hari",
       "inactive": "Tidak Aktif",
       "items": "{count} item",
       "nextRun": "Berikutnya: {time}",
@@ -182,6 +190,8 @@
       "dayOfMonthRequired": "Tanggal dalam bulan wajib diisi",
       "dayOfWeekRequired": "Hari dalam minggu wajib dipilih",
       "frequencyRequired": "Frekuensi wajib dipilih",
+      "intervalDaysInvalid": "Interval minimal 1 hari",
+      "intervalDaysRequired": "Interval wajib diisi",
       "monthOfYearRequired": "Bulan wajib dipilih",
       "nameRequired": "Nama grup wajib diisi",
       "scheduleHourInvalid": "Jam harus 0–23",
@@ -393,7 +403,7 @@
       "manageCategories": "Kelola Kategori",
       "password": "Kata Sandi",
       "settings": "Pengaturan",
-      "title": "Pengaturan"
+      "title": "Lainnya"
     },
     "setting": {
       "appearance": "TAMPILAN",
@@ -570,7 +580,7 @@
     "userShell": {
       "assets": "Aset",
       "backToExit": "Tekan sekali lagi untuk keluar",
-      "settings": "Pengaturan",
+      "others": "Lainnya",
       "statistics": "Statistik",
       "transactions": "Transaksi"
     }

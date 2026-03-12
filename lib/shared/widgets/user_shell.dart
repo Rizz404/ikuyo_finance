@@ -83,9 +83,9 @@ class _UserShellState extends State<UserShell> {
               label: LocaleKeys.sharedWidgetsUserShellAssets.tr(),
             ),
             NavigationDestination(
-              icon: const Icon(Icons.settings_outlined),
+              icon: const Icon(Icons.more_horiz),
               selectedIcon: const Icon(Icons.settings),
-              label: LocaleKeys.sharedWidgetsUserShellSettings.tr(),
+              label: LocaleKeys.sharedWidgetsUserShellOthers.tr(),
             ),
           ],
         ),

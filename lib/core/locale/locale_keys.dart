@@ -144,8 +144,7 @@ abstract class LocaleKeys {
   static const sharedWidgetsUserShellStatistics =
       'sharedWidgets.userShell.statistics';
   static const sharedWidgetsUserShellAssets = 'sharedWidgets.userShell.assets';
-  static const sharedWidgetsUserShellSettings =
-      'sharedWidgets.userShell.settings';
+  static const sharedWidgetsUserShellOthers = 'sharedWidgets.userShell.others';
 
   // ──────────────────────────────────────────────
   // * Asset — Validator
@@ -746,6 +745,10 @@ abstract class LocaleKeys {
       'autoTransaction.validator.dayOfMonthInvalid';
   static const autoTransactionValidatorMonthOfYearRequired =
       'autoTransaction.validator.monthOfYearRequired';
+  static const autoTransactionValidatorIntervalDaysRequired =
+      'autoTransaction.validator.intervalDaysRequired';
+  static const autoTransactionValidatorIntervalDaysInvalid =
+      'autoTransaction.validator.intervalDaysInvalid';
   static const autoTransactionValidatorStartDateRequired =
       'autoTransaction.validator.startDateRequired';
   static const autoTransactionValidatorTransactionRequired =
@@ -775,6 +778,18 @@ abstract class LocaleKeys {
       'autoTransaction.groupUpsert.descriptionHint';
   static const autoTransactionGroupUpsertFrequencyLabel =
       'autoTransaction.groupUpsert.frequencyLabel';
+  static const autoTransactionGroupUpsertIntervalDaysLabel =
+      'autoTransaction.groupUpsert.intervalDaysLabel';
+  static const autoTransactionGroupUpsertIntervalDaysHint =
+      'autoTransaction.groupUpsert.intervalDaysHint';
+  static const autoTransactionGroupUpsertActiveDaysLabel =
+      'autoTransaction.groupUpsert.activeDaysLabel';
+  static const autoTransactionGroupUpsertActiveDaysAll =
+      'autoTransaction.groupUpsert.activeDaysAll';
+  static const autoTransactionGroupUpsertActiveDaysWeekdays =
+      'autoTransaction.groupUpsert.activeDaysWeekdays';
+  static const autoTransactionGroupUpsertActiveDaysWeekends =
+      'autoTransaction.groupUpsert.activeDaysWeekends';
   static const autoTransactionGroupUpsertScheduleTimeLabel =
       'autoTransaction.groupUpsert.scheduleTimeLabel';
   static const autoTransactionGroupUpsertDayOfWeekLabel =
@@ -888,10 +903,14 @@ abstract class LocaleKeys {
       'autoTransaction.tile.pausedUntil';
   static const autoTransactionTileSingleItem =
       'autoTransaction.tile.singleItem';
+  static const autoTransactionTileEveryNDays =
+      'autoTransaction.tile.everyNDays';
 
   // * AutoTransaction — Frequency
   static const autoTransactionFrequencyDaily =
       'autoTransaction.frequency.daily';
+  static const autoTransactionFrequencyEveryNDays =
+      'autoTransaction.frequency.everyNDays';
   static const autoTransactionFrequencyWeekly =
       'autoTransaction.frequency.weekly';
   static const autoTransactionFrequencyMonthly =

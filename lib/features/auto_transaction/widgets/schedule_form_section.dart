@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_frequency.dart';
 import 'package:ikuyo_finance/features/auto_transaction/validators/create_auto_group_validator.dart';
 import 'package:ikuyo_finance/shared/widgets/app_dropdown.dart';
@@ -15,6 +16,8 @@ class ScheduleFormSection extends StatefulWidget {
   final int? initialDayOfWeek;
   final int? initialDayOfMonth;
   final int? initialMonthOfYear;
+  final List<int> initialActiveDays;
+  final int? initialIntervalDays;
   final ValueChanged<AutoScheduleFrequency>? onFrequencyChanged;
 
   const ScheduleFormSection({
@@ -24,6 +27,8 @@ class ScheduleFormSection extends StatefulWidget {
     this.initialDayOfWeek,
     this.initialDayOfMonth,
     this.initialMonthOfYear,
+    this.initialActiveDays = const [],
+    this.initialIntervalDays,
     this.onFrequencyChanged,
   });
 
@@ -90,12 +95,31 @@ class _ScheduleFormSectionState extends State<ScheduleFormSection> {
             }
           },
         ),
+        if (_frequency == AutoScheduleFrequency.everyNDays) ...[
+          const SizedBox(height: 16),
+          AppTextField(
+            name: 'intervalDays',
+            label: LocaleKeys.autoTransactionGroupUpsertIntervalDaysLabel.tr(),
+            placeHolder: LocaleKeys.autoTransactionGroupUpsertIntervalDaysHint
+                .tr(),
+            initialValue: widget.initialIntervalDays?.toString() ?? '1',
+            type: AppTextFieldType.number,
+            prefixIcon: const Icon(Icons.sync_outlined),
+            validator: FormBuilderValidators.compose([
+              (v) => CreateAutoGroupValidator.intervalDays(v, _frequency),
+            ]),
+          ),
+        ],
         const SizedBox(height: 16),
         AppTimePicker(
           name: 'scheduleTime',
           label: LocaleKeys.autoTransactionGroupUpsertScheduleTimeLabel.tr(),
           initialValue: widget.initialTime,
         ),
+        if (_frequency == AutoScheduleFrequency.daily) ...[
+          const SizedBox(height: 16),
+          _buildActiveDaysField(),
+        ],
         if (_frequency == AutoScheduleFrequency.weekly) ...[
           const SizedBox(height: 16),
           FormBuilderField<int>(
@@ -170,9 +194,102 @@ class _ScheduleFormSectionState extends State<ScheduleFormSection> {
     );
   }
 
+  Widget _buildActiveDaysField() {
+    return FormBuilderField<List<int>>(
+      name: 'activeDays',
+      initialValue: widget.initialActiveDays,
+      builder: (field) {
+        final selected = field.value ?? [];
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              LocaleKeys.autoTransactionGroupUpsertActiveDaysLabel.tr(),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 4,
+              children: [
+                ActionChip(
+                  label: Text(
+                    LocaleKeys.autoTransactionGroupUpsertActiveDaysAll.tr(),
+                  ),
+                  onPressed: () => field.didChange([]),
+                  backgroundColor: selected.isEmpty
+                      ? context.colorScheme.primaryContainer
+                      : null,
+                ),
+                ActionChip(
+                  label: Text(
+                    LocaleKeys.autoTransactionGroupUpsertActiveDaysWeekdays
+                        .tr(),
+                  ),
+                  onPressed: () => field.didChange([1, 2, 3, 4, 5]),
+                  backgroundColor: _isPreset(selected, [1, 2, 3, 4, 5])
+                      ? context.colorScheme.primaryContainer
+                      : null,
+                ),
+                ActionChip(
+                  label: Text(
+                    LocaleKeys.autoTransactionGroupUpsertActiveDaysWeekends
+                        .tr(),
+                  ),
+                  onPressed: () => field.didChange([6, 7]),
+                  backgroundColor: _isPreset(selected, [6, 7])
+                      ? context.colorScheme.primaryContainer
+                      : null,
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: _weekDays
+                  .map(
+                    (day) => FilterChip(
+                      label: Text(day.label),
+                      selected: selected.contains(day.value),
+                      onSelected: (on) {
+                        final next = List<int>.from(selected);
+                        if (on) {
+                          next.add(day.value);
+                        } else {
+                          next.remove(day.value);
+                        }
+                        field.didChange(next);
+                      },
+                    ),
+                  )
+                  .toList(),
+            ),
+            if (field.errorText != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4, left: 4),
+                child: Text(
+                  field.errorText!,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.error,
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  bool _isPreset(List<int> selected, List<int> preset) {
+    if (selected.length != preset.length) return false;
+    return preset.every(selected.contains);
+  }
+
   String _frequencyLabel(AutoScheduleFrequency f) => switch (f) {
     AutoScheduleFrequency.daily =>
       LocaleKeys.autoTransactionFrequencyDaily.tr(),
+    AutoScheduleFrequency.everyNDays =>
+      LocaleKeys.autoTransactionFrequencyEveryNDays.tr(),
     AutoScheduleFrequency.weekly =>
       LocaleKeys.autoTransactionFrequencyWeekly.tr(),
     AutoScheduleFrequency.monthly =>

@@ -11,6 +11,8 @@ class UpdateAutoGroupParams {
   final ValueGetter<int?>? dayOfWeek;
   final ValueGetter<int?>? dayOfMonth;
   final ValueGetter<int?>? monthOfYear;
+  final int? intervalDays;
+  final int? activeDaysMask;
   final DateTime? startDate;
   final ValueGetter<DateTime?>? endDate;
   final bool? isActive;
@@ -25,6 +27,8 @@ class UpdateAutoGroupParams {
     this.dayOfWeek,
     this.dayOfMonth,
     this.monthOfYear,
+    this.intervalDays,
+    this.activeDaysMask,
     this.startDate,
     this.endDate,
     this.isActive,

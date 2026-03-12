@@ -9,6 +9,8 @@ class CreateAutoGroupParams {
   final int? dayOfWeek;
   final int? dayOfMonth;
   final int? monthOfYear;
+  final int intervalDays;
+  final int activeDaysMask;
   final DateTime startDate;
   final DateTime? endDate;
 
@@ -21,6 +23,8 @@ class CreateAutoGroupParams {
     this.dayOfWeek,
     this.dayOfMonth,
     this.monthOfYear,
+    this.intervalDays = 1,
+    this.activeDaysMask = 0,
     required this.startDate,
     this.endDate,
   });

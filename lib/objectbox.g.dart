@@ -300,7 +300,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(6, 1819148253403484607),
     name: 'AutoTransactionGroup',
-    lastPropertyId: const obx_int.IdUid(20, 972203873915686380),
+    lastPropertyId: const obx_int.IdUid(22, 6650204367973282538),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -422,6 +422,18 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(20, 972203873915686380),
         name: 'updatedAt',
         type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(21, 5041171992777948423),
+        name: 'intervalDays',
+        type: 6,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(22, 6650204367973282538),
+        name: 'activeDaysMask',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -1018,7 +1030,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final descriptionOffset = object.description == null
             ? null
             : fbb.writeString(object.description!);
-        fbb.startTable(21);
+        fbb.startTable(23);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, ulidOffset);
         fbb.addOffset(2, nameOffset);
@@ -1039,6 +1051,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addInt64(17, object.lastExecutedAt?.millisecondsSinceEpoch);
         fbb.addInt64(18, object.createdAt.millisecondsSinceEpoch);
         fbb.addInt64(19, object.updatedAt.millisecondsSinceEpoch);
+        fbb.addInt64(20, object.intervalDays);
+        fbb.addInt64(21, object.activeDaysMask);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -1136,6 +1150,18 @@ obx_int.ModelDefinition getObjectBoxModel() {
           rootOffset,
           30,
         );
+        final intervalDaysParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          44,
+          0,
+        );
+        final activeDaysMaskParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          46,
+          0,
+        );
         final startDateParam = DateTime.fromMillisecondsSinceEpoch(
           const fb.Int64Reader().vTableGet(buffer, rootOffset, 32, 0),
         );
@@ -1169,6 +1195,8 @@ obx_int.ModelDefinition getObjectBoxModel() {
           dayOfWeek: dayOfWeekParam,
           dayOfMonth: dayOfMonthParam,
           monthOfYear: monthOfYearParam,
+          intervalDays: intervalDaysParam,
+          activeDaysMask: activeDaysMaskParam,
           startDate: startDateParam,
           endDate: endDateParam,
           nextExecutedAt: nextExecutedAtParam,
@@ -1667,6 +1695,16 @@ class AutoTransactionGroup_ {
   /// See [AutoTransactionGroup.updatedAt].
   static final updatedAt = obx.QueryDateProperty<AutoTransactionGroup>(
     _entities[4].properties[19],
+  );
+
+  /// See [AutoTransactionGroup.intervalDays].
+  static final intervalDays = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[20],
+  );
+
+  /// See [AutoTransactionGroup.activeDaysMask].
+  static final activeDaysMask = obx.QueryIntegerProperty<AutoTransactionGroup>(
+    _entities[4].properties[21],
   );
 
   /// see [AutoTransactionGroup.items]
