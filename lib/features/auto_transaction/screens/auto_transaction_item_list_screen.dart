@@ -34,6 +34,9 @@ class _AutoTransactionItemListScreenState
   }
 
   void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
+    // * Guard: skip if a child route is currently on top (prevents duplicate toasts)
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+
     if (state.writeStatus == AutoTransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,

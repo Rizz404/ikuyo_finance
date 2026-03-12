@@ -149,8 +149,11 @@ Future<void> setupAutoTransactionServices() async {
     ),
   );
 
-  // * Init notification channels + permission request
+  // * Init notification channels
   await getIt<AutoTransactionNotificationService>().initialize();
+
+  // * Request notification permission from user
+  await getIt<AutoTransactionNotificationService>().requestPermission();
 
   // * Init Workmanager dengan callback dispatcher
   await Workmanager().initialize(
