@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -12,6 +14,7 @@ import 'package:ikuyo_finance/di/injection.dart';
 import 'package:ikuyo_finance/features/auth/bloc/auth_bloc.dart';
 import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bloc.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -29,6 +32,9 @@ void main() async {
   await EasyLocalization.ensureInitialized();
   await initializeDateFormatting();
   await setupDependencies();
+
+  // * Run scheduler on startup to execute any pending auto transactions
+  unawaited(getIt<AutoTransactionScheduler>().runPendingExecutions());
 
   // * Route to auto transaction screen when a notification is tapped
   AutoTransactionNotificationService.onNotificationTap = (groupUlid) {
@@ -169,6 +175,8 @@ class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
         break;
       case AppLifecycleState.resumed:
         cubit.onAppResumed();
+        // * Run scheduler when app comes to foreground to catch missed executions
+        unawaited(getIt<AutoTransactionScheduler>().runPendingExecutions());
         break;
       case AppLifecycleState.hidden:
         cubit.onScreenOff();

@@ -770,6 +770,8 @@ abstract class LocaleKeys {
       'autoTransaction.screen.emptySubtitle';
   static const autoTransactionScreenErrorOccurred =
       'autoTransaction.screen.errorOccurred';
+  static const autoTransactionScreenSchedulerNotice =
+      'autoTransaction.screen.schedulerNotice';
 
   // * AutoTransaction — GroupUpsert
   static const autoTransactionGroupUpsertAddTitle =

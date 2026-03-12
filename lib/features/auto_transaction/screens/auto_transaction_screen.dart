@@ -144,16 +144,20 @@ class _AutoTransactionScreenState extends State<AutoTransactionScreen> {
               color: context.colorScheme.outline,
               textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 24),
+            _buildSchedulerNotice(context),
           ],
         ),
       );
     }
 
     return ListView.separated(
-      itemCount: state.groups.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemCount: state.groups.length + 1,
+      separatorBuilder: (_, index) =>
+          index == 0 ? const SizedBox.shrink() : const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        final group = state.groups[index];
+        if (index == 0) return _buildSchedulerNotice(context);
+        final group = state.groups[index - 1];
         return AutoGroupTile(
           group: group,
           onTap: () => context.pushToEditAutoGroup(group),
@@ -166,6 +170,35 @@ class _AutoTransactionScreenState extends State<AutoTransactionScreen> {
               _openBatchDeleteDialog(context, state.groups, group),
         );
       },
+    );
+  }
+
+  Widget _buildSchedulerNotice(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: context.colorScheme.secondaryContainer.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.info_outline,
+            size: 16,
+            color: context.colorScheme.onSecondaryContainer,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: AppText(
+              LocaleKeys.autoTransactionScreenSchedulerNotice.tr(),
+              style: AppTextStyle.bodySmall,
+              color: context.colorScheme.onSecondaryContainer,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

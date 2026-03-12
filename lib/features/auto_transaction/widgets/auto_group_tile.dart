@@ -262,7 +262,6 @@ class AutoGroupTile extends StatelessWidget {
     final txName = tx.description ?? '—';
     final category = tx.category.target?.name;
     final amount = tx.amount;
-    final currencySymbol = context.read<CurrencyCubit>().symbol;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -300,7 +299,7 @@ class AutoGroupTile extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           AppText(
-            '$currencySymbol${amount.toStringAsFixed(0)}',
+            context.formatMoney(amount),
             style: AppTextStyle.bodySmall,
             fontWeight: FontWeight.w600,
             color: context.colorScheme.primary,

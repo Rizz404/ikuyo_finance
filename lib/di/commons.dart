@@ -22,7 +22,6 @@ import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
 import 'package:ikuyo_finance/features/security/service/biometric_service.dart';
 import 'package:ikuyo_finance/features/security/service/security_storage_service.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:talker_bloc_logger/talker_bloc_logger.dart';
@@ -162,10 +161,7 @@ Future<void> setupAutoTransactionServices() async {
   await getIt<AutoTransactionNotificationService>().requestPermission();
 
   // * Init Workmanager dengan callback dispatcher
-  await Workmanager().initialize(
-    workmanagerCallbackDispatcher,
-    isInDebugMode: kDebugMode,
-  );
+  await Workmanager().initialize(workmanagerCallbackDispatcher);
 
   // * Register periodic task — existingWorkPolicy.keep agar tidak tumpang tindih
   await Workmanager().registerPeriodicTask(

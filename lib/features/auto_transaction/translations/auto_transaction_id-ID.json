@@ -81,6 +81,7 @@
       "emptySubtitle": "Tekan + untuk membuat grup transaksi otomatis baru",
       "emptyTitle": "Belum ada grup transaksi otomatis",
       "errorOccurred": "Terjadi kesalahan",
+      "schedulerNotice": "Transaksi dijalankan saat kamu membuka aplikasi. Karena keterbatasan Android, eksekusi latar belakang bisa tertunda hingga 15 menit.",
       "title": "Transaksi Otomatis"
     },
     "tile": {

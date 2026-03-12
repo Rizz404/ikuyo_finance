@@ -58,7 +58,7 @@ class OtherScreen extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 4),
 
               // * Settings Grid
               GridView.count(

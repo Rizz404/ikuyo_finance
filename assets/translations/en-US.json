@@ -172,6 +172,7 @@
       "emptySubtitle": "Press + to create a new auto transaction group",
       "emptyTitle": "No auto transaction groups",
       "errorOccurred": "An error occurred",
+      "schedulerNotice": "Transactions run when you open the app. Due to Android limits, background execution may be delayed up to 15 minutes.",
       "title": "Auto Transactions"
     },
     "tile": {
