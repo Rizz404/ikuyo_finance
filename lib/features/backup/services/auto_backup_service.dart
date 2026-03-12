@@ -105,9 +105,23 @@ class AutoBackupService {
   }
 
   static Future<String> _saveBackupToFile(BackupData backupData) async {
-    final dir = await getApplicationDocumentsDirectory();
+    final prefs = await SharedPreferences.getInstance();
+    final baseDir = prefs.getString(_exportDirKey);
+
+    final Directory targetDir;
+    if (baseDir != null && baseDir.isNotEmpty) {
+      targetDir = Directory('$baseDir/Auto Backup');
+    } else {
+      final appDir = await getApplicationDocumentsDirectory();
+      targetDir = Directory('${appDir.path}/Auto Backup');
+    }
+
+    if (!await targetDir.exists()) {
+      await targetDir.create(recursive: true);
+    }
+
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-    final file = File('${dir.path}/ikuyo_backup_$timestamp.json');
+    final file = File('${targetDir.path}/ikuyo_backup_$timestamp.json');
     await file.writeAsString(backupData.toJsonString());
     return file.path;
   }
@@ -115,4 +129,5 @@ class AutoBackupService {
   // ─── Private ──────────────────────────────────────────────────────────────
 
   static const _settingsKey = 'auto_backup_settings';
+  static const _exportDirKey = 'export_directory';
 }

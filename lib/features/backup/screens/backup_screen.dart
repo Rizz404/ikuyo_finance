@@ -17,6 +17,7 @@ import 'package:ikuyo_finance/shared/widgets/app_file_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BackupScreen extends StatefulWidget {
   const BackupScreen({super.key});
@@ -27,11 +28,37 @@ class BackupScreen extends StatefulWidget {
 
 class _BackupScreenState extends State<BackupScreen> {
   List<PlatformFile> _importFiles = [];
+  String _exportDirectory = '';
+
+  static const _exportDirPrefKey = 'export_directory';
 
   @override
   void initState() {
     super.initState();
     context.read<BackupBloc>().add(BackupSummaryRequested());
+    _loadExportDirectory();
+  }
+
+  Future<void> _loadExportDirectory() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(_exportDirPrefKey);
+    if (saved != null) {
+      if (mounted) setState(() => _exportDirectory = saved);
+      return;
+    }
+    final dir = await getApplicationDocumentsDirectory();
+    if (mounted) setState(() => _exportDirectory = dir.path);
+  }
+
+  Future<void> _pickExportDirectory() async {
+    final result = await FilePicker.platform.getDirectoryPath(
+      dialogTitle: 'Pilih direktori ekspor',
+      initialDirectory: _exportDirectory.isNotEmpty ? _exportDirectory : null,
+    );
+    if (result == null || !mounted) return;
+    setState(() => _exportDirectory = result);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_exportDirPrefKey, result);
   }
 
   Future<void> _handleExport() async {
@@ -151,43 +178,21 @@ class _BackupScreenState extends State<BackupScreen> {
 
   Future<void> _saveExportedFile(BackupData backupData) async {
     try {
-      // * Generate filename with timestamp
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final fileName = 'ikuyo_backup_$timestamp.json';
+      final filePath = '$_exportDirectory/$fileName';
 
-      // * Get directory untuk save
-      final directory = await getApplicationDocumentsDirectory();
-      final filePath = '${directory.path}/$fileName';
-
-      // * Write file
       final file = File(filePath);
       await file.writeAsString(backupData.toJsonString());
 
-      // * Let user choose where to save using file_picker
-      final result = await FilePicker.platform.saveFile(
-        dialogTitle: LocaleKeys.backupScreenSaveDialogTitle.tr(),
-        fileName: fileName,
-        type: FileType.custom,
-        allowedExtensions: ['json'],
-        bytes: file.readAsBytesSync(),
-      );
-
       if (!mounted) return;
-
-      if (result != null) {
-        ToastHelper.instance.showSuccess(
-          context: context,
-          title: LocaleKeys.backupScreenSuccess.tr(),
-          description: LocaleKeys.backupScreenBackupSavedTo.tr(
-            namedArgs: {'path': result},
-          ),
-        );
-      }
-
-      // * Clean temp file
-      if (await file.exists()) {
-        await file.delete();
-      }
+      ToastHelper.instance.showSuccess(
+        context: context,
+        title: LocaleKeys.backupScreenSuccess.tr(),
+        description: LocaleKeys.backupScreenBackupSavedTo.tr(
+          namedArgs: {'path': filePath},
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ToastHelper.instance.showError(
@@ -371,14 +376,7 @@ class _BackupScreenState extends State<BackupScreen> {
                 const SizedBox(height: 32),
 
                 // * Export Section
-                _buildActionCard(
-                  icon: Icons.cloud_upload_outlined,
-                  title: LocaleKeys.backupScreenExportTitle.tr(),
-                  description: LocaleKeys.backupScreenExportDescription.tr(),
-                  buttonText: LocaleKeys.backupScreenExportButton.tr(),
-                  buttonColor: AppButtonColor.primary,
-                  onPressed: _handleExport,
-                ),
+                _buildExportCard(),
                 const SizedBox(height: 16),
 
                 // * Import Section
@@ -473,6 +471,113 @@ class _BackupScreenState extends State<BackupScreen> {
                         _importFiles.isEmpty)
                     ? null
                     : _handleImport,
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExportCard() {
+    final colors = context.colors;
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: colors.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colors.primaryContainer.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.cloud_upload_outlined,
+                  color: colors.primary,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: AppText(
+                  LocaleKeys.backupScreenExportTitle.tr(),
+                  style: AppTextStyle.titleSmall,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          AppText(
+            LocaleKeys.backupScreenExportDescription.tr(),
+            style: AppTextStyle.bodySmall,
+            color: colors.textSecondary,
+          ),
+          const SizedBox(height: 16),
+          // * Directory picker
+          AppText(
+            'Simpan ke direktori',
+            style: AppTextStyle.bodySmall,
+            color: colors.textSecondary,
+          ),
+          const SizedBox(height: 6),
+          InkWell(
+            onTap: _pickExportDirectory,
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: colors.primaryContainer.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.folder_outlined, size: 18, color: colors.primary),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: AppText(
+                      _exportDirectory.isEmpty
+                          ? 'Pilih direktori...'
+                          : _exportDirectory,
+                      style: AppTextStyle.bodySmall,
+                      color: _exportDirectory.isEmpty
+                          ? colors.textSecondary
+                          : colors.textPrimary,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    Icons.edit_outlined,
+                    size: 16,
+                    color: colors.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          BlocBuilder<BackupBloc, BackupState>(
+            builder: (context, state) {
+              return AppButton(
+                text: LocaleKeys.backupScreenExportButton.tr(),
+                color: AppButtonColor.primary,
+                isLoading: state.status == BackupStatus.loading,
+                onPressed:
+                    (state.status == BackupStatus.loading ||
+                        _exportDirectory.isEmpty)
+                    ? null
+                    : _handleExport,
               );
             },
           ),
