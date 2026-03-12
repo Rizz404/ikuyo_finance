@@ -97,20 +97,25 @@ class MyApp extends StatelessWidget {
                 previous.writeStatus != current.writeStatus &&
                 current.writeStatus == TransactionWriteStatus.success,
             listener: (context, state) {
-              // * Refresh asset list when transaction write succeeds
+              // * Refresh asset, budget, and statistic when transaction write succeeds
               context.read<AssetBloc>().add(const AssetRefreshed());
+              context.read<BudgetBloc>().add(const BudgetRefreshed());
+              context.read<StatisticBloc>().add(const StatisticRefreshed());
             },
           ),
           BlocListener<BackupBloc, BackupState>(
             listenWhen: (previous, current) =>
                 previous.status != current.status &&
-                current.status == BackupStatus.success,
+                current.status == BackupStatus.success &&
+                current.isImport,
             listener: (context, state) {
               // * Refetch all data blocs after successful backup import
               context.read<CategoryBloc>().add(const CategoryFetched());
               context.read<AssetBloc>().add(const AssetFetched());
               context.read<BudgetBloc>().add(const BudgetFetched());
               context.read<TransactionBloc>().add(const TransactionFetched());
+              context.read<StatisticBloc>().add(const StatisticRefreshed());
+              context.read<AutoTransactionBloc>().add(const AutoGroupFetched());
             },
           ),
         ],
@@ -175,8 +180,15 @@ class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
         break;
       case AppLifecycleState.resumed:
         cubit.onAppResumed();
-        // * Run scheduler when app comes to foreground to catch missed executions
-        unawaited(getIt<AutoTransactionScheduler>().runPendingExecutions());
+        // * Run scheduler when app comes to foreground, then refresh stale blocs
+        unawaited(
+          getIt<AutoTransactionScheduler>().runPendingExecutions().then((_) {
+            if (!mounted) return;
+            context.read<TransactionBloc>().add(const TransactionFetched());
+            context.read<AssetBloc>().add(const AssetRefreshed());
+            context.read<StatisticBloc>().add(const StatisticRefreshed());
+          }),
+        );
         break;
       case AppLifecycleState.hidden:
         cubit.onScreenOff();

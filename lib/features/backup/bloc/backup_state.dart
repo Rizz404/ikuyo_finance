@@ -8,6 +8,7 @@ class BackupState {
   final Map<String, int>? summary;
   final String? message;
   final BackupScheduleSettings schedule;
+  final bool isImport;
 
   const BackupState({
     this.status = BackupStatus.initial,
@@ -15,6 +16,7 @@ class BackupState {
     this.summary,
     this.message,
     this.schedule = BackupScheduleSettings.defaultSettings,
+    this.isImport = false,
   });
 
   BackupState copyWith({
@@ -23,6 +25,7 @@ class BackupState {
     Map<String, int>? summary,
     String? message,
     BackupScheduleSettings? schedule,
+    bool? isImport,
   }) {
     return BackupState(
       status: status ?? this.status,
@@ -30,6 +33,7 @@ class BackupState {
       summary: summary ?? this.summary,
       message: message ?? this.message,
       schedule: schedule ?? this.schedule,
+      isImport: isImport ?? this.isImport,
     );
   }
 

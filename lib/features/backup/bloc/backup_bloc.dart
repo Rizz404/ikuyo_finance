@@ -78,6 +78,7 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
           state.copyWith(
             status: BackupStatus.success,
             message: success.message,
+            isImport: true,
           ),
         );
       },
