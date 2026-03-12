@@ -89,6 +89,7 @@ GoRouter createAppRouter(SupabaseAuthListenable authListenable) {
                 ),
                 routes: [
                   GoRoute(
+                    parentNavigatorKey: AppRoutes.rootNavigatorKey,
                     name: AppRoutes.transactionAddName,
                     path: AppRoutes.transactionAddPath,
                     pageBuilder: (context, state) {

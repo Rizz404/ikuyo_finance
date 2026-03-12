@@ -1,5 +1,7 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
@@ -21,6 +23,8 @@ class AutoGroupTile extends StatelessWidget {
     required this.onLogTap,
   });
 
+  bool get _isSingleItem => group.items.length == 1;
+
   @override
   Widget build(BuildContext context) {
     final isPaused = group.isCurrentlyPaused();
@@ -29,171 +33,275 @@ class AutoGroupTile extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: context.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: context.colorScheme.outlineVariant.withValues(alpha: 0.5),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: context.colorScheme.shadow.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+      child: Stack(
+        children: [
+          Container(
+            padding: EdgeInsets.fromLTRB(_isSingleItem ? 20 : 16, 16, 16, 16),
+            decoration: BoxDecoration(
+              color: _isSingleItem
+                  ? context.colorScheme.primaryContainer.withValues(alpha: 0.15)
+                  : context.colorScheme.surface,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: _isSingleItem
+                    ? context.colorScheme.primary.withValues(alpha: 0.35)
+                    : context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: context.colorScheme.shadow.withValues(alpha: 0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: AppText(
-                    group.name,
-                    style: AppTextStyle.bodyLarge,
-                    fontWeight: FontWeight.w600,
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppText(
+                        group.name.isNotEmpty ? group.name : '—',
+                        style: AppTextStyle.bodyLarge,
+                        fontWeight: FontWeight.w600,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        color: group.name.isEmpty
+                            ? context.colorScheme.outline
+                            : null,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: AppText(
+                        statusLabel,
+                        style: AppTextStyle.labelSmall,
+                        color: statusColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Switch(
+                      value: group.isActive,
+                      onChanged: onToggle,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ],
+                ),
+                if (group.description != null &&
+                    group.description!.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  AppText(
+                    group.description!,
+                    style: AppTextStyle.bodySmall,
+                    color: context.colorScheme.outline,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                ],
+                if (_isSingleItem) ...[
+                  const SizedBox(height: 6),
+                  _buildSingleItemInfo(context),
+                ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule,
+                      size: 14,
+                      color: context.colorScheme.outline,
+                    ),
+                    const SizedBox(width: 4),
+                    AppText(
+                      _scheduleLabel(),
+                      style: AppTextStyle.bodySmall,
+                      color: context.colorScheme.outline,
+                    ),
+                    const Spacer(),
+                    if (_isSingleItem)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.colorScheme.primary.withValues(
+                            alpha: 0.12,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: AppText(
+                          LocaleKeys.autoTransactionTileSingleItem.tr(),
+                          style: AppTextStyle.labelSmall,
+                          color: context.colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      )
+                    else
+                      AppText(
+                        LocaleKeys.autoTransactionTileItems.tr(
+                          namedArgs: {'count': group.items.length.toString()},
+                        ),
+                        style: AppTextStyle.labelSmall,
+                        color: context.colorScheme.outline,
+                      ),
+                  ],
                 ),
-                const SizedBox(width: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
+                if (_pauseNote(isPaused) != null) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.pause_circle_outline,
+                        size: 14,
+                        color: context.semantic.warning,
+                      ),
+                      const SizedBox(width: 4),
+                      AppText(
+                        _pauseNote(isPaused)!,
+                        style: AppTextStyle.bodySmall,
+                        color: context.semantic.warning,
+                      ),
+                    ],
                   ),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(20),
+                ],
+                if (group.nextExecutedAt != null && !isPaused) ...[
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.arrow_forward,
+                        size: 14,
+                        color: context.colorScheme.outline,
+                      ),
+                      const SizedBox(width: 4),
+                      AppText(
+                        LocaleKeys.autoTransactionTileNextRun.tr(
+                          namedArgs: {
+                            'time': DateFormat(
+                              'dd MMM yyyy HH:mm',
+                            ).format(group.nextExecutedAt!),
+                          },
+                        ),
+                        style: AppTextStyle.bodySmall,
+                        color: context.colorScheme.outline,
+                      ),
+                    ],
                   ),
-                  child: AppText(
-                    statusLabel,
-                    style: AppTextStyle.labelSmall,
-                    color: statusColor,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Switch(
-                  value: group.isActive,
-                  onChanged: onToggle,
-                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ],
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: onItemsTap,
+                      icon: const Icon(Icons.list, size: 16),
+                      label: AppText('Items', style: AppTextStyle.labelSmall),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    TextButton.icon(
+                      onPressed: onLogTap,
+                      icon: const Icon(Icons.history, size: 16),
+                      label: AppText('Log', style: AppTextStyle.labelSmall),
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
-            if (group.description != null && group.description!.isNotEmpty) ...[
-              const SizedBox(height: 4),
-              AppText(
-                group.description!,
-                style: AppTextStyle.bodySmall,
-                color: context.colorScheme.outline,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Icon(
-                  Icons.schedule,
-                  size: 14,
-                  color: context.colorScheme.outline,
+          ),
+          if (_isSingleItem)
+            Positioned(
+              left: 0,
+              top: 0,
+              bottom: 0,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
                 ),
-                const SizedBox(width: 4),
+                child: Container(width: 4, color: context.colorScheme.primary),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSingleItemInfo(BuildContext context) {
+    final tx = group.items.first.transaction.target;
+    if (tx == null) return const SizedBox.shrink();
+
+    final txName = tx.description ?? '—';
+    final category = tx.category.target?.name;
+    final amount = tx.amount;
+    final currencySymbol = context.read<CurrencyCubit>().symbol;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: context.colorScheme.primary.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.receipt_long_outlined,
+            size: 14,
+            color: context.colorScheme.primary,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 AppText(
-                  _scheduleLabel(),
+                  txName,
                   style: AppTextStyle.bodySmall,
-                  color: context.colorScheme.outline,
+                  fontWeight: FontWeight.w500,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const Spacer(),
-                AppText(
-                  LocaleKeys.autoTransactionTileItems.tr(
-                    namedArgs: {'count': group.items.length.toString()},
-                  ),
-                  style: AppTextStyle.labelSmall,
-                  color: context.colorScheme.outline,
-                ),
-              ],
-            ),
-            if (_pauseNote(isPaused) != null) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.pause_circle_outline,
-                    size: 14,
-                    color: context.semantic.warning,
-                  ),
-                  const SizedBox(width: 4),
+                if (category != null)
                   AppText(
-                    _pauseNote(isPaused)!,
-                    style: AppTextStyle.bodySmall,
-                    color: context.semantic.warning,
-                  ),
-                ],
-              ),
-            ],
-            if (group.nextExecutedAt != null && !isPaused) ...[
-              const SizedBox(height: 4),
-              Row(
-                children: [
-                  Icon(
-                    Icons.arrow_forward,
-                    size: 14,
+                    category,
+                    style: AppTextStyle.labelSmall,
                     color: context.colorScheme.outline,
                   ),
-                  const SizedBox(width: 4),
-                  AppText(
-                    LocaleKeys.autoTransactionTileNextRun.tr(
-                      namedArgs: {
-                        'time': DateFormat(
-                          'dd MMM yyyy HH:mm',
-                        ).format(group.nextExecutedAt!),
-                      },
-                    ),
-                    style: AppTextStyle.bodySmall,
-                    color: context.colorScheme.outline,
-                  ),
-                ],
-              ),
-            ],
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                TextButton.icon(
-                  onPressed: onItemsTap,
-                  icon: const Icon(Icons.list, size: 16),
-                  label: AppText('Items', style: AppTextStyle.labelSmall),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
-                const SizedBox(width: 4),
-                TextButton.icon(
-                  onPressed: onLogTap,
-                  icon: const Icon(Icons.history, size: 16),
-                  label: AppText('Log', style: AppTextStyle.labelSmall),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                ),
               ],
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 8),
+          AppText(
+            '$currencySymbol${amount.toStringAsFixed(0)}',
+            style: AppTextStyle.bodySmall,
+            fontWeight: FontWeight.w600,
+            color: context.colorScheme.primary,
+          ),
+        ],
       ),
     );
   }

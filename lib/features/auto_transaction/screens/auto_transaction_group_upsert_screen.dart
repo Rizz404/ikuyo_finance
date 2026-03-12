@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bloc.dart';
@@ -12,10 +13,14 @@ import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_
 import 'package:ikuyo_finance/features/auto_transaction/models/create_auto_group_params.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/update_auto_group_params.dart';
 import 'package:ikuyo_finance/features/auto_transaction/validators/create_auto_group_validator.dart';
+import 'package:ikuyo_finance/features/auto_transaction/validators/create_auto_item_validator.dart';
 import 'package:ikuyo_finance/features/auto_transaction/widgets/pause_form_section.dart';
 import 'package:ikuyo_finance/features/auto_transaction/widgets/schedule_form_section.dart';
+import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_date_time_picker.dart';
+import 'package:ikuyo_finance/shared/widgets/app_searchable_dropdown.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text_field.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
@@ -35,6 +40,18 @@ class AutoTransactionGroupUpsertScreen extends StatefulWidget {
 class _AutoTransactionGroupUpsertScreenState
     extends State<AutoTransactionGroupUpsertScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
+  bool _syncWithItem = false;
+  bool _isSingleMode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!widget.isEdit) {
+      context.read<TransactionBloc>().add(
+        TransactionFetched(startDate: DateTime(2000), endDate: DateTime(2099)),
+      );
+    }
+  }
 
   void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
     if (state.writeStatus == AutoTransactionWriteStatus.success) {
@@ -99,22 +116,57 @@ class _AutoTransactionGroupUpsertScreenState
       );
     } else {
       if (startDate == null) return;
-      context.read<AutoTransactionBloc>().add(
-        AutoGroupCreated(
-          params: CreateAutoGroupParams(
-            name: (values['name'] as String).trim(),
-            description: values['description'] as String?,
-            frequency: frequency,
-            scheduleHour: scheduleHour,
-            scheduleMinute: scheduleMinute,
-            dayOfWeek: dayOfWeek,
-            dayOfMonth: dayOfMonth,
-            monthOfYear: monthOfYear,
-            startDate: startDate,
-            endDate: endDate,
+
+      if (_isSingleMode) {
+        final txUlid = values['transactionUlid'] as String?;
+        if (txUlid == null) return;
+
+        final txState = context.read<TransactionBloc>().state;
+        String txName = '';
+        for (final t in txState.transactions) {
+          if (t.ulid == txUlid) {
+            txName = t.description?.trim() ?? '';
+            break;
+          }
+        }
+        final customName = (values['name'] as String?)?.trim();
+        context.read<AutoTransactionBloc>().add(
+          AutoGroupWithItemCreated(
+            groupParams: CreateAutoGroupParams(
+              name: customName?.isNotEmpty == true
+                  ? customName!
+                  : (txName.isNotEmpty ? txName : '—'),
+              description: values['description'] as String?,
+              frequency: frequency,
+              scheduleHour: scheduleHour,
+              scheduleMinute: scheduleMinute,
+              dayOfWeek: dayOfWeek,
+              dayOfMonth: dayOfMonth,
+              monthOfYear: monthOfYear,
+              startDate: startDate,
+              endDate: endDate,
+            ),
+            transactionUlid: txUlid,
           ),
-        ),
-      );
+        );
+      } else {
+        context.read<AutoTransactionBloc>().add(
+          AutoGroupCreated(
+            params: CreateAutoGroupParams(
+              name: (values['name'] as String).trim(),
+              description: values['description'] as String?,
+              frequency: frequency,
+              scheduleHour: scheduleHour,
+              scheduleMinute: scheduleMinute,
+              dayOfWeek: dayOfWeek,
+              dayOfMonth: dayOfMonth,
+              monthOfYear: monthOfYear,
+              startDate: startDate,
+              endDate: endDate,
+            ),
+          ),
+        );
+      }
     }
   }
 
@@ -260,16 +312,25 @@ class _AutoTransactionGroupUpsertScreenState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      if (!widget.isEdit) ...[
+                        _buildSingleModeToggle(),
+                        const SizedBox(height: 16),
+                      ],
                       AppTextField(
                         name: 'name',
                         label: LocaleKeys.autoTransactionGroupUpsertNameLabel
                             .tr(),
-                        placeHolder: LocaleKeys
-                            .autoTransactionGroupUpsertNameHint
-                            .tr(),
+                        placeHolder: _isSingleMode && !widget.isEdit
+                            ? LocaleKeys
+                                  .autoTransactionGroupUpsertSingleItemNameHint
+                                  .tr()
+                            : LocaleKeys.autoTransactionGroupUpsertNameHint
+                                  .tr(),
                         initialValue: group?.name,
                         prefixIcon: const Icon(Icons.group_outlined),
-                        validator: CreateAutoGroupValidator.name,
+                        validator: (_isSingleMode && !widget.isEdit)
+                            ? null
+                            : CreateAutoGroupValidator.name,
                       ),
                       const SizedBox(height: 16),
                       AppTextField(
@@ -284,6 +345,17 @@ class _AutoTransactionGroupUpsertScreenState
                         prefixIcon: const Icon(Icons.notes_outlined),
                         maxLines: 2,
                       ),
+                      if (widget.isEdit && (group?.items.length ?? 0) == 1) ...[
+                        const SizedBox(height: 8),
+                        _buildSyncToggle(group!),
+                      ],
+                      if (_isSingleMode && !widget.isEdit) ...[
+                        const SizedBox(height: 16),
+                        BlocBuilder<TransactionBloc, TransactionState>(
+                          builder: (_, txState) =>
+                              _buildTransactionSection(txState),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       ScheduleFormSection(
                         initialFrequency:
@@ -332,6 +404,146 @@ class _AutoTransactionGroupUpsertScreenState
             );
           },
         ),
+      ),
+    );
+  }
+
+  Widget _buildSingleModeToggle() {
+    return Container(
+      decoration: BoxDecoration(
+        color: _isSingleMode
+            ? context.colorScheme.primaryContainer.withValues(alpha: 0.3)
+            : context.colorScheme.surface,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: _isSingleMode
+              ? context.colorScheme.primary.withValues(alpha: 0.35)
+              : context.colorScheme.outlineVariant.withValues(alpha: 0.5),
+        ),
+      ),
+      child: SwitchListTile(
+        value: _isSingleMode,
+        onChanged: (val) => setState(() {
+          _isSingleMode = val;
+          if (!val) {
+            _formKey.currentState?.fields['transactionUlid']?.reset();
+          }
+        }),
+        title: AppText(
+          LocaleKeys.autoTransactionGroupUpsertSingleItemModeLabel.tr(),
+          style: AppTextStyle.bodyMedium,
+          fontWeight: FontWeight.w500,
+        ),
+        subtitle: AppText(
+          LocaleKeys.autoTransactionGroupUpsertSingleItemModeHint.tr(),
+          style: AppTextStyle.bodySmall,
+          color: context.colorScheme.outline,
+        ),
+        secondary: Icon(
+          Icons.looks_one_outlined,
+          color: _isSingleMode
+              ? context.colorScheme.primary
+              : context.colorScheme.outline,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
+
+  Widget _buildTransactionSection(TransactionState txState) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        AppSearchableDropdown<Transaction>(
+          name: 'transactionUlid',
+          label: LocaleKeys.autoTransactionItemUpsertTransactionLabel.tr(),
+          hintText: LocaleKeys.autoTransactionItemUpsertTransactionHint.tr(),
+          items: txState.transactions,
+          isLoading: txState.status == TransactionStatus.loading,
+          isLoadingMore: txState.status == TransactionStatus.loadingMore,
+          hasMore: !txState.hasReachedMax,
+          onSearch: (query) => context.read<TransactionBloc>().add(
+            TransactionSearched(query: query),
+          ),
+          onLoadMore: () => context.read<TransactionBloc>().add(
+            const TransactionFetchedMore(),
+          ),
+          itemDisplayMapper: (tx) => tx.description ?? 'Unnamed',
+          itemValueMapper: (tx) => tx.ulid,
+          itemSubtitleMapper: (tx) {
+            final date = tx.transactionDate != null
+                ? DateFormat('dd MMM yyyy').format(tx.transactionDate!)
+                : null;
+            final cat = tx.category.target?.name;
+            final parts = [cat, date].whereType<String>().toList();
+            return parts.isEmpty ? null : parts.join(' · ');
+          },
+          validator: (value) => CreateAutoItemValidator.transactionUlid(value),
+          prefixIcon: const Icon(Icons.receipt_outlined),
+        ),
+        Align(
+          alignment: Alignment.centerRight,
+          child: TextButton.icon(
+            onPressed: _onCreateNewTransaction,
+            icon: const Icon(Icons.add, size: 16),
+            label: AppText(
+              LocaleKeys.autoTransactionItemUpsertCreateNewTransaction.tr(),
+              style: AppTextStyle.bodySmall,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _onCreateNewTransaction() async {
+    await context.pushToAddTransaction();
+    if (!mounted) return;
+    context.read<TransactionBloc>().add(
+      TransactionFetched(startDate: DateTime(2000), endDate: DateTime(2099)),
+    );
+  }
+
+  Widget _buildSyncToggle(AutoTransactionGroup group) {
+    final singleItem = group.items.first;
+    final txName = singleItem.transaction.target?.description ?? '';
+
+    return Container(
+      decoration: BoxDecoration(
+        color: context.colorScheme.primaryContainer.withValues(alpha: 0.3),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: context.colorScheme.primary.withValues(alpha: 0.25),
+        ),
+      ),
+      child: SwitchListTile(
+        value: _syncWithItem,
+        onChanged: (val) {
+          setState(() => _syncWithItem = val);
+          if (val) {
+            _formKey.currentState?.fields['name']?.didChange(txName);
+            _formKey.currentState?.fields['description']?.didChange(null);
+          }
+        },
+        title: AppText(
+          LocaleKeys.autoTransactionGroupUpsertSyncWithItemLabel.tr(),
+          style: AppTextStyle.bodyMedium,
+          fontWeight: FontWeight.w500,
+        ),
+        subtitle: AppText(
+          LocaleKeys.autoTransactionGroupUpsertSyncWithItemHint.tr(),
+          style: AppTextStyle.bodySmall,
+          color: context.colorScheme.outline,
+        ),
+        secondary: Icon(
+          Icons.link,
+          color: _syncWithItem
+              ? context.colorScheme.primary
+              : context.colorScheme.outline,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+import 'package:ikuyo_finance/core/router/app_navigator.dart';
 import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bloc.dart';
@@ -87,6 +88,14 @@ class _AutoTransactionItemUpsertScreenState
           sortOrder: nextSortOrder,
         ),
       ),
+    );
+  }
+
+  Future<void> _onCreateNewTransaction() async {
+    await context.pushToAddTransaction();
+    if (!mounted) return;
+    context.read<TransactionBloc>().add(
+      TransactionFetched(startDate: DateTime(2000), endDate: DateTime(2099)),
     );
   }
 
@@ -206,7 +215,21 @@ class _AutoTransactionItemUpsertScreenState
                               CreateAutoItemValidator.transactionUlid(value),
                           prefixIcon: const Icon(Icons.receipt_outlined),
                         ),
-                        const SizedBox(height: 32),
+                        const SizedBox(height: 8),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton.icon(
+                            onPressed: _onCreateNewTransaction,
+                            icon: const Icon(Icons.add, size: 16),
+                            label: AppText(
+                              LocaleKeys
+                                  .autoTransactionItemUpsertCreateNewTransaction
+                                  .tr(),
+                              style: AppTextStyle.bodySmall,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
                         AppButton(
                           text: LocaleKeys.autoTransactionItemUpsertSave.tr(),
                           isLoading: autoState.isWriting,

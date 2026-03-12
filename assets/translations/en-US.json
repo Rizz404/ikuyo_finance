@@ -121,7 +121,12 @@
       "resumeButton": "Resume",
       "save": "Save",
       "scheduleTimeLabel": "Schedule Time",
+      "singleItemModeHint": "Directly link a transaction, no need to manage items",
+      "singleItemModeLabel": "Quick single item",
+      "singleItemNameHint": "Leave blank to use transaction name",
       "startDateLabel": "Start Date",
+      "syncWithItemHint": "Auto-fill name & description from the linked transaction",
+      "syncWithItemLabel": "Same as item",
       "upsertError": "Failed to save group",
       "upsertSuccess": "Group saved"
     },
@@ -133,6 +138,7 @@
     },
     "itemUpsert": {
       "addTitle": "Add Item",
+      "createNewTransaction": "Create new transaction",
       "delete": "Delete",
       "deleteConfirm": "Are you sure you want to remove this item?",
       "deleteTitle": "Remove Item",
@@ -168,7 +174,8 @@
       "nextRun": "Next: {time}",
       "pausedManually": "Paused manually",
       "pausedUntil": "Paused until {date}",
-      "running": "Running"
+      "running": "Running",
+      "singleItem": "Solo"
     },
     "validator": {
       "dayOfMonthInvalid": "Day must be between 1 and 28",

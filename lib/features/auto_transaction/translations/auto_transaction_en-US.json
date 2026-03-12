@@ -32,7 +32,12 @@
       "scheduleTimeLabel": "Schedule Time",
       "startDateLabel": "Start Date",
       "upsertError": "Failed to save group",
-      "upsertSuccess": "Group saved"
+      "upsertSuccess": "Group saved",
+      "syncWithItemLabel": "Same as item",
+      "syncWithItemHint": "Auto-fill name & description from the linked transaction",
+      "singleItemModeLabel": "Quick single item",
+      "singleItemModeHint": "Directly link a transaction, no need to manage items",
+      "singleItemNameHint": "Leave blank to use transaction name"
     },
     "itemList": {
       "emptySubtitle": "Press + to add a transaction template",
@@ -50,7 +55,8 @@
       "transactionHint": "Select a transaction as template",
       "transactionLabel": "Transaction Template",
       "upsertError": "Failed to save item",
-      "upsertSuccess": "Item saved"
+      "upsertSuccess": "Item saved",
+      "createNewTransaction": "Create new transaction"
     },
     "log": {
       "emptyTitle": "No execution logs yet",
@@ -77,7 +83,8 @@
       "nextRun": "Next: {time}",
       "pausedManually": "Paused manually",
       "pausedUntil": "Paused until {date}",
-      "running": "Running"
+      "running": "Running",
+      "singleItem": "Solo"
     },
     "validator": {
       "dayOfMonthInvalid": "Day must be between 1 and 28",

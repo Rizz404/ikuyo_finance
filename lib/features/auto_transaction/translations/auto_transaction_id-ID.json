@@ -32,7 +32,12 @@
       "scheduleTimeLabel": "Waktu Jadwal",
       "startDateLabel": "Tanggal Mulai",
       "upsertError": "Gagal menyimpan grup",
-      "upsertSuccess": "Grup berhasil disimpan"
+      "upsertSuccess": "Grup berhasil disimpan",
+      "singleItemModeLabel": "Satu item langsung",
+      "singleItemModeHint": "Langsung hubungkan transaksi tanpa kelola daftar item",
+      "singleItemNameHint": "Kosongkan untuk pakai nama transaksi",
+      "syncWithItemLabel": "Samakan dengan item",
+      "syncWithItemHint": "Isi nama & deskripsi otomatis dari transaksi yang terhubung"
     },
     "itemList": {
       "emptySubtitle": "Tekan + untuk menambah template transaksi",
@@ -50,7 +55,8 @@
       "transactionHint": "Pilih transaksi sebagai template",
       "transactionLabel": "Template Transaksi",
       "upsertError": "Gagal menyimpan item",
-      "upsertSuccess": "Item berhasil disimpan"
+      "upsertSuccess": "Item berhasil disimpan",
+      "createNewTransaction": "Buat transaksi baru"
     },
     "log": {
       "emptyTitle": "Belum ada log eksekusi",
@@ -77,7 +83,8 @@
       "nextRun": "Berikutnya: {time}",
       "pausedManually": "Dijeda manual",
       "pausedUntil": "Dijeda hingga {date}",
-      "running": "Berjalan"
+      "running": "Berjalan",
+      "singleItem": "Solo"
     },
     "validator": {
       "dayOfMonthInvalid": "Tanggal harus antara 1 dan 28",

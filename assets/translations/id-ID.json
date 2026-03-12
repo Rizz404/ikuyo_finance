@@ -121,7 +121,12 @@
       "resumeButton": "Lanjutkan",
       "save": "Simpan",
       "scheduleTimeLabel": "Waktu Jadwal",
+      "singleItemModeHint": "Langsung hubungkan transaksi tanpa kelola daftar item",
+      "singleItemModeLabel": "Satu item langsung",
+      "singleItemNameHint": "Kosongkan untuk pakai nama transaksi",
       "startDateLabel": "Tanggal Mulai",
+      "syncWithItemHint": "Isi nama & deskripsi otomatis dari transaksi yang terhubung",
+      "syncWithItemLabel": "Samakan dengan item",
       "upsertError": "Gagal menyimpan grup",
       "upsertSuccess": "Grup berhasil disimpan"
     },
@@ -133,6 +138,7 @@
     },
     "itemUpsert": {
       "addTitle": "Tambah Item",
+      "createNewTransaction": "Buat transaksi baru",
       "delete": "Hapus",
       "deleteConfirm": "Yakin ingin menghapus item ini?",
       "deleteTitle": "Hapus Item",
@@ -168,7 +174,8 @@
       "nextRun": "Berikutnya: {time}",
       "pausedManually": "Dijeda manual",
       "pausedUntil": "Dijeda hingga {date}",
-      "running": "Berjalan"
+      "running": "Berjalan",
+      "singleItem": "Solo"
     },
     "validator": {
       "dayOfMonthInvalid": "Tanggal harus antara 1 dan 28",

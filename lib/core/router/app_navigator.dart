@@ -28,7 +28,7 @@ extension AppNavigator on BuildContext {
   void pushToSecurity() => push(AppRoutes.securityPath);
 
   // * Transaction Child Routes (push - add to stack)
-  void pushToAddTransaction({Transaction? sourceTransaction}) =>
+  Future<void> pushToAddTransaction({Transaction? sourceTransaction}) =>
       pushNamed(AppRoutes.transactionAddName, extra: sourceTransaction);
   void pushToBulkCopyTransaction() =>
       push('/${AppRoutes.transactionBulkCopyPath}');

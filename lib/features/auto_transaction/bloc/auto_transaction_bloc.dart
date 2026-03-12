@@ -26,6 +26,9 @@ class AutoTransactionBloc
     on<AutoGroupPaused>(_onGroupPaused);
     on<AutoGroupResumed>(_onGroupResumed);
 
+    // * Group + item atomically
+    on<AutoGroupWithItemCreated>(_onGroupWithItemCreated);
+
     // * Item read
     on<AutoItemsFetched>(_onItemsFetched);
 
@@ -262,6 +265,57 @@ class AutoTransactionBloc
     );
   }
 
+  // ─── Group + item (quick single-item mode) ────────────────────────────────
+
+  Future<void> _onGroupWithItemCreated(
+    AutoGroupWithItemCreated event,
+    Emitter<AutoTransactionState> emit,
+  ) async {
+    emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
+
+    final groupResult = await _repo.createGroup(event.groupParams).run();
+
+    bool failed = false;
+    AutoTransactionGroup? createdGroup;
+    groupResult.fold((failure) {
+      failed = true;
+      emit(
+        state.copyWith(
+          writeStatus: AutoTransactionWriteStatus.failure,
+          writeErrorMessage: () => failure.message,
+        ),
+      );
+    }, (success) => createdGroup = success.data!);
+    if (failed) return;
+
+    final itemResult = await _repo
+        .createItem(
+          CreateAutoItemParams(
+            groupUlid: createdGroup!.ulid,
+            transactionUlid: event.transactionUlid,
+            sortOrder: 0,
+          ),
+        )
+        .run();
+
+    itemResult.fold(
+      (failure) => emit(
+        state.copyWith(
+          writeStatus: AutoTransactionWriteStatus.failure,
+          writeErrorMessage: () => failure.message,
+        ),
+      ),
+      (success) => emit(
+        state.copyWith(
+          writeStatus: AutoTransactionWriteStatus.success,
+          writeSuccessMessage: () => 'Grup berhasil dibuat',
+          groups: [createdGroup!, ...state.groups],
+          currentItems: [success.data!],
+        ),
+      ),
+    );
+  }
+
   // ─── Item read ────────────────────────────────────────────────────────────
 
   Future<void> _onItemsFetched(
@@ -299,8 +353,12 @@ class AutoTransactionBloc
   ) async {
     emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
 
+    // * Capture count before creation to detect 1→2 transition
+    final wasOnlyItem = state.currentItems.length == 1;
+
     final result = await _repo.createItem(event.params).run();
 
+    bool creationSucceeded = false;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -308,14 +366,40 @@ class AutoTransactionBloc
           writeErrorMessage: () => failure.message,
         ),
       ),
-      (success) => emit(
-        state.copyWith(
-          writeStatus: AutoTransactionWriteStatus.success,
-          writeSuccessMessage: () => success.message,
-          currentItems: [...state.currentItems, success.data!],
-        ),
-      ),
+      (success) {
+        creationSucceeded = true;
+        emit(
+          state.copyWith(
+            writeStatus: AutoTransactionWriteStatus.success,
+            writeSuccessMessage: () => success.message,
+            currentItems: [...state.currentItems, success.data!],
+          ),
+        );
+      },
     );
+
+    // * Auto-clear group name & description when transitioning from 1 item → 2 items
+    if (creationSucceeded && wasOnlyItem) {
+      final groupUpdateResult = await _repo
+          .updateGroup(
+            UpdateAutoGroupParams(
+              ulid: event.params.groupUlid,
+              name: '',
+              description: () => null,
+            ),
+          )
+          .run();
+      groupUpdateResult.fold(
+        (f) => null,
+        (s) => emit(
+          state.copyWith(
+            groups: state.groups
+                .map((g) => g.ulid == event.params.groupUlid ? s.data! : g)
+                .toList(),
+          ),
+        ),
+      );
+    }
   }
 
   Future<void> _onItemUpdated(

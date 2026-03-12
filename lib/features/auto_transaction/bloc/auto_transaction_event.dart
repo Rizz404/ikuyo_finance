@@ -51,6 +51,17 @@ final class AutoGroupResumed extends AutoTransactionEvent {
   final String ulid;
 }
 
+// * Group + first item, created in one shot (quick single-item mode)
+final class AutoGroupWithItemCreated extends AutoTransactionEvent {
+  const AutoGroupWithItemCreated({
+    required this.groupParams,
+    required this.transactionUlid,
+  });
+
+  final CreateAutoGroupParams groupParams;
+  final String transactionUlid;
+}
+
 // * Item read
 final class AutoItemsFetched extends AutoTransactionEvent {
   const AutoItemsFetched({required this.groupUlid});

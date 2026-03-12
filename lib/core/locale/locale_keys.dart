@@ -813,6 +813,16 @@ abstract class LocaleKeys {
       'autoTransaction.groupUpsert.pauseButton';
   static const autoTransactionGroupUpsertResumeButton =
       'autoTransaction.groupUpsert.resumeButton';
+  static const autoTransactionGroupUpsertSyncWithItemLabel =
+      'autoTransaction.groupUpsert.syncWithItemLabel';
+  static const autoTransactionGroupUpsertSyncWithItemHint =
+      'autoTransaction.groupUpsert.syncWithItemHint';
+  static const autoTransactionGroupUpsertSingleItemModeLabel =
+      'autoTransaction.groupUpsert.singleItemModeLabel';
+  static const autoTransactionGroupUpsertSingleItemModeHint =
+      'autoTransaction.groupUpsert.singleItemModeHint';
+  static const autoTransactionGroupUpsertSingleItemNameHint =
+      'autoTransaction.groupUpsert.singleItemNameHint';
 
   // * AutoTransaction — ItemList
   static const autoTransactionItemListTitle = 'autoTransaction.itemList.title';
@@ -844,6 +854,8 @@ abstract class LocaleKeys {
       'autoTransaction.itemUpsert.upsertSuccess';
   static const autoTransactionItemUpsertUpsertError =
       'autoTransaction.itemUpsert.upsertError';
+  static const autoTransactionItemUpsertCreateNewTransaction =
+      'autoTransaction.itemUpsert.createNewTransaction';
 
   // * AutoTransaction — Log
   static const autoTransactionLogTitle = 'autoTransaction.log.title';
@@ -874,6 +886,8 @@ abstract class LocaleKeys {
       'autoTransaction.tile.pausedManually';
   static const autoTransactionTilePausedUntil =
       'autoTransaction.tile.pausedUntil';
+  static const autoTransactionTileSingleItem =
+      'autoTransaction.tile.singleItem';
 
   // * AutoTransaction — Frequency
   static const autoTransactionFrequencyDaily =
