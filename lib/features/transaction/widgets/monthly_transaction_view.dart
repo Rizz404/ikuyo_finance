@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/extensions/currency_extension.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -212,7 +211,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: AppText(
-                      '${balance >= 0 ? '+' : ''}${_formatCurrency(context, balance)}',
+                      '${balance >= 0 ? '+' : ''}${context.formatMoney(balance)}',
                       style: AppTextStyle.labelMedium,
                       fontWeight: FontWeight.w600,
                       color: balance >= 0
@@ -287,7 +286,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
         ),
         const SizedBox(height: 4),
         AppText(
-          _formatCurrency(context, amount),
+          context.formatMoney(amount),
           style: AppTextStyle.bodyMedium,
           fontWeight: FontWeight.w600,
           color: color,
@@ -375,7 +374,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
                   ),
                   const SizedBox(width: 8),
                   AppText(
-                    _formatCurrency(context, entry.value),
+                    context.formatMoney(entry.value),
                     style: AppTextStyle.labelMedium,
                     fontWeight: FontWeight.w600,
                   ),
@@ -396,9 +395,5 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
       } catch (_) {}
     }
     return context.semantic.error;
-  }
-
-  String _formatCurrency(BuildContext context, double amount) {
-    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }

@@ -8,17 +8,21 @@ Follow these rules on every suggestion, edit, or generation — no exceptions.
 
 ---
 
-## 1. Imports & Extensions
+## 1. Extensions — Import Only When Needed
 
-Always import these extensions at the top of any widget file:
+Never import all extensions by default. Only import what the file actually uses.
 
-```dart
-import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
-import 'package:ikuyo_finance/core/extensions/localization_extension.dart';
-```
+| When you need | Import | Access via |
+|---|---|---|
+| Theme, colors, dark mode | `theme_extension.dart` | `context.theme`, `context.colors`, `context.colorScheme`, `context.isDarkMode` |
+| Translations, locale change | `localization_extension.dart`, `locale_extension.dart` | `context.l10n`, `context.currentSupportedLocale`, `context.changeLocale()` |
+| Format or convert money | `currency_extension.dart` | `context.formatMoney()`, `context.currencySymbol`, `amount.convertTo()` |
+| Navigate between screens | `navigator_extension.dart` | `context.pushToX()`, `context.goToX()` |
+| Logs in BLoC / Service / Repo | `logger_extension.dart` | `logInfo()`, `logError()`, `logService()` |
+| Filter dropdowns | `dropdown_extension.dart` | `AppDropdownExtensions.createFilterItems()` |
+| Backup frequency labels | `backup_frequency_extension.dart` | `frequency.label`, `frequency.labelId` |
 
-- Use `context.theme`, `context.colorScheme`, `context.colors`, `context.textTheme`, `context.isDarkMode`
-- Use `context.l10n`, `context.locale`, `context.isEnglish`, `context.isIndonesian`, `context.isJapanese`
+All extensions are in `package:ikuyo_finance/core/extensions/`.
 
 ---
 
@@ -247,3 +251,43 @@ Prefer modern CLI tools:
 | Monitor | `btm`, `procs` |
 
 Avoid: `dir`, `findstr`, `find`, `grep`, `cat`, manual `cd`
+
+---
+
+## 13. Deletions — Point, Don't Remove
+
+When the task involves deleting a file, folder, class, or function, do not perform the deletion.
+Instead, tell me what to remove and where.
+```
+// Instead of deleting, say:
+// "Remove `_buildOldWidget()` in lib/features/transaction/screens/transaction_screen.dart"
+// "Delete lib/features/legacy/ folder — no longer referenced"
+```
+
+This applies to:
+- Entire files or folders
+- Large classes or widgets
+- Long functions (30+ lines)
+- Any removal where showing the diff would waste tokens
+
+For small removals (1–5 lines), just make the edit directly.
+
+---
+
+## 14. Minimal Diff — Change Only What's Asked
+
+Do not reformat, reorder, or refactor code that is not part of the request.
+Only touch lines directly related to the task.
+
+---
+
+## 15. Clarify Before Generating
+
+If the request is ambiguous or missing key info, ask one short question before writing any code.
+Do not assume and generate a large block that may need to be thrown away.
+
+Examples of when to ask first:
+- Multiple valid approaches exist
+- The target file or class is unclear
+- Static text vs localization is unclear (ask: *"Static text atau l10n?"*)
+- New widget vs reuse existing is unclear

@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/extensions/currency_extension.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -227,7 +226,7 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
             children: [
               if (totalIncome > 0) ...[
                 AppText(
-                  '+${_formatCurrency(context, totalIncome)}',
+                  '+${context.formatMoney(totalIncome)}',
                   style: AppTextStyle.labelMedium,
                   color: context.semantic.success,
                   fontWeight: FontWeight.w600,
@@ -236,7 +235,7 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
               ],
               if (totalExpense > 0)
                 AppText(
-                  '-${_formatCurrency(context, totalExpense)}',
+                  '-${context.formatMoney(totalExpense)}',
                   style: AppTextStyle.labelMedium,
                   color: context.semantic.error,
                   fontWeight: FontWeight.w600,
@@ -246,9 +245,5 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
         ],
       ),
     );
-  }
-
-  String _formatCurrency(BuildContext context, double amount) {
-    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }

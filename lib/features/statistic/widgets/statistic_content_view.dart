@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/extensions/currency_extension.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
@@ -114,7 +113,7 @@ class StatisticContentView extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           AppText(
-            _formatCurrency(context, total),
+            context.formatMoney(total),
             style: AppTextStyle.headlineMedium,
             fontWeight: FontWeight.bold,
             color: Colors.white,
@@ -132,9 +131,5 @@ class StatisticContentView extends StatelessWidget {
 
   int _getTotalTransactionCount() {
     return summaries.fold<int>(0, (sum, s) => sum + s.transactionCount);
-  }
-
-  String _formatCurrency(BuildContext context, double amount) {
-    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }

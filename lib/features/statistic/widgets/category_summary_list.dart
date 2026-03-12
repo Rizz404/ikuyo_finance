@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/extensions/currency_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
 import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
@@ -96,7 +95,7 @@ class _CategorySummaryTile extends StatelessWidget {
                       ),
                     ),
                     AppText(
-                      _formatCurrency(context, summary.totalAmount),
+                      context.formatMoney(summary.totalAmount),
                       style: AppTextStyle.bodyMedium,
                       fontWeight: FontWeight.bold,
                       color: color,
@@ -229,9 +228,5 @@ class _CategorySummaryTile extends StatelessWidget {
           ];
 
     return colors[index % colors.length];
-  }
-
-  String _formatCurrency(BuildContext context, double amount) {
-    return context.read<CurrencyCubit>().formatAmount(amount);
   }
 }

@@ -1,7 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/extensions/currency_extension.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
@@ -19,9 +18,8 @@ class AssetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getAssetColor(context);
-    // * Use realtime currency conversion
-    final currencyCubit = context.watch<CurrencyCubit>();
-    final formattedBalance = currencyCubit.formatAmount(asset.balance);
+    context.currencyState; // triggers rebuild on currency change
+    final formattedBalance = context.formatMoney(asset.balance);
 
     return GestureDetector(
       onTap: onTap ?? () => context.pushToEditAsset(asset),
