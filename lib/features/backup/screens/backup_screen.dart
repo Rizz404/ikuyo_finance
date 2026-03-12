@@ -10,10 +10,10 @@ import 'package:ikuyo_finance/core/theme/app_theme.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
+import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
-import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 class BackupScreen extends StatefulWidget {
@@ -394,6 +394,10 @@ class _BackupScreenState extends State<BackupScreen> {
                   onPressed: _handleImport,
                   isWarning: true,
                 ),
+                const SizedBox(height: 24),
+
+                // * Auto Backup Schedule Section
+                _buildScheduleCard(),
               ],
             ),
           ),
@@ -490,6 +494,158 @@ class _BackupScreenState extends State<BackupScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Future<void> _handlePickTime(BackupScheduleSettings current) async {
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay(hour: current.hour, minute: current.minute),
+    );
+    if (picked != null && mounted) {
+      context.read<BackupBloc>().add(
+        BackupScheduleTimeChanged(hour: picked.hour, minute: picked.minute),
+      );
+    }
+  }
+
+  Widget _buildScheduleCard() {
+    final colors = context.colors;
+
+    return BlocBuilder<BackupBloc, BackupState>(
+      buildWhen: (previous, current) => previous.schedule != current.schedule,
+      builder: (context, state) {
+        final schedule = state.schedule;
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: colors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: colors.border.withValues(alpha: 0.5)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // * Header + toggle
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: colors.primaryContainer.withValues(alpha: 0.5),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Icon(
+                      Icons.schedule_rounded,
+                      color: colors.primary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AppText(
+                          LocaleKeys.backupScreenAutoTitle.tr(),
+                          style: AppTextStyle.titleSmall,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        AppText(
+                          LocaleKeys.backupScreenAutoDescription.tr(),
+                          style: AppTextStyle.bodySmall,
+                          color: colors.textSecondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Switch(
+                    value: schedule.isEnabled,
+                    onChanged: (v) => context.read<BackupBloc>().add(
+                      BackupScheduleToggled(v),
+                    ),
+                  ),
+                ],
+              ),
+
+              if (schedule.isEnabled) ...[
+                const Divider(height: 28),
+
+                // * Time picker row
+                InkWell(
+                  onTap: () => _handlePickTime(schedule),
+                  borderRadius: BorderRadius.circular(8),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.access_time_rounded,
+                          size: 18,
+                          color: colors.textSecondary,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: AppText(
+                            LocaleKeys.backupScreenAutoTime.tr(),
+                            style: AppTextStyle.bodyMedium,
+                          ),
+                        ),
+                        AppText(
+                          schedule.formattedTime,
+                          style: AppTextStyle.bodyMedium,
+                          fontWeight: FontWeight.bold,
+                          color: colors.primary,
+                        ),
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.chevron_right_rounded,
+                          size: 18,
+                          color: colors.textSecondary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // * Frequency selector
+                AppText(
+                  LocaleKeys.backupScreenAutoFrequency.tr(),
+                  style: AppTextStyle.bodySmall,
+                  color: colors.textSecondary,
+                ),
+                const SizedBox(height: 8),
+                _buildFrequencyChips(schedule),
+              ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFrequencyChips(BackupScheduleSettings schedule) {
+    return Wrap(
+      spacing: 8,
+      children: BackupFrequency.values.map((freq) {
+        final isSelected = schedule.frequency == freq;
+        return ChoiceChip(
+          label: Text(freq.label),
+          selected: isSelected,
+          onSelected: (_) => context.read<BackupBloc>().add(
+            BackupScheduleFrequencyChanged(freq),
+          ),
+          selectedColor: context.colorScheme.primary,
+          labelStyle: TextStyle(
+            color: isSelected
+                ? context.colorScheme.onPrimary
+                : context.colors.textPrimary,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+          ),
+        );
+      }).toList(),
     );
   }
 }

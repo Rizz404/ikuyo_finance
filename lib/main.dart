@@ -71,7 +71,9 @@ class MyApp extends StatelessWidget {
               getIt<TransactionBloc>()..add(const TransactionFetched()),
         ),
         BlocProvider(create: (_) => getIt<StatisticBloc>()),
-        BlocProvider(create: (_) => getIt<BackupBloc>()),
+        BlocProvider(
+          create: (_) => getIt<BackupBloc>()..add(BackupScheduleLoaded()),
+        ),
         BlocProvider(create: (_) => getIt<ThemeCubit>()),
         BlocProvider(create: (_) => getIt<CurrencyCubit>()),
         BlocProvider(create: (_) => getIt<LocaleCubit>()),

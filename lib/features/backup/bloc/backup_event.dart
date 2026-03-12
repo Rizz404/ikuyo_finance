@@ -11,3 +11,25 @@ class BackupImportRequested extends BackupEvent {
 }
 
 class BackupSummaryRequested extends BackupEvent {}
+
+// * Auto backup schedule events
+class BackupScheduleLoaded extends BackupEvent {}
+
+class BackupScheduleToggled extends BackupEvent {
+  final bool isEnabled;
+
+  BackupScheduleToggled(this.isEnabled);
+}
+
+class BackupScheduleTimeChanged extends BackupEvent {
+  final int hour;
+  final int minute;
+
+  BackupScheduleTimeChanged({required this.hour, required this.minute});
+}
+
+class BackupScheduleFrequencyChanged extends BackupEvent {
+  final BackupFrequency frequency;
+
+  BackupScheduleFrequencyChanged(this.frequency);
+}

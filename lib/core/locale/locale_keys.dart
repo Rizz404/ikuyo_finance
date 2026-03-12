@@ -277,6 +277,12 @@ abstract class LocaleKeys {
   static const backupScreenErrorOccurred = 'backup.screen.errorOccurred';
   static const backupScreenReadBackupFailed = 'backup.screen.readBackupFailed';
   static const backupScreenSaveFileFailed = 'backup.screen.saveFileFailed';
+  static const backupScreenAutoTitle = 'backup.screen.autoTitle';
+  static const backupScreenAutoDescription = 'backup.screen.autoDescription';
+  static const backupScreenAutoTime = 'backup.screen.autoTime';
+  static const backupScreenAutoFrequency = 'backup.screen.autoFrequency';
+  static const backupScreenAutoEnabled = 'backup.screen.autoEnabled';
+  static const backupScreenAutoDisabled = 'backup.screen.autoDisabled';
 
   // ──────────────────────────────────────────────
   // * Budget — Validator

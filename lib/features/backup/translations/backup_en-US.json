@@ -30,7 +30,13 @@
       "readBackupFailed": "Failed to read backup file: {error}",
       "saveFileFailed": "Failed to save file: {error}",
       "comingSoon": "Coming Soon",
-      "featureInDevelopment": "This feature is under development"
+      "featureInDevelopment": "This feature is under development",
+      "autoTitle": "Auto Backup",
+      "autoDescription": "Automatically backup your data on a schedule.",
+      "autoTime": "Backup Time",
+      "autoFrequency": "Frequency",
+      "autoEnabled": "Auto backup is active — next run at {time}",
+      "autoDisabled": "Auto backup is disabled"
     }
   }
 }

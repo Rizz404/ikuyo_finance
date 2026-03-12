@@ -5,6 +5,7 @@ import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bl
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository.dart';
+import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/budget/repositories/budget_repository.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
@@ -29,7 +30,9 @@ void setupBlocs() {
     ..registerFactory<StatisticBloc>(
       () => StatisticBloc(getIt<TransactionRepository>()),
     )
-    ..registerFactory<BackupBloc>(() => BackupBloc(getIt<BackupRepository>()))
+    ..registerFactory<BackupBloc>(
+      () => BackupBloc(getIt<BackupRepository>(), getIt<AutoBackupService>()),
+    )
     ..registerFactory<AutoTransactionBloc>(
       () => AutoTransactionBloc(getIt<AutoTransactionRepository>()),
     );

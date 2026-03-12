@@ -6,6 +6,7 @@ import 'package:ikuyo_finance/core/currency/service/currency_migration_service.d
 import 'package:ikuyo_finance/core/currency/service/exchange_rate_service.dart';
 import 'package:ikuyo_finance/core/locale/cubit/locale_cubit.dart';
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
+import 'package:ikuyo_finance/core/service/workmanager_dispatcher.dart';
 import 'package:ikuyo_finance/core/storage/database_seeder.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/storage/secure_local_storage.dart';
@@ -16,7 +17,7 @@ import 'package:ikuyo_finance/di/service_locator.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
-import 'package:ikuyo_finance/features/auto_transaction/services/workmanager_dispatcher.dart';
+import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
 import 'package:ikuyo_finance/features/security/service/biometric_service.dart';
 import 'package:ikuyo_finance/features/security/service/security_storage_service.dart';
@@ -135,6 +136,11 @@ Future<void> setupCurrency() async {
 
 /// * Init notification service + Workmanager — dipanggil setelah setupRepositories & setupBlocs
 Future<void> setupAutoTransactionServices() async {
+  // * Register AutoBackupService singleton
+  getIt.registerLazySingleton<AutoBackupService>(
+    () => AutoBackupService(getIt<SharedPreferences>()),
+  );
+
   // * Register notification service singleton
   getIt.registerLazySingleton<AutoTransactionNotificationService>(
     () => AutoTransactionNotificationService(),
@@ -157,7 +163,7 @@ Future<void> setupAutoTransactionServices() async {
 
   // * Init Workmanager dengan callback dispatcher
   await Workmanager().initialize(
-    autoTransactionCallbackDispatcher,
+    workmanagerCallbackDispatcher,
     isInDebugMode: kDebugMode,
   );
 

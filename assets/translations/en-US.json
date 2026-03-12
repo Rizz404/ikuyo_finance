@@ -203,6 +203,12 @@
   "backup": {
     "screen": {
       "assets": "Assets",
+      "autoDescription": "Automatically backup your data on a schedule.",
+      "autoDisabled": "Auto backup is disabled",
+      "autoEnabled": "Auto backup is active — next run at {time}",
+      "autoFrequency": "Frequency",
+      "autoTime": "Backup Time",
+      "autoTitle": "Auto Backup",
       "backupSavedTo": "Backup saved to: {path}",
       "budgets": "Budgets",
       "categories": "Categories",

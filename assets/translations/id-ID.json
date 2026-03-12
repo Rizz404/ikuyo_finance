@@ -203,6 +203,12 @@
   "backup": {
     "screen": {
       "assets": "Aset",
+      "autoDescription": "Cadangkan data secara otomatis sesuai jadwal.",
+      "autoDisabled": "Backup otomatis dinonaktifkan",
+      "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
+      "autoFrequency": "Frekuensi",
+      "autoTime": "Waktu Backup",
+      "autoTitle": "Backup Otomatis",
       "backupSavedTo": "Backup disimpan ke: {path}",
       "budgets": "Budget",
       "categories": "Kategori",

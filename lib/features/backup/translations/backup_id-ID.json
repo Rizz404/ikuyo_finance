@@ -30,7 +30,13 @@
       "readBackupFailed": "Gagal membaca file backup: {error}",
       "saveFileFailed": "Gagal menyimpan file: {error}",
       "comingSoon": "Coming Soon",
-      "featureInDevelopment": "Fitur ini sedang dalam pengembangan"
+      "featureInDevelopment": "Fitur ini sedang dalam pengembangan",
+      "autoTitle": "Backup Otomatis",
+      "autoDescription": "Cadangkan data secara otomatis sesuai jadwal.",
+      "autoTime": "Waktu Backup",
+      "autoFrequency": "Frekuensi",
+      "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
+      "autoDisabled": "Backup otomatis dinonaktifkan"
     }
   }
 }

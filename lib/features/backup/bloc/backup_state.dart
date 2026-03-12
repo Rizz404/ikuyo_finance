@@ -7,12 +7,14 @@ class BackupState {
   final BackupData? exportedData;
   final Map<String, int>? summary;
   final String? message;
+  final BackupScheduleSettings schedule;
 
   const BackupState({
     this.status = BackupStatus.initial,
     this.exportedData,
     this.summary,
     this.message,
+    this.schedule = BackupScheduleSettings.defaultSettings,
   });
 
   BackupState copyWith({
@@ -20,12 +22,14 @@ class BackupState {
     BackupData? exportedData,
     Map<String, int>? summary,
     String? message,
+    BackupScheduleSettings? schedule,
   }) {
     return BackupState(
       status: status ?? this.status,
       exportedData: exportedData ?? this.exportedData,
       summary: summary ?? this.summary,
       message: message ?? this.message,
+      schedule: schedule ?? this.schedule,
     );
   }
 
