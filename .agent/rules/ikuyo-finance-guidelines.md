@@ -7,163 +7,302 @@ trigger: always_on
 You are pairing on the Ikuyo Finance Flutter codebase.
 Follow these rules strictly and consistently.
 
-## 0) Scope & behavior
-- Apply these rules to all code you generate/modify in this workspace.
-- If a request conflicts with these rules, ask a clarifying question before coding.
-- Keep your response brief & to the point: mention only what changed/added/removed.
+---
 
-## 1) Extensions (mandatory)
-- When accessing theme or localization, always use the project extensions:
-  - import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
-  - import 'package:ikuyo_finance/core/extensions/localization_extension.dart';
-- Theme access must use:
-  - context.theme / context.textTheme / context.colorScheme / context.colors / context.semantic / context.isDarkMode
-- Localization access must use:
-  - context.l10n / context.locale / context.isEnglish / context.isIndonesian / context.isJapanese
+## 0) Clarify Before Generating
 
-## 2) Theming (never hardcode colors)
-- DO: use context.colorScheme.*, context.colors.*, context.textTheme.*
-- DON'T: Color(0xFF...), Colors.red, any hardcoded colors.
-- If a color token does not exist, ask before introducing a new token.
+If the request is ambiguous or missing key info, ask one short question before writing any code.
 
-## 3) Logging (replace all print)
-- Never use print().
-- Use: import 'package:ikuyo_finance/core/utils/logger.dart';
-- Use the available helpers on `this`:
-  - logInfo, logError, logData, logDomain, logPresentation, logService
-- For failures: logError('message', e, s)
-- DO NOT add logging in widgets/screens unless explicitly requested.
-- Keep logging in business/data layers: BLoCs, Repositories, Services, Use Cases.
-- If unsure whether UI logging is needed, ask first: "Perlu logging di widget/screen ini?"
+Ask first when:
+- Multiple valid approaches exist
+- Target file or class is unclear
+- Static text vs localization is unclear → ask: *"Static text atau l10n?"*
+- New widget vs reuse existing is unclear
 
-## 4) Comments (Better Comments format)
-- Only use these prefixes:
-  - TODO: | FIXME: | ! warning | ? question | * important note
-- Use Bahasa Indonesia for comments: singkat, padat, jelas.
-- Keep inline comments max 1–2 lines; code should be self-explanatory.
-- If explanation is long, put it in chat response, NOT in code comments.
+---
 
-## 5) const everywhere possible
-- Use const for widgets, durations, paddings, SizedBox, constructors, lists, etc.
-- Prefer immutable patterns; avoid unnecessary rebuild churn.
+## 1) Copy-Pattern Rule
 
-## 6) Docs & files
-- Do not create new .md documentation files unless explicitly requested.
-- If you need to explain something, do it in the chat message, not as a new docs file.
+When asked to implement something "with the same pattern as X", copy X entirely, then:
+1. Rename all identifiers (e.g. `User` → `Product`, `user` → `product`)
+2. Re-check the target source/model for additions or differences
+3. Apply only the delta — do not rewrite from scratch
+```dart
+// "Buat ProductRepository dengan pattern yang sama seperti UserRepository"
+// → Copy UserRepository seluruhnya, rename User→Product, lalu diff dengan ProductDataSource
+```
 
-## 7) Shared Widgets first (no raw Material widgets unless needed)
-- Always prefer shared components from:
-  - 'package:ikuyo_finance/shared/widgets/...'
-- Use existing widgets instead of raw Material/Cupertino equivalents:
-  - AppButton (primary/secondary/text)
-  - AppTextField, AppSearchField
-  - AppDropdown, AppCheckbox, AppRadioGroup
-  - AppDateTimePicker, AppTimePicker
-  - AppText
-  - CustomAppBar, ScreenWrapper
-  - AdminShell, UserShell, AppEndDrawer
-- If a shared widget is missing a needed capability, ask before creating a new widget.
+---
 
-## 8) Widget Structure — Hybrid Approach
-- Keep everything inline inside build() as long as it stays readable.
-- Only extract when there is a clear reason — not just to "organize".
-- Scaffold-level slots (appBar, body, drawer, bottomNavigationBar, floatingActionButton)
-  must always be written inline. Never wrap them in _buildAppBar(), _buildBody(), etc.
-  Use shared components directly (CustomAppBar, AppEndDrawer, ScreenWrapper, etc.)
-- Extract to TIER 1 / TIER 2 only for deep leaf content that has grown complex,
-  not for top-level scaffold slots.
+## 2) Shared Widgets — Search Before Creating
 
-**TIER 1 — Private Function (_buildX)**
-  When: a leaf subtree is complex enough to reduce nesting,
-        accesses parent scope directly (widget.x, state, controller),
-        no independent props needed — any length is fine
+Before writing any widget, run: `rg "class App" lib/shared/widgets/`
 
-**TIER 2 — Private Class (_MyWidget)**
-  When: ONLY if one of these is needed:
-        - independent props (not from parent scope)
-        - const constructor for rebuild optimization
-        - own local state
-        - own lifecycle (initState, dispose, etc.)
-  DON'T: use just because a widget is long without the above needs
+If a shared widget covers the use case → use it. Do not create a new one.
 
-**TIER 3 — Public Class in /widgets**
-  When: used across more than 1 screen/file
-  Location: feature/category/widgets/category_card.dart
+Available shared widgets (import from `package:ikuyo_finance/shared/widgets/...`):
 
-**Decision tree:**
-  Used in > 1 screen?                              → TIER 3
-  Needs independent props / own state / lifecycle? → TIER 2
-  Deep leaf content that reduces nesting?          → TIER 1
-  Everything else (including scaffold slots)       → inline in build()
+| Widget | Purpose |
+|---|---|
+| `AppButton` | Primary / secondary / text buttons |
+| `AppTextField` | Standard text input |
+| `AppSearchField` | Search input with icon |
+| `AppDropdown` | Dropdown selector |
+| `AppCheckbox` | Checkbox input |
+| `AppRadioGroup` | Radio button group |
+| `AppDateTimePicker` | Date + time picker |
+| `AppTimePicker` | Time-only picker |
+| `AppText` | Themed text (replaces raw `Text()`) |
+| `CustomAppBar` | App bar (replaces raw `AppBar()`) |
+| `ScreenWrapper` | Screen-level layout wrapper |
+| `AdminShell` | Admin navigation shell |
+| `UserShell` | User navigation shell |
+| `AppEndDrawer` | End drawer |
 
-**Feature structure:**
+Decision rule:
+1. Shared widget exists? → **Use it**
+2. Feature-local widget exists? → **Reuse it**
+3. Neither? → Create new, follow tier rules (rule 6)
+4. Shared widget is missing a needed capability? → Ask before creating a new one
+```dart
+// Avoid
+TextField(decoration: InputDecoration(...))
+ElevatedButton(onPressed: ..., child: Text('Submit'))
+
+// Prefer
+AppTextField(...)
+AppButton(text: 'Submit', onPressed: onSubmit)
+```
+
+---
+
+## 3) Theming — Never Hardcode Colors
+```dart
+// Avoid
+color: Color(0xFF1A1A2E)
+color: Colors.red
+
+// Prefer
+color: context.colorScheme.primary
+color: context.colors.surface
+```
+
+Never use `Color(0xFF...)`, `Colors.*`, or any hardcoded color value.
+If a color token does not exist, ask before introducing a new one.
+
+---
+
+## 4) Extensions — Import Only When Needed
+
+Never import all extensions by default. Only import what the file actually uses.
+
+| When you need | Import | Access via |
+|---|---|---|
+| Theme, colors, dark mode | `theme_extension.dart` | `context.theme`, `context.colors`, `context.colorScheme`, `context.isDarkMode` |
+| Translations, locale change | `localization_extension.dart`, `locale_extension.dart` | `context.l10n`, `context.currentSupportedLocale`, `context.changeLocale()` |
+| Format or convert money | `currency_extension.dart` | `context.formatMoney()`, `context.currencySymbol`, `amount.convertTo()` |
+| Navigate between screens | `navigator_extension.dart` | `context.pushToX()`, `context.goToX()` |
+| Logs in BLoC / Service / Repo | `logger_extension.dart` | `logInfo()`, `logError()`, `logService()` |
+| Filter dropdowns | `dropdown_extension.dart` | `AppDropdownExtensions.createFilterItems()` |
+| Backup frequency labels | `backup_frequency_extension.dart` | `frequency.label`, `frequency.labelId` |
+
+All extensions are in `package:ikuyo_finance/core/extensions/`.
+
+---
+
+## 5) Logging
+```dart
+import 'package:ikuyo_finance/core/utils/logger.dart';
+
+logInfo('Starting process');
+logError('Something failed', e, stackTrace);
+```
+
+- Use: `logInfo`, `logError`, `logData`, `logDomain`, `logPresentation`, `logService`
+- Only in: BLoCs, Repositories, Services, Use Cases
+- Never in widgets or screens unless explicitly asked
+- If unsure: ask *"Perlu logging di widget/screen ini?"*
+
+---
+
+## 6) Widget Structure
+
+Keep everything inline in `build()` unless there is a clear reason to extract.
+Scaffold slots are always inline — never wrap in `_buildX()`:
+```dart
+// Avoid
+appBar: _buildAppBar()
+body: _buildBody()
+
+// Prefer
+appBar: CustomAppBar(title: 'Screen Title')
+body: ListView.builder(...)
+```
+
+**Tier 1 — `_buildX`**
+When: leaf subtree is complex, accesses parent scope, no independent props needed.
+```dart
+Widget _buildEmptyState() => Center(child: AppText('No items'));
+```
+
+**Tier 2 — `_MyWidget`**
+Only when one of these is required:
+- Independent props (not from parent scope)
+- `const` constructor for rebuild optimization
+- Own local state
+- Own lifecycle (`initState`, `dispose`)
+
+**Tier 3 — Public class in `/widgets`**
+Only when used across more than one screen or file.
+Location: `lib/features/<feature>/widgets/<name>.dart`
+
+Decision tree:
+- Used in > 1 screen? → Tier 3
+- Needs independent props / own state / lifecycle? → Tier 2
+- Complex leaf that reduces nesting? → Tier 1
+- Everything else (including scaffold slots) → inline
+
+Feature structure:
 ```
 lib/features/category/
 ├── screens/
-│   └── category_screen.dart   ← inline build, TIER 1 & TIER 2 if needed
+│   └── category_screen.dart   ← inline build, Tier 1 & 2 if needed
 └── widgets/
-    └── category_card.dart     ← TIER 3
+    └── category_card.dart     ← Tier 3
 ```
 
-## 9) Widget Member Ordering
-Applies to: StatelessWidget, StatefulWidget, ConsumerWidget,
-            ConsumerStatefulWidget, HookWidget, HookConsumerWidget
+---
 
-**STATELESS / CONSUMER WIDGET**
-  1. Fields / final variables
-  2. Constructor
-  3. Override methods (except build)
-  4. build()
-  5. Private widget functions (_buildX) ← always last, per rule 8
+## 7) Widget Member Ordering
 
-**STATEFUL / CONSUMER STATEFUL**
+Applies to: StatelessWidget, StatefulWidget, ConsumerWidget, ConsumerStatefulWidget, HookWidget, HookConsumerWidget
 
-StatefulWidget class:
-  1. Fields / final variables (props)
-  2. Constructor
-  3. createState()
+**StatelessWidget / ConsumerWidget:**
+1. Fields / final variables
+2. Constructor
+3. Override methods (except `build`)
+4. `build()`
+5. Private widget functions `_buildX`
 
-State class:
-  1. Variables (controllers, flags, notifiers, etc.)
-  2. Override methods (initState, didChangeDependencies, dispose, etc.)
-  3. Private logic functions (_handleX, _loadX, etc.)
-  4. build() — widget tree only, no logic/vars inside
-  5. Private widget functions (_buildX) ← always last, per rule 8
+**StatefulWidget State class:**
+1. Variables (controllers, flags, notifiers)
+2. Override methods (`initState`, `didChangeDependencies`, `dispose`, etc.)
+3. Private logic functions (`_handleX`, `_loadX`)
+4. `build()` — widget tree only, no logic or variable declarations inside
+5. Private widget functions `_buildX`
+```dart
+// Avoid
+Widget build(BuildContext context) {
+  final ctrl = TextEditingController(); // ❌ never declare here
+}
 
-- DON'T: declare variables or logic inside build()
-- DO: move all variables to class-level or initState
+// Prefer — declare at class level
+late final TextEditingController _ctrl;
 
-## 10) Static analysis & linting (IMPORTANT)
-- Do NOT run or suggest running Flutter/Dart analysis automatically.
-- Never run these unless the user explicitly asks:
-  - flutter analyze
-  - dart analyze
-  - dart fix
-  - dart format / flutter format
-  - any lint command or "auto-fix all"
-- If analysis is relevant, ask: "Mau aku jalankan flutter analyze/dart analyze?" and wait for confirmation.
-- Do not use any auto-run / turbo execution for analysis/lint commands.
+@override
+void initState() {
+  super.initState();
+  _ctrl = TextEditingController();
+}
+```
 
-## 11) Translations (static text default)
-- DO NOT modify or add to translation files (.json / translations) unless explicitly requested.
-- Use static/hardcoded text strings in widgets by default.
-- Only use context.l10n when the user specifically asks for localization support.
-- If unsure whether to localize, ask first: "Mau pakai translation atau static text?"
-- If EXPLICITLY requested to add translations, strictly follow the feature-based l10n pattern:
-  - Add the new translation keys to ALL available `.json` files inside the corresponding feature's `translations` folder.
-  - Example: If editing `lib/feature/appraisal/screens/appraisal_result_screen.dart`, add the translations to all `.json` files in `lib/feature/appraisal/translations/`.
-  - After updating the `.json` files, you MUST run the following command to generate the localization files:
-    `dart run tools/merge_translations.dart`
+---
 
-## 12) Terminal workflow preferences
-- Prefer modern CLI tools:
-  - eza, fd, rg, bat, sd
-  - lazygit, gh, delta
-  - z (zoxide), fzf, yazi
-  - btm, procs, dust, duf
-- Avoid: dir, findstr, find, grep, cat, and manual repetitive cd.
+## 8) Text & Localization
 
-## 13) Code output expectations
-- Prefer small, focused diffs.
-- When editing code, preserve existing architecture and patterns in the repo.
-- Avoid introducing new dependencies unless explicitly requested.
+- Use static strings by default: `'Submit'`, `'Cancel'`, `'Save'`
+- Never use `context.l10n` or edit `.json` files unless explicitly asked
+
+If localization is explicitly requested:
+1. Add key to **all** `.json` files in the feature's `translations/` folder
+2. Run: `dart run tools/merge_translations.dart`
+
+---
+
+## 9) Minimal Diff — Change Only What's Asked
+
+Do not reformat, reorder, or refactor code that is not part of the request.
+Only touch lines directly related to the task.
+Avoid introducing new dependencies unless explicitly requested.
+
+---
+
+## 10) Deletions — Point, Don't Remove
+
+For files, folders, classes, or functions 30+ lines — do not delete.
+Instead, point to what should be removed and where.
+```
+// "Remove `_buildOldWidget()` in lib/features/transaction/screens/transaction_screen.dart"
+// "Delete lib/features/legacy/ folder — no longer referenced"
+```
+
+For 1–5 lines → edit directly.
+
+---
+
+## 11) Static Analysis — Never Auto-Run
+
+Never run unless explicitly asked:
+- `flutter analyze`, `dart analyze`, `dart fix`
+- `dart format`, `flutter format`
+- Any lint or auto-fix command
+
+If relevant, ask: *"Mau aku jalankan flutter analyze?"* and wait for confirmation.
+
+---
+
+## 12) Const
+
+Use `const` everywhere valid:
+```dart
+const SizedBox(height: 16)
+const Duration(milliseconds: 300)
+const EdgeInsets.symmetric(horizontal: 16)
+```
+
+---
+
+## 13) Comments
+
+Better Comments format only. Use Bahasa Indonesia, singkat dan padat.
+```dart
+// TODO: implementasi pagination
+// FIXME: null check belum ada
+// ! warning: ini mutasi shared state
+// ? apakah perlu pakai stream?
+// * dipanggil setiap frame
+```
+
+Inline comments max 1–2 lines. Jika penjelasan panjang, tulis di chat — bukan di kode.
+
+---
+
+## 14) Documentation
+
+- No `.md` files unless explicitly requested
+- If explanation is needed, write it in chat — not as a new file
+
+---
+
+## 15) Response Style
+
+- Brief and to the point
+- Only mention what changed, added, or removed
+- No lengthy explanations unless asked
+
+---
+
+## 16) Terminal Tools
+
+| Task | Tool |
+|---|---|
+| List files | `eza` |
+| Find files | `fd` |
+| Search content | `rg` |
+| Read files | `bat` |
+| Replace text | `sd` |
+| Git UI | `lazygit`, `gh`, `delta` |
+| Navigate | `z` (zoxide), `fzf`, `yazi` |
+| Monitor | `btm`, `procs`, `dust`, `duf` |
+
+Avoid: `dir`, `findstr`, `find`, `grep`, `cat`, manual `cd`

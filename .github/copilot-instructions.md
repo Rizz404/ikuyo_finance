@@ -8,100 +8,33 @@ Follow these rules on every suggestion, edit, or generation — no exceptions.
 
 ---
 
-## 1. Extensions — Import Only When Needed
+## 1. Clarify Before Generating
 
-Never import all extensions by default. Only import what the file actually uses.
+If the request is ambiguous or missing key info, ask one short question before writing any code.
+Do not assume and generate a large block that may need to be thrown away.
 
-| When you need | Import | Access via |
-|---|---|---|
-| Theme, colors, dark mode | `theme_extension.dart` | `context.theme`, `context.colors`, `context.colorScheme`, `context.isDarkMode` |
-| Translations, locale change | `localization_extension.dart`, `locale_extension.dart` | `context.l10n`, `context.currentSupportedLocale`, `context.changeLocale()` |
-| Format or convert money | `currency_extension.dart` | `context.formatMoney()`, `context.currencySymbol`, `amount.convertTo()` |
-| Navigate between screens | `navigator_extension.dart` | `context.pushToX()`, `context.goToX()` |
-| Logs in BLoC / Service / Repo | `logger_extension.dart` | `logInfo()`, `logError()`, `logService()` |
-| Filter dropdowns | `dropdown_extension.dart` | `AppDropdownExtensions.createFilterItems()` |
-| Backup frequency labels | `backup_frequency_extension.dart` | `frequency.label`, `frequency.labelId` |
-
-All extensions are in `package:ikuyo_finance/core/extensions/`.
+Examples of when to ask first:
+- Multiple valid approaches exist
+- The target file or class is unclear
+- Static text vs localization is unclear (ask: *"Static text atau l10n?"*)
+- New widget vs reuse existing is unclear
 
 ---
 
-## 2. Theming — Never Hardcode Colors
+## 2. Copy-Pattern Rule
 
+When asked to implement something "with the same pattern as X", copy X entirely, then:
+1. Rename all identifiers (e.g. `User` → `Product`, `user` → `product`)
+2. Re-check the target source/model for additions or differences
+3. Apply only the delta — do not rewrite from scratch
 ```dart
-// Avoid
-color: Color(0xFF1A1A2E)
-color: Colors.red
-
-// Prefer
-color: context.colorScheme.primary
-color: context.colors.surface
-```
-
-Never use `Color(0xFF...)`, `Colors.*`, or any hardcoded color value anywhere.
-
----
-
-## 3. Logging
-
-Import logger and use the correct function per layer:
-
-```dart
-import 'package:ikuyo_finance/core/utils/logger.dart';
-
-logInfo('Starting process');
-logError('Something failed', e, stackTrace);
-```
-
-- Use: `logInfo`, `logError`, `logData`, `logDomain`, `logPresentation`, `logService`
-- Only add logging in: BLoCs, Repositories, Services, Use Cases
-- Never add logging inside widgets or screens unless explicitly asked
-
----
-
-## 4. Comments
-
-Use Better Comments format only:
-
-```dart
-// TODO: implement pagination
-// FIXME: null check missing here
-// ! warning: this mutates shared state
-// ? should this use a stream instead?
-// * this is called on every frame
+// "Buat ProductRepository dengan pattern yang sama seperti UserRepository"
+// → Copy UserRepository seluruhnya, rename User→Product, lalu diff dengan ProductDataSource
 ```
 
 ---
 
-## 5. Const
-
-Use `const` everywhere it is valid:
-
-```dart
-const SizedBox(height: 16)
-const Duration(milliseconds: 300)
-const EdgeInsets.symmetric(horizontal: 16)
-```
-
----
-
-## 6. Response Style
-
-- Be brief and to the point
-- Only mention what changed, added, or removed
-- No lengthy explanations unless asked
-
----
-
-## 7. Documentation
-
-- No `.md` files unless explicitly requested
-- Inline comments: 1–2 lines max
-- Code should be self-explanatory
-
----
-
-## 8. Shared Widgets — Search Before Creating
+## 3. Shared Widgets — Search Before Creating
 
 **Before writing any widget, check if a shared widget already exists.**
 
@@ -132,7 +65,6 @@ Available shared widgets (import from `package:ikuyo_finance/shared/widgets/...`
 1. Shared widget exists? → **Use it**
 2. Feature-local widget exists? → **Reuse it**
 3. Neither exists? → Create new, following widget tier rules below
-
 ```dart
 // Avoid
 TextField(decoration: InputDecoration(...))
@@ -145,7 +77,56 @@ AppButton(text: 'Submit', onPressed: onSubmit)
 
 ---
 
-## 9. Text & Localization
+## 4. Theming — Never Hardcode Colors
+```dart
+// Avoid
+color: Color(0xFF1A1A2E)
+color: Colors.red
+
+// Prefer
+color: context.colorScheme.primary
+color: context.colors.surface
+```
+
+Never use `Color(0xFF...)`, `Colors.*`, or any hardcoded color value anywhere.
+
+---
+
+## 5. Extensions — Import Only When Needed
+
+Never import all extensions by default. Only import what the file actually uses.
+
+| When you need | Import | Access via |
+|---|---|---|
+| Theme, colors, dark mode | `theme_extension.dart` | `context.theme`, `context.colors`, `context.colorScheme`, `context.isDarkMode` |
+| Translations, locale change | `localization_extension.dart`, `locale_extension.dart` | `context.l10n`, `context.currentSupportedLocale`, `context.changeLocale()` |
+| Format or convert money | `currency_extension.dart` | `context.formatMoney()`, `context.currencySymbol`, `amount.convertTo()` |
+| Navigate between screens | `navigator_extension.dart` | `context.pushToX()`, `context.goToX()` |
+| Logs in BLoC / Service / Repo | `logger_extension.dart` | `logInfo()`, `logError()`, `logService()` |
+| Filter dropdowns | `dropdown_extension.dart` | `AppDropdownExtensions.createFilterItems()` |
+| Backup frequency labels | `backup_frequency_extension.dart` | `frequency.label`, `frequency.labelId` |
+
+All extensions are in `package:ikuyo_finance/core/extensions/`.
+
+---
+
+## 6. Logging
+
+Import logger and use the correct function per layer:
+```dart
+import 'package:ikuyo_finance/core/utils/logger.dart';
+
+logInfo('Starting process');
+logError('Something failed', e, stackTrace);
+```
+
+- Use: `logInfo`, `logError`, `logData`, `logDomain`, `logPresentation`, `logService`
+- Only add logging in: BLoCs, Repositories, Services, Use Cases
+- Never add logging inside widgets or screens unless explicitly asked
+
+---
+
+## 7. Text & Localization
 
 - Use static text strings by default: `'Submit'`, `'Cancel'`, `'Save'`
 - Do **not** use `context.l10n` or edit `.json` files unless explicitly asked
@@ -157,12 +138,11 @@ AppButton(text: 'Submit', onPressed: onSubmit)
 
 ---
 
-## 10. Widget Structure
+## 8. Widget Structure
 
 Keep everything inline in `build()` unless there is a clear reason to extract.
 
 ### Scaffold slots are always inline
-
 ```dart
 // Avoid
 appBar: _buildAppBar()
@@ -177,7 +157,6 @@ body: ListView.builder(...)
 
 **Tier 1 — Private function `_buildX`**
 When: leaf content is complex, accesses parent scope, no independent props needed.
-
 ```dart
 Widget _buildEmptyState() => Center(child: AppText('No items'));
 ```
@@ -201,7 +180,7 @@ Location: `lib/features/<feature>/widgets/<name>.dart`
 
 ---
 
-## 11. Widget Member Ordering
+## 9. Widget Member Ordering
 
 **StatelessWidget / ConsumerWidget:**
 1. Fields / final variables
@@ -216,7 +195,6 @@ Location: `lib/features/<feature>/widgets/<name>.dart`
 3. Private logic functions (`_handleX`, `_loadX`)
 4. `build()` — widget tree only, no logic or variable declarations inside
 5. Private widget functions `_buildX`
-
 ```dart
 // Avoid
 Widget build(BuildContext context) {
@@ -235,26 +213,14 @@ void initState() {
 
 ---
 
-## 12. Terminal Tools
+## 10. Minimal Diff — Change Only What's Asked
 
-Prefer modern CLI tools:
-
-| Task | Tool |
-|---|---|
-| List files | `eza` |
-| Find files | `fd` |
-| Search content | `rg` |
-| Read files | `bat` |
-| Replace text | `sd` |
-| Git UI | `lazygit` |
-| Navigate | `z` (zoxide) |
-| Monitor | `btm`, `procs` |
-
-Avoid: `dir`, `findstr`, `find`, `grep`, `cat`, manual `cd`
+Do not reformat, reorder, or refactor code that is not part of the request.
+Only touch lines directly related to the task.
 
 ---
 
-## 13. Deletions — Point, Don't Remove
+## 11. Deletions — Point, Don't Remove
 
 When the task involves deleting a file, folder, class, or function, do not perform the deletion.
 Instead, tell me what to remove and where.
@@ -274,20 +240,59 @@ For small removals (1–5 lines), just make the edit directly.
 
 ---
 
-## 14. Minimal Diff — Change Only What's Asked
+## 12. Const
 
-Do not reformat, reorder, or refactor code that is not part of the request.
-Only touch lines directly related to the task.
+Use `const` everywhere it is valid:
+```dart
+const SizedBox(height: 16)
+const Duration(milliseconds: 300)
+const EdgeInsets.symmetric(horizontal: 16)
+```
 
 ---
 
-## 15. Clarify Before Generating
+## 13. Comments
 
-If the request is ambiguous or missing key info, ask one short question before writing any code.
-Do not assume and generate a large block that may need to be thrown away.
+Use Better Comments format only:
+```dart
+// TODO: implement pagination
+// FIXME: null check missing here
+// ! warning: this mutates shared state
+// ? should this use a stream instead?
+// * this is called on every frame
+```
 
-Examples of when to ask first:
-- Multiple valid approaches exist
-- The target file or class is unclear
-- Static text vs localization is unclear (ask: *"Static text atau l10n?"*)
-- New widget vs reuse existing is unclear
+---
+
+## 14. Documentation
+
+- No `.md` files unless explicitly requested
+- Inline comments: 1–2 lines max
+- Code should be self-explanatory
+
+---
+
+## 15. Response Style
+
+- Be brief and to the point
+- Only mention what changed, added, or removed
+- No lengthy explanations unless asked
+
+---
+
+## 16. Terminal Tools
+
+Prefer modern CLI tools:
+
+| Task | Tool |
+|---|---|
+| List files | `eza` |
+| Find files | `fd` |
+| Search content | `rg` |
+| Read files | `bat` |
+| Replace text | `sd` |
+| Git UI | `lazygit` |
+| Navigate | `z` (zoxide) |
+| Monitor | `btm`, `procs` |
+
+Avoid: `dir`, `findstr`, `find`, `grep`, `cat`, manual `cd`
