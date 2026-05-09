@@ -133,10 +133,10 @@ jobs:
             LOG_RANGE="${PREV_TAG}..HEAD"
           fi
 
-          FEATURES=$(git log "$LOG_RANGE" --pretty=format:"- %s (\`%h\`)" --grep="^feat")
-          FIXES=$(git log "$LOG_RANGE" --pretty=format:"- %s (\`%h\`)" --grep="^fix")
-          PERF=$(git log "$LOG_RANGE" --pretty=format:"- %s (\`%h\`)" --grep="^perf")
-          REFACTOR=$(git log "$LOG_RANGE" --pretty=format:"- %s (\`%h\`)" --grep="^refactor")
+          FEATURES=$(git log "$LOG_RANGE" --pretty=format:"%s" --grep="^feat" | sed 's/^[a-z]*([^)]*): //;s/^[a-z]*: //' | sed 's/^/- /')
+          FIXES=$(git log "$LOG_RANGE" --pretty=format:"%s" --grep="^fix" | sed 's/^[a-z]*([^)]*): //;s/^[a-z]*: //' | sed 's/^/- /')
+          PERF=$(git log "$LOG_RANGE" --pretty=format:"%s" --grep="^perf" | sed 's/^[a-z]*([^)]*): //;s/^[a-z]*: //' | sed 's/^/- /')
+          REFACTOR=$(git log "$LOG_RANGE" --pretty=format:"%s" --grep="^refactor" | sed 's/^[a-z]*([^)]*): //;s/^[a-z]*: //' | sed 's/^/- /')
 
           {
             echo "## What's Changed"
