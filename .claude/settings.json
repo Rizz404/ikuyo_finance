@@ -10,7 +10,9 @@
       "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" show --stat HEAD)",
       "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" status)",
       "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" diff lib/features/auto_transaction/services/auto_transaction_scheduler.dart)",
-      "Bash(dart analyze *)"
+      "Bash(dart analyze *)",
+      "Bash(flutter --version)",
+      "Bash(java -version)"
     ],
     "additionalDirectories": [
       "d:\\kodingan\\personal\\ikuyo_finance\\lib\\features\\security\\service"
