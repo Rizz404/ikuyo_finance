@@ -6,6 +6,9 @@ enum BudgetStatus { initial, loading, loadingMore, success, failure }
 // * Status untuk write operations (create, update, delete)
 enum BudgetWriteStatus { initial, loading, success, failure }
 
+// * Action type for write operations
+enum BudgetWriteAction { none, create, update, delete }
+
 final class BudgetState extends Equatable {
   // * Read state
   final BudgetStatus status;
@@ -29,6 +32,7 @@ final class BudgetState extends Equatable {
 
   // * Write state (terpisah dari read)
   final BudgetWriteStatus writeStatus;
+  final BudgetWriteAction writeAction;
   final String? writeSuccessMessage;
   final String? writeErrorMessage;
   final Budget? lastCreatedBudget;
@@ -51,6 +55,7 @@ final class BudgetState extends Equatable {
     this.currentEndDateFrom,
     this.currentEndDateTo,
     this.writeStatus = BudgetWriteStatus.initial,
+    this.writeAction = BudgetWriteAction.none,
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedBudget,
@@ -110,6 +115,7 @@ final class BudgetState extends Equatable {
     DateTime? Function()? currentEndDateFrom,
     DateTime? Function()? currentEndDateTo,
     BudgetWriteStatus? writeStatus,
+    BudgetWriteAction? writeAction,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
     Budget? Function()? lastCreatedBudget,
@@ -150,6 +156,7 @@ final class BudgetState extends Equatable {
           ? currentEndDateTo()
           : this.currentEndDateTo,
       writeStatus: writeStatus ?? this.writeStatus,
+      writeAction: writeAction ?? this.writeAction,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
           : this.writeSuccessMessage,
@@ -181,6 +188,7 @@ final class BudgetState extends Equatable {
     currentEndDateFrom,
     currentEndDateTo,
     writeStatus,
+    writeAction,
     writeSuccessMessage,
     writeErrorMessage,
     lastCreatedBudget,

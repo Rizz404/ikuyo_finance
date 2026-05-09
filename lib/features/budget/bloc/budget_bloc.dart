@@ -411,7 +411,12 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetCreated event,
     Emitter<BudgetState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: BudgetWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: BudgetWriteStatus.loading,
+        writeAction: BudgetWriteAction.create,
+      ),
+    );
 
     final result = await _budgetRepository.createBudget(event.params).run();
 
@@ -419,12 +424,14 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: BudgetWriteStatus.failure,
+          writeAction: BudgetWriteAction.create,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: BudgetWriteStatus.success,
+          writeAction: BudgetWriteAction.create,
           writeSuccessMessage: () => success.message,
           lastCreatedBudget: () => success.data,
           // * Tambah ke list langsung untuk UX responsif
@@ -439,7 +446,12 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetUpdated event,
     Emitter<BudgetState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: BudgetWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: BudgetWriteStatus.loading,
+        writeAction: BudgetWriteAction.update,
+      ),
+    );
 
     final result = await _budgetRepository.updateBudget(event.params).run();
 
@@ -447,12 +459,14 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: BudgetWriteStatus.failure,
+          writeAction: BudgetWriteAction.update,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: BudgetWriteStatus.success,
+          writeAction: BudgetWriteAction.update,
           writeSuccessMessage: () => success.message,
           // * Update item di list
           budgets: state.budgets.map((budget) {
@@ -468,7 +482,12 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetDeleted event,
     Emitter<BudgetState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: BudgetWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: BudgetWriteStatus.loading,
+        writeAction: BudgetWriteAction.delete,
+      ),
+    );
 
     final result = await _budgetRepository.deleteBudget(ulid: event.ulid).run();
 
@@ -476,12 +495,14 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: BudgetWriteStatus.failure,
+          writeAction: BudgetWriteAction.delete,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: BudgetWriteStatus.success,
+          writeAction: BudgetWriteAction.delete,
           writeSuccessMessage: () => success.message,
           // * Hapus dari list
           budgets: state.budgets
@@ -500,6 +521,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     emit(
       state.copyWith(
         writeStatus: BudgetWriteStatus.initial,
+        writeAction: BudgetWriteAction.none,
         writeSuccessMessage: () => null,
         writeErrorMessage: () => null,
         lastCreatedBudget: () => null,

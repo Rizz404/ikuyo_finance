@@ -49,6 +49,13 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
   }
 
   void _handleWriteStatus(BuildContext context, BudgetState state) {
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final action = state.writeAction;
+    if (action != BudgetWriteAction.create &&
+        action != BudgetWriteAction.update &&
+        action != BudgetWriteAction.delete) {
+      return;
+    }
     if (state.writeStatus == BudgetWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,
