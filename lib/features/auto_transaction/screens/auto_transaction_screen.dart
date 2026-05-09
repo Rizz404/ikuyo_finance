@@ -58,6 +58,11 @@ class _AutoTransactionScreenState extends State<AutoTransactionScreen> {
   void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
     // * Guard: skip if a child route is currently on top (prevents duplicate toasts)
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final action = state.writeAction;
+    if (action != AutoTransactionWriteAction.groupBatchDelete &&
+        action != AutoTransactionWriteAction.groupToggle) {
+      return;
+    }
 
     if (state.writeStatus == AutoTransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(

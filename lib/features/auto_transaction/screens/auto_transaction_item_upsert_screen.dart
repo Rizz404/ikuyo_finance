@@ -50,6 +50,12 @@ class _AutoTransactionItemUpsertScreenState
   }
 
   void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final action = state.writeAction;
+    if (action != AutoTransactionWriteAction.itemCreate &&
+        action != AutoTransactionWriteAction.itemDelete) {
+      return;
+    }
     if (state.writeStatus == AutoTransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,

@@ -34,6 +34,9 @@ class _AutoTransactionLogScreenState extends State<AutoTransactionLogScreen> {
 
   void _handleWriteStatus(BuildContext context, AutoTransactionState state) {
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    if (state.writeAction != AutoTransactionWriteAction.logBatchDelete) {
+      return;
+    }
 
     if (state.writeStatus == AutoTransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(

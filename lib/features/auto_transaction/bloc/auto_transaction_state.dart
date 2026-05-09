@@ -4,6 +4,24 @@ enum AutoTransactionStatus { initial, loading, success, failure }
 
 enum AutoTransactionWriteStatus { initial, loading, success, failure }
 
+enum AutoTransactionWriteAction {
+  none,
+  groupCreate,
+  groupUpdate,
+  groupDelete,
+  groupBatchDelete,
+  groupToggle,
+  groupPause,
+  groupResume,
+  groupWithItemCreate,
+  itemCreate,
+  itemUpdate,
+  itemDelete,
+  itemBatchDelete,
+  itemReorder,
+  logBatchDelete,
+}
+
 final class AutoTransactionState extends Equatable {
   final AutoTransactionStatus status;
   final List<AutoTransactionGroup> groups;
@@ -15,6 +33,7 @@ final class AutoTransactionState extends Equatable {
   final List<AutoTransactionLog> currentLogs;
 
   final AutoTransactionWriteStatus writeStatus;
+  final AutoTransactionWriteAction writeAction;
   final String? errorMessage;
   final String? writeSuccessMessage;
   final String? writeErrorMessage;
@@ -25,6 +44,7 @@ final class AutoTransactionState extends Equatable {
     this.currentItems = const [],
     this.currentLogs = const [],
     this.writeStatus = AutoTransactionWriteStatus.initial,
+    this.writeAction = AutoTransactionWriteAction.none,
     this.errorMessage,
     this.writeSuccessMessage,
     this.writeErrorMessage,
@@ -39,6 +59,7 @@ final class AutoTransactionState extends Equatable {
     List<AutoTransactionItem>? currentItems,
     List<AutoTransactionLog>? currentLogs,
     AutoTransactionWriteStatus? writeStatus,
+    AutoTransactionWriteAction? writeAction,
     String? Function()? errorMessage,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
@@ -49,6 +70,7 @@ final class AutoTransactionState extends Equatable {
       currentItems: currentItems ?? this.currentItems,
       currentLogs: currentLogs ?? this.currentLogs,
       writeStatus: writeStatus ?? this.writeStatus,
+      writeAction: writeAction ?? this.writeAction,
       errorMessage: errorMessage != null ? errorMessage() : this.errorMessage,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
@@ -66,6 +88,7 @@ final class AutoTransactionState extends Equatable {
     currentItems,
     currentLogs,
     writeStatus,
+    writeAction,
     errorMessage,
     writeSuccessMessage,
     writeErrorMessage,
