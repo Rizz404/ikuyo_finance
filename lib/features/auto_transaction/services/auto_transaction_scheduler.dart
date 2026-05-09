@@ -4,6 +4,7 @@ import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_log.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_log_status.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_alarm_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
@@ -12,14 +13,17 @@ class AutoTransactionScheduler {
   final AutoTransactionRepository _repo;
   final TransactionRepository _transactionRepo;
   final AutoTransactionNotificationService _notifService;
+  final AutoTransactionAlarmService? _alarmService;
 
   const AutoTransactionScheduler({
     required AutoTransactionRepository repo,
     required TransactionRepository transactionRepo,
     required AutoTransactionNotificationService notifService,
+    AutoTransactionAlarmService? alarmService,
   }) : _repo = repo,
        _transactionRepo = transactionRepo,
-       _notifService = notifService;
+       _notifService = notifService,
+       _alarmService = alarmService;
 
   // * Entry point utama — dipanggil dari Workmanager & foreground trigger
   Future<void> runPendingExecutions() async {
@@ -118,6 +122,18 @@ class AutoTransactionScheduler {
           isActive: stillActive,
         )
         .run();
+
+    // * Re-arm exact alarm for the next tick so subsequent executions are
+    //   triggered precisely at the scheduled time, not by WorkManager drift.
+    if (stillActive && _alarmService != null) {
+      // Reflect the updated nextExecutedAt on the in-memory group object
+      // so the alarm service sees the correct next time.
+      group.nextExecutedAt = scheduled;
+      group.isActive = stillActive;
+      await _alarmService.scheduleForGroup(group);
+    } else if (!stillActive && _alarmService != null) {
+      await _alarmService.cancelForGroup(group);
+    }
 
     // * Kirim satu notifikasi per grup per run
     if (logs.isNotEmpty) {

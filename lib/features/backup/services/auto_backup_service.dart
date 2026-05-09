@@ -5,7 +5,7 @@ import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository_impl.dart';
-import 'package:ikuyo_finance/features/backup/services/auto_backup_notification_service.dart';
+import 'package:ikuyo_finance/features/backup/services/auto_backup_alarm_service.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,8 +16,9 @@ const autoBackupTaskUniqueName = 'ikuyo_auto_backup';
 
 class AutoBackupService {
   final SharedPreferences _prefs;
+  final AutoBackupAlarmService _alarmService;
 
-  const AutoBackupService(this._prefs);
+  const AutoBackupService(this._prefs, this._alarmService);
 
   // ─── Settings ─────────────────────────────────────────────────────────────
 
@@ -52,6 +53,10 @@ class AutoBackupService {
       'initialDelay=${settings.initialDelay.inMinutes}m',
     );
 
+    // Exact alarm — primary trigger, fires precisely at scheduled time
+    await _alarmService.scheduleFromSettings(settings);
+
+    // Workmanager — safety net catch-up (e.g. after device reboot)
     await Workmanager().registerPeriodicTask(
       autoBackupTaskUniqueName,
       autoBackupTaskName,
@@ -63,6 +68,7 @@ class AutoBackupService {
   }
 
   Future<void> cancel() async {
+    await _alarmService.cancel();
     await Workmanager().cancelByUniqueName(autoBackupTaskUniqueName);
     logService('AutoBackupService: jadwal dibatalkan');
   }
@@ -71,10 +77,7 @@ class AutoBackupService {
 
   /// Runs inside the Workmanager isolate — no DI available.
   static Future<bool> runBackup() async {
-    final notifService = AutoBackupNotificationService();
     try {
-      await notifService.initializeForBackground();
-
       final storage = ObjectBoxStorage();
       await storage.init();
 
@@ -86,20 +89,16 @@ class AutoBackupService {
       return await result.fold(
         (failure) async {
           talker.error('AutoBackup background gagal: ${failure.message}');
-          await notifService.showFailure(failure.message);
           return false;
         },
         (success) async {
-          final backupData = success.data!;
-          final filePath = await _saveBackupToFile(backupData);
+          final filePath = await _saveBackupToFile(success.data!);
           talker.info('AutoBackup background selesai: $filePath');
-          await notifService.showSuccess(filePath);
           return true;
         },
       );
     } catch (e, s) {
       talker.error('AutoBackup background exception', e, s);
-      await notifService.showFailure(e.toString());
       return false;
     }
   }

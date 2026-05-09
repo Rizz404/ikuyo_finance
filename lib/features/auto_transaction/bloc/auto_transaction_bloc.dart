@@ -8,13 +8,15 @@ import 'package:ikuyo_finance/features/auto_transaction/models/create_auto_item_
 import 'package:ikuyo_finance/features/auto_transaction/models/update_auto_group_params.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/update_auto_item_params.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_alarm_service.dart';
 
 part 'auto_transaction_event.dart';
 part 'auto_transaction_state.dart';
 
 class AutoTransactionBloc
     extends Bloc<AutoTransactionEvent, AutoTransactionState> {
-  AutoTransactionBloc(this._repo) : super(const AutoTransactionState()) {
+  AutoTransactionBloc(this._repo, this._alarmService)
+    : super(const AutoTransactionState()) {
     // * Group read
     on<AutoGroupFetched>(_onGroupFetched);
 
@@ -51,6 +53,7 @@ class AutoTransactionBloc
   }
 
   final AutoTransactionRepository _repo;
+  final AutoTransactionAlarmService _alarmService;
 
   // ─── Group read ───────────────────────────────────────────────────────────
 
@@ -89,6 +92,7 @@ class AutoTransactionBloc
 
     final result = await _repo.createGroup(event.params).run();
 
+    AutoTransactionGroup? created;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -96,14 +100,18 @@ class AutoTransactionBloc
           writeErrorMessage: () => failure.message,
         ),
       ),
-      (success) => emit(
-        state.copyWith(
-          writeStatus: AutoTransactionWriteStatus.success,
-          writeSuccessMessage: () => success.message,
-          groups: [success.data!, ...state.groups],
-        ),
-      ),
+      (success) {
+        created = success.data!;
+        emit(
+          state.copyWith(
+            writeStatus: AutoTransactionWriteStatus.success,
+            writeSuccessMessage: () => success.message,
+            groups: [success.data!, ...state.groups],
+          ),
+        );
+      },
     );
+    if (created != null) await _alarmService.scheduleForGroup(created!);
   }
 
   Future<void> _onGroupUpdated(
@@ -114,6 +122,7 @@ class AutoTransactionBloc
 
     final result = await _repo.updateGroup(event.params).run();
 
+    AutoTransactionGroup? updated;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -121,26 +130,36 @@ class AutoTransactionBloc
           writeErrorMessage: () => failure.message,
         ),
       ),
-      (success) => emit(
-        state.copyWith(
-          writeStatus: AutoTransactionWriteStatus.success,
-          writeSuccessMessage: () => success.message,
-          groups: state.groups
-              .map((g) => g.ulid == event.params.ulid ? success.data! : g)
-              .toList(),
-        ),
-      ),
+      (success) {
+        updated = success.data!;
+        emit(
+          state.copyWith(
+            writeStatus: AutoTransactionWriteStatus.success,
+            writeSuccessMessage: () => success.message,
+            groups: state.groups
+                .map((g) => g.ulid == event.params.ulid ? success.data! : g)
+                .toList(),
+          ),
+        );
+      },
     );
+    if (updated != null) await _alarmService.scheduleForGroup(updated!);
   }
 
   Future<void> _onGroupDeleted(
     AutoGroupDeleted event,
     Emitter<AutoTransactionState> emit,
   ) async {
+    AutoTransactionGroup? toDelete;
+    for (final g in state.groups) {
+      if (g.ulid == event.ulid) { toDelete = g; break; }
+    }
+
     emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
 
     final result = await _repo.deleteGroup(ulid: event.ulid).run();
 
+    bool deleted = false;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -148,14 +167,18 @@ class AutoTransactionBloc
           writeErrorMessage: () => failure.message,
         ),
       ),
-      (success) => emit(
-        state.copyWith(
-          writeStatus: AutoTransactionWriteStatus.success,
-          writeSuccessMessage: () => success.message,
-          groups: state.groups.where((g) => g.ulid != event.ulid).toList(),
-        ),
-      ),
+      (success) {
+        deleted = true;
+        emit(
+          state.copyWith(
+            writeStatus: AutoTransactionWriteStatus.success,
+            writeSuccessMessage: () => success.message,
+            groups: state.groups.where((g) => g.ulid != event.ulid).toList(),
+          ),
+        );
+      },
     );
+    if (deleted && toDelete != null) await _alarmService.cancelById(toDelete.id);
   }
 
   Future<void> _onGroupToggled(
@@ -168,6 +191,7 @@ class AutoTransactionBloc
         .toggleGroup(ulid: event.ulid, isActive: event.isActive)
         .run();
 
+    AutoTransactionGroup? toggled;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -176,10 +200,10 @@ class AutoTransactionBloc
         ),
       ),
       (success) {
-        // * Mutate entity in place — state emits due to writeStatus change
         for (final g in state.groups) {
           if (g.ulid == event.ulid) {
             g.isActive = event.isActive;
+            toggled = g;
             break;
           }
         }
@@ -192,12 +216,24 @@ class AutoTransactionBloc
         );
       },
     );
+    if (toggled != null) {
+      if (event.isActive) {
+        await _alarmService.scheduleForGroup(toggled!);
+      } else {
+        await _alarmService.cancelById(toggled!.id);
+      }
+    }
   }
 
   Future<void> _onGroupPaused(
     AutoGroupPaused event,
     Emitter<AutoTransactionState> emit,
   ) async {
+    AutoTransactionGroup? toPause;
+    for (final g in state.groups) {
+      if (g.ulid == event.ulid) { toPause = g; break; }
+    }
+
     emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
 
     final result = await _repo
@@ -208,6 +244,7 @@ class AutoTransactionBloc
         )
         .run();
 
+    bool paused = false;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -216,6 +253,7 @@ class AutoTransactionBloc
         ),
       ),
       (success) {
+        paused = true;
         for (final g in state.groups) {
           if (g.ulid == event.ulid) {
             g.isPaused = true;
@@ -233,6 +271,7 @@ class AutoTransactionBloc
         );
       },
     );
+    if (paused && toPause != null) await _alarmService.cancelById(toPause.id);
   }
 
   Future<void> _onGroupResumed(
@@ -243,6 +282,7 @@ class AutoTransactionBloc
 
     final result = await _repo.resumeGroup(ulid: event.ulid).run();
 
+    AutoTransactionGroup? resumed;
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -256,6 +296,7 @@ class AutoTransactionBloc
             g.isPaused = false;
             g.pauseStartAt = null;
             g.pauseEndAt = null;
+            resumed = g;
             break;
           }
         }
@@ -268,6 +309,7 @@ class AutoTransactionBloc
         );
       },
     );
+    if (resumed != null) await _alarmService.scheduleForGroup(resumed!);
   }
 
   // ─── Group + item (quick single-item mode) ────────────────────────────────
@@ -303,6 +345,7 @@ class AutoTransactionBloc
         )
         .run();
 
+    bool itemCreated = false;
     itemResult.fold(
       (failure) => emit(
         state.copyWith(
@@ -310,15 +353,19 @@ class AutoTransactionBloc
           writeErrorMessage: () => failure.message,
         ),
       ),
-      (success) => emit(
-        state.copyWith(
-          writeStatus: AutoTransactionWriteStatus.success,
-          writeSuccessMessage: () => 'Grup berhasil dibuat',
-          groups: [createdGroup!, ...state.groups],
-          currentItems: [success.data!],
-        ),
-      ),
+      (success) {
+        itemCreated = true;
+        emit(
+          state.copyWith(
+            writeStatus: AutoTransactionWriteStatus.success,
+            writeSuccessMessage: () => 'Grup berhasil dibuat',
+            groups: [createdGroup!, ...state.groups],
+            currentItems: [success.data!],
+          ),
+        );
+      },
     );
+    if (itemCreated) await _alarmService.scheduleForGroup(createdGroup!);
   }
 
   // ─── Item read ────────────────────────────────────────────────────────────
@@ -529,6 +576,11 @@ class AutoTransactionBloc
     AutoGroupBatchDeleted event,
     Emitter<AutoTransactionState> emit,
   ) async {
+    final groupsToDelete = <AutoTransactionGroup>[];
+    for (final g in state.groups) {
+      if (event.ulids.contains(g.ulid)) groupsToDelete.add(g);
+    }
+
     emit(state.copyWith(writeStatus: AutoTransactionWriteStatus.loading));
 
     final results = await Future.wait(
@@ -556,6 +608,9 @@ class AutoTransactionBloc
         groups: state.groups.where((g) => !deleted.contains(g.ulid)).toList(),
       ),
     );
+    for (final g in groupsToDelete) {
+      if (deleted.contains(g.ulid)) await _alarmService.cancelById(g.id);
+    }
   }
 
   Future<void> _onItemBatchDeleted(

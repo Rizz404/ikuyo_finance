@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(Get-ChildItem -Path \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\" -Directory | ForEach-Object { $_.Name } | Sort-Object)"
+      "PowerShell(Get-ChildItem -Path \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\" -Directory | ForEach-Object { $_.Name } | Sort-Object)",
+      "Read(//c/Users/fujiy/AppData/Local/Pub/Cache/hosted/pub.dev/**)",
+      "mcp__plugin_claude-mem_mcp-search__search",
+      "mcp__plugin_claude-mem_mcp-search__get_observations",
+      "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" log --oneline -10)",
+      "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" diff HEAD~1 --stat)",
+      "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" show --stat HEAD)",
+      "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" status)",
+      "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" diff lib/features/auto_transaction/services/auto_transaction_scheduler.dart)",
+      "Bash(dart analyze *)"
     ],
     "additionalDirectories": [
       "d:\\kodingan\\personal\\ikuyo_finance\\lib\\features\\security\\service"
