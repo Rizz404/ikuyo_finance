@@ -11,7 +11,9 @@
       "backup": "Backup",
       "help": "Help",
       "brandTagline": "Smart Personal Finance",
-      "brandSubtitle": "Track, manage, and grow your finances with ease."
+      "brandSubtitle": "Track, manage, and grow your finances with ease.",
+      "autoTransaction": "Auto Transaction",
+      "export": "Export to Excel"
     },
     "setting": {
       "title": "Settings",

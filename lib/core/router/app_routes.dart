@@ -117,4 +117,8 @@ final class AppRoutes {
 
   static const String autoLogName = 'auto-log';
   static const String autoLogPath = 'logs';
+
+  // * Export Routes
+  static const String exportName = 'export';
+  static const String exportPath = '/export';
 }

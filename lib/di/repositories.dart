@@ -15,6 +15,8 @@ import 'package:ikuyo_finance/features/transaction/repositories/transaction_repo
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository_impl.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository_impl.dart';
+import 'package:ikuyo_finance/features/export/repositories/export_repository.dart';
+import 'package:ikuyo_finance/features/export/repositories/export_repository_impl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void setupRepositories() {
@@ -45,5 +47,8 @@ void setupRepositories() {
     )
     ..registerLazySingleton<AutoTransactionRepository>(
       () => AutoTransactionRepositoryImpl(getIt<ObjectBoxStorage>()),
+    )
+    ..registerLazySingleton<ExportRepository>(
+      () => ExportRepositoryImpl(getIt<ObjectBoxStorage>()),
     );
 }

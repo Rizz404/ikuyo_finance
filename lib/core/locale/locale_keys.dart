@@ -474,6 +474,8 @@ abstract class LocaleKeys {
   static const otherScreenHelp = 'other.screen.help';
   static const otherScreenBrandTagline = 'other.screen.brandTagline';
   static const otherScreenBrandSubtitle = 'other.screen.brandSubtitle';
+  static const otherScreenAutoTransaction = 'other.screen.autoTransaction';
+  static const otherScreenExport = 'other.screen.export';
 
   // * Other — Setting
   static const otherSettingTitle = 'other.setting.title';
@@ -493,6 +495,79 @@ abstract class LocaleKeys {
   static const otherSettingLanguage = 'other.setting.language';
   static const otherSettingLanguageTitle = 'other.setting.languageTitle';
   static const otherSettingLanguageSubtitle = 'other.setting.languageSubtitle';
+
+  // ──────────────────────────────────────────────
+  // * Export — Screen
+  // ──────────────────────────────────────────────
+  static const exportScreenTitle = 'export.screen.title';
+  static const exportScreenInfoDescription = 'export.screen.infoDescription';
+  static const exportScreenDateRange = 'export.screen.dateRange';
+  static const exportScreenStartDate = 'export.screen.startDate';
+  static const exportScreenEndDate = 'export.screen.endDate';
+  static const exportScreenFilterAssets = 'export.screen.filterAssets';
+  static const exportScreenFilterCategories = 'export.screen.filterCategories';
+  static const exportScreenFilterAssetHint = 'export.screen.filterAssetHint';
+  static const exportScreenFilterCategoryHint =
+      'export.screen.filterCategoryHint';
+  static const exportScreenSelectAll = 'export.screen.selectAll';
+  static const exportScreenDeselectAll = 'export.screen.deselectAll';
+  static const exportScreenExportButton = 'export.screen.exportButton';
+  static const exportScreenExportSuccess = 'export.screen.exportSuccess';
+  static const exportScreenExportSuccessDesc = 'export.screen.exportSuccessDesc';
+  static const exportScreenExportError = 'export.screen.exportError';
+  static const exportScreenNoData = 'export.screen.noData';
+  static const exportScreenSaveToDirectory = 'export.screen.saveToDirectory';
+  static const exportScreenPickDirectory = 'export.screen.pickDirectory';
+  static const exportScreenDirectoryPermissionRequired =
+      'export.screen.directoryPermissionRequired';
+  static const exportScreenDirectoryPermissionDesc =
+      'export.screen.directoryPermissionDesc';
+  static const exportScreenDirectoryNotWritable =
+      'export.screen.directoryNotWritable';
+  static const exportScreenDirectoryNotWritableDesc =
+      'export.screen.directoryNotWritableDesc';
+
+  // * Export — Excel sheets
+  static const exportExcelSheetTransactions = 'export.excel.sheet.transactions';
+  static const exportExcelSheetAssets = 'export.excel.sheet.assets';
+  static const exportExcelSheetCategories = 'export.excel.sheet.categories';
+
+  // * Export — Excel column headers
+  static const exportExcelColNo = 'export.excel.col.no';
+  static const exportExcelColDate = 'export.excel.col.date';
+  static const exportExcelColAsset = 'export.excel.col.asset';
+  static const exportExcelColAssetType = 'export.excel.col.assetType';
+  static const exportExcelColCategory = 'export.excel.col.category';
+  static const exportExcelColCategoryType = 'export.excel.col.categoryType';
+  static const exportExcelColParentCategory = 'export.excel.col.parentCategory';
+  static const exportExcelColAmount = 'export.excel.col.amount';
+  static const exportExcelColDescription = 'export.excel.col.description';
+  static const exportExcelColCreatedAt = 'export.excel.col.createdAt';
+  static const exportExcelColName = 'export.excel.col.name';
+  static const exportExcelColType = 'export.excel.col.type';
+  static const exportExcelColBalance = 'export.excel.col.balance';
+  static const exportExcelColIcon = 'export.excel.col.icon';
+  static const exportExcelColColor = 'export.excel.col.color';
+
+  // * Export — Excel summary rows
+  static const exportExcelSummaryTotalIncome = 'export.excel.summary.totalIncome';
+  static const exportExcelSummaryTotalExpense =
+      'export.excel.summary.totalExpense';
+  static const exportExcelSummaryNet = 'export.excel.summary.net';
+  static const exportExcelSummaryTotalBalance =
+      'export.excel.summary.totalBalance';
+
+  // * Export — Excel asset type labels
+  static const exportExcelAssetTypeCash = 'export.excel.assetType.cash';
+  static const exportExcelAssetTypeBank = 'export.excel.assetType.bank';
+  static const exportExcelAssetTypeEWallet = 'export.excel.assetType.eWallet';
+  static const exportExcelAssetTypeStock = 'export.excel.assetType.stock';
+  static const exportExcelAssetTypeCrypto = 'export.excel.assetType.crypto';
+
+  // * Export — Excel category type labels
+  static const exportExcelCategoryTypeIncome = 'export.excel.categoryType.income';
+  static const exportExcelCategoryTypeExpense =
+      'export.excel.categoryType.expense';
 
   // ──────────────────────────────────────────────
   // * Statistic — Screen

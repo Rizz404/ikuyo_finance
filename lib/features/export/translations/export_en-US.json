@@ -1,0 +1,69 @@
+{
+  "export": {
+    "screen": {
+      "title": "Export to Excel",
+      "infoDescription": "Export your financial data as an Excel file. Use filters to refine the exported data.",
+      "dateRange": "Date Range",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "filterAssets": "Filter Assets",
+      "filterCategories": "Filter Categories",
+      "filterAssetHint": "Deselect assets to exclude from export",
+      "filterCategoryHint": "Deselect categories to exclude from export",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "exportButton": "Export to Excel",
+      "exportSuccess": "Export successful",
+      "exportSuccessDesc": "File saved to {path}",
+      "exportError": "Export failed",
+      "noData": "No data to export",
+      "saveToDirectory": "Save to directory",
+      "pickDirectory": "Pick directory...",
+      "directoryPermissionRequired": "Permission required",
+      "directoryPermissionDesc": "Storage permission is required to save to the selected directory.",
+      "directoryNotWritable": "Cannot access directory",
+      "directoryNotWritableDesc": "This directory is not writable. Please choose another."
+    },
+    "excel": {
+      "sheet": {
+        "transactions": "Transactions",
+        "assets": "Assets",
+        "categories": "Categories"
+      },
+      "col": {
+        "no": "No",
+        "date": "Date",
+        "asset": "Asset",
+        "assetType": "Asset Type",
+        "category": "Category",
+        "categoryType": "Category Type",
+        "parentCategory": "Parent Category",
+        "amount": "Amount",
+        "description": "Description",
+        "createdAt": "Created At",
+        "name": "Name",
+        "type": "Type",
+        "balance": "Balance",
+        "icon": "Icon",
+        "color": "Color"
+      },
+      "summary": {
+        "totalIncome": "Total Income",
+        "totalExpense": "Total Expense",
+        "net": "Net",
+        "totalBalance": "Total Balance"
+      },
+      "assetType": {
+        "cash": "Cash",
+        "bank": "Bank",
+        "eWallet": "E-Wallet",
+        "stock": "Stock",
+        "crypto": "Crypto"
+      },
+      "categoryType": {
+        "income": "Income",
+        "expense": "Expense"
+      }
+    }
+  }
+}

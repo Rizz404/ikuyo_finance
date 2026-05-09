@@ -1,0 +1,69 @@
+{
+  "export": {
+    "screen": {
+      "title": "Ekspor ke Excel",
+      "infoDescription": "Ekspor data keuangan Anda sebagai file Excel. Gunakan filter untuk menyaring data yang diekspor.",
+      "dateRange": "Rentang Tanggal",
+      "startDate": "Tanggal Mulai",
+      "endDate": "Tanggal Selesai",
+      "filterAssets": "Filter Aset",
+      "filterCategories": "Filter Kategori",
+      "filterAssetHint": "Hapus centang untuk mengecualikan aset dari ekspor",
+      "filterCategoryHint": "Hapus centang untuk mengecualikan kategori dari ekspor",
+      "selectAll": "Pilih Semua",
+      "deselectAll": "Hapus Semua",
+      "exportButton": "Ekspor ke Excel",
+      "exportSuccess": "Ekspor berhasil",
+      "exportSuccessDesc": "File disimpan ke {path}",
+      "exportError": "Ekspor gagal",
+      "noData": "Tidak ada data untuk diekspor",
+      "saveToDirectory": "Simpan ke direktori",
+      "pickDirectory": "Pilih direktori...",
+      "directoryPermissionRequired": "Izin diperlukan",
+      "directoryPermissionDesc": "Izin penyimpanan diperlukan untuk menyimpan ke direktori yang dipilih.",
+      "directoryNotWritable": "Tidak bisa diakses",
+      "directoryNotWritableDesc": "Direktori ini tidak dapat ditulis. Pilih direktori lain."
+    },
+    "excel": {
+      "sheet": {
+        "transactions": "Transaksi",
+        "assets": "Aset",
+        "categories": "Kategori"
+      },
+      "col": {
+        "no": "No",
+        "date": "Tanggal",
+        "asset": "Aset",
+        "assetType": "Tipe Aset",
+        "category": "Kategori",
+        "categoryType": "Tipe Kategori",
+        "parentCategory": "Kategori Induk",
+        "amount": "Jumlah",
+        "description": "Deskripsi",
+        "createdAt": "Dibuat Pada",
+        "name": "Nama",
+        "type": "Tipe",
+        "balance": "Saldo",
+        "icon": "Ikon",
+        "color": "Warna"
+      },
+      "summary": {
+        "totalIncome": "Total Pemasukan",
+        "totalExpense": "Total Pengeluaran",
+        "net": "Bersih",
+        "totalBalance": "Total Saldo"
+      },
+      "assetType": {
+        "cash": "Tunai",
+        "bank": "Bank",
+        "eWallet": "E-Wallet",
+        "stock": "Saham",
+        "crypto": "Kripto"
+      },
+      "categoryType": {
+        "income": "Pemasukan",
+        "expense": "Pengeluaran"
+      }
+    }
+  }
+}

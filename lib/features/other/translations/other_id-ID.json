@@ -11,7 +11,9 @@
       "backup": "Cadangan",
       "help": "Bantuan",
       "brandTagline": "Keuangan Pribadi yang Cerdas",
-      "brandSubtitle": "Lacak, kelola, dan kembangkan keuangan Anda dengan mudah."
+      "brandSubtitle": "Lacak, kelola, dan kembangkan keuangan Anda dengan mudah.",
+      "autoTransaction": "Transaksi Otomatis",
+      "export": "Ekspor ke Excel"
     },
     "setting": {
       "title": "Pengaturan",

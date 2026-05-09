@@ -16,6 +16,8 @@ import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository.dart';
+import 'package:ikuyo_finance/features/export/bloc/export_bloc.dart';
+import 'package:ikuyo_finance/features/export/repositories/export_repository.dart';
 
 void setupBlocs() {
   getIt
@@ -39,5 +41,8 @@ void setupBlocs() {
         getIt<AutoTransactionRepository>(),
         getIt<AutoTransactionAlarmService>(),
       ),
+    )
+    ..registerFactory<ExportBloc>(
+      () => ExportBloc(getIt<ExportRepository>()),
     );
 }

@@ -94,6 +94,9 @@ extension AppNavigator on BuildContext {
     extra: group,
   );
 
+  // * Export Navigation
+  void pushToExport() => push(AppRoutes.exportPath);
+
   // * Named Navigation (alternative using route names)
   void goToNamed(String name, {Object? extra, Map<String, String>? params}) =>
       goNamed(name, extra: extra, pathParameters: params ?? {});

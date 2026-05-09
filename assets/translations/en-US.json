@@ -400,12 +400,81 @@
       "ulidRequired": "ULID is required"
     }
   },
+  "export": {
+    "excel": {
+      "assetType": {
+        "bank": "Bank",
+        "cash": "Cash",
+        "crypto": "Crypto",
+        "eWallet": "E-Wallet",
+        "stock": "Stock"
+      },
+      "categoryType": {
+        "expense": "Expense",
+        "income": "Income"
+      },
+      "col": {
+        "amount": "Amount",
+        "asset": "Asset",
+        "assetType": "Asset Type",
+        "balance": "Balance",
+        "category": "Category",
+        "categoryType": "Category Type",
+        "color": "Color",
+        "createdAt": "Created At",
+        "date": "Date",
+        "description": "Description",
+        "icon": "Icon",
+        "name": "Name",
+        "no": "No",
+        "parentCategory": "Parent Category",
+        "type": "Type"
+      },
+      "sheet": {
+        "assets": "Assets",
+        "categories": "Categories",
+        "transactions": "Transactions"
+      },
+      "summary": {
+        "net": "Net",
+        "totalBalance": "Total Balance",
+        "totalExpense": "Total Expense",
+        "totalIncome": "Total Income"
+      }
+    },
+    "screen": {
+      "dateRange": "Date Range",
+      "deselectAll": "Deselect All",
+      "directoryNotWritable": "Cannot access directory",
+      "directoryNotWritableDesc": "This directory is not writable. Please choose another.",
+      "directoryPermissionDesc": "Storage permission is required to save to the selected directory.",
+      "directoryPermissionRequired": "Permission required",
+      "endDate": "End Date",
+      "exportButton": "Export to Excel",
+      "exportError": "Export failed",
+      "exportSuccess": "Export successful",
+      "exportSuccessDesc": "File saved to {path}",
+      "filterAssetHint": "Deselect assets to exclude from export",
+      "filterAssets": "Filter Assets",
+      "filterCategories": "Filter Categories",
+      "filterCategoryHint": "Deselect categories to exclude from export",
+      "infoDescription": "Export your financial data as an Excel file. Use filters to refine the exported data.",
+      "noData": "No data to export",
+      "pickDirectory": "Pick directory...",
+      "saveToDirectory": "Save to directory",
+      "selectAll": "Select All",
+      "startDate": "Start Date",
+      "title": "Export to Excel"
+    }
+  },
   "other": {
     "screen": {
+      "autoTransaction": "Auto Transaction",
       "backup": "Backup",
       "brandSubtitle": "Track, manage, and grow your finances with ease.",
       "brandTagline": "Smart Personal Finance",
       "comingSoon": "Coming Soon",
+      "export": "Export to Excel",
       "featureInDevelopment": "This feature is under development",
       "help": "Help",
       "manageAssets": "Manage Assets",

@@ -175,8 +175,10 @@ Future<void> setupAutoTransactionServices() async {
   await getIt<AutoTransactionAlarmService>().initialize();
   await getIt<AutoBackupAlarmService>().initialize();
 
-  // * Request notification permission from user
+  // * Request notification + exact alarm permission from user
   await getIt<AutoTransactionNotificationService>().requestPermission();
+  await getIt<AutoTransactionAlarmService>().requestExactAlarmPermission();
+  await getIt<AutoBackupAlarmService>().requestExactAlarmPermission();
 
   // * Init Workmanager dengan callback dispatcher
   await Workmanager().initialize(workmanagerCallbackDispatcher);

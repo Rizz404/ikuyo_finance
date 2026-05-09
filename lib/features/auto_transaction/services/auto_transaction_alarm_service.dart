@@ -68,6 +68,26 @@ class AutoTransactionAlarmService {
     logService('AutoTransactionAlarmService diinisialisasi');
   }
 
+  /// Requests SCHEDULE_EXACT_ALARM permission (Android 12+).
+  /// Opens system settings on Android 14+ where it is not granted by default.
+  Future<void> requestExactAlarmPermission() async {
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.requestExactAlarmsPermission();
+  }
+
+  /// Returns true if exact alarms can be scheduled on this device.
+  Future<bool> canScheduleExactAlarms() async {
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android == null) return true; // non-Android, no restriction
+    return await android.canScheduleExactNotifications() ?? false;
+  }
+
   /// Lightweight init — no handler registration. Call from background isolate.
   Future<void> initializeForBackground() async {
     const android = AndroidInitializationSettings('ic_launcher_foreground');
@@ -94,6 +114,14 @@ class AutoTransactionAlarmService {
       // Already overdue — foreground catch-up or WorkManager will handle it.
       logInfo(
         'AutoTransactionAlarmService: grup ${group.ulid} overdue, skip alarm',
+      );
+      return;
+    }
+
+    if (!await canScheduleExactAlarms()) {
+      logService(
+        'AutoTransactionAlarmService: SCHEDULE_EXACT_ALARM tidak granted, '
+        'skip alarm untuk ${group.ulid}',
       );
       return;
     }

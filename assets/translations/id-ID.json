@@ -400,12 +400,81 @@
       "ulidRequired": "ULID wajib diisi"
     }
   },
+  "export": {
+    "excel": {
+      "assetType": {
+        "bank": "Bank",
+        "cash": "Tunai",
+        "crypto": "Kripto",
+        "eWallet": "E-Wallet",
+        "stock": "Saham"
+      },
+      "categoryType": {
+        "expense": "Pengeluaran",
+        "income": "Pemasukan"
+      },
+      "col": {
+        "amount": "Jumlah",
+        "asset": "Aset",
+        "assetType": "Tipe Aset",
+        "balance": "Saldo",
+        "category": "Kategori",
+        "categoryType": "Tipe Kategori",
+        "color": "Warna",
+        "createdAt": "Dibuat Pada",
+        "date": "Tanggal",
+        "description": "Deskripsi",
+        "icon": "Ikon",
+        "name": "Nama",
+        "no": "No",
+        "parentCategory": "Kategori Induk",
+        "type": "Tipe"
+      },
+      "sheet": {
+        "assets": "Aset",
+        "categories": "Kategori",
+        "transactions": "Transaksi"
+      },
+      "summary": {
+        "net": "Bersih",
+        "totalBalance": "Total Saldo",
+        "totalExpense": "Total Pengeluaran",
+        "totalIncome": "Total Pemasukan"
+      }
+    },
+    "screen": {
+      "dateRange": "Rentang Tanggal",
+      "deselectAll": "Hapus Semua",
+      "directoryNotWritable": "Tidak bisa diakses",
+      "directoryNotWritableDesc": "Direktori ini tidak dapat ditulis. Pilih direktori lain.",
+      "directoryPermissionDesc": "Izin penyimpanan diperlukan untuk menyimpan ke direktori yang dipilih.",
+      "directoryPermissionRequired": "Izin diperlukan",
+      "endDate": "Tanggal Selesai",
+      "exportButton": "Ekspor ke Excel",
+      "exportError": "Ekspor gagal",
+      "exportSuccess": "Ekspor berhasil",
+      "exportSuccessDesc": "File disimpan ke {path}",
+      "filterAssetHint": "Hapus centang untuk mengecualikan aset dari ekspor",
+      "filterAssets": "Filter Aset",
+      "filterCategories": "Filter Kategori",
+      "filterCategoryHint": "Hapus centang untuk mengecualikan kategori dari ekspor",
+      "infoDescription": "Ekspor data keuangan Anda sebagai file Excel. Gunakan filter untuk menyaring data yang diekspor.",
+      "noData": "Tidak ada data untuk diekspor",
+      "pickDirectory": "Pilih direktori...",
+      "saveToDirectory": "Simpan ke direktori",
+      "selectAll": "Pilih Semua",
+      "startDate": "Tanggal Mulai",
+      "title": "Ekspor ke Excel"
+    }
+  },
   "other": {
     "screen": {
+      "autoTransaction": "Transaksi Otomatis",
       "backup": "Cadangan",
       "brandSubtitle": "Lacak, kelola, dan kembangkan keuangan Anda dengan mudah.",
       "brandTagline": "Keuangan Pribadi yang Cerdas",
       "comingSoon": "Coming Soon",
+      "export": "Ekspor ke Excel",
       "featureInDevelopment": "Fitur ini sedang dalam pengembangan",
       "help": "Bantuan",
       "manageAssets": "Kelola Aset",

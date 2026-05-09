@@ -18,6 +18,7 @@ import 'package:ikuyo_finance/features/auto_transaction/services/auto_transactio
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
+import 'package:ikuyo_finance/features/export/bloc/export_bloc.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
 import 'package:ikuyo_finance/features/security/screens/lock_screen.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
@@ -88,6 +89,7 @@ class MyApp extends StatelessWidget {
           create: (_) =>
               getIt<AutoTransactionBloc>()..add(const AutoGroupFetched()),
         ),
+        BlocProvider(create: (_) => getIt<ExportBloc>()),
       ],
       // * Use BlocListener for loose coupling between blocs (best practice)
       child: MultiBlocListener(

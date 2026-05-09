@@ -75,6 +75,24 @@ class AutoBackupAlarmService {
     logService('AutoBackupAlarmService diinisialisasi');
   }
 
+  /// Requests SCHEDULE_EXACT_ALARM permission (Android 12+).
+  Future<void> requestExactAlarmPermission() async {
+    await _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.requestExactAlarmsPermission();
+  }
+
+  Future<bool> _canScheduleExactAlarms() async {
+    final androidPlugin = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (androidPlugin == null) return true;
+    return await androidPlugin.canScheduleExactNotifications() ?? false;
+  }
+
   /// Lightweight init — no handler registration. Call from background isolate.
   Future<void> initializeForBackground() async {
     const android = AndroidInitializationSettings('ic_launcher_foreground');
@@ -89,6 +107,11 @@ class AutoBackupAlarmService {
   Future<void> scheduleFromSettings(BackupScheduleSettings settings) async {
     if (!settings.isEnabled) {
       await cancel();
+      return;
+    }
+
+    if (!await _canScheduleExactAlarms()) {
+      logService('AutoBackupAlarmService: SCHEDULE_EXACT_ALARM tidak granted, skip alarm');
       return;
     }
 
