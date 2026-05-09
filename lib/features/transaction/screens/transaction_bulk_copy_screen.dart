@@ -157,6 +157,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
   }
 
   void _handleWriteStatus(BuildContext context, TransactionState state) {
+    if (state.writeAction != TransactionWriteAction.bulkCreate) return;
     if (state.writeStatus == TransactionWriteStatus.success) {
       final bulkResult = state.bulkCreateResult;
       if (bulkResult != null) {

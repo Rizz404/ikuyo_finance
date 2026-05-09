@@ -6,6 +6,16 @@ enum TransactionStatus { initial, loading, loadingMore, success, failure }
 // * Status untuk write operations (create, update, delete)
 enum TransactionWriteStatus { initial, loading, success, failure }
 
+// * Action type for write operations
+enum TransactionWriteAction {
+  none,
+  create,
+  bulkCreate,
+  update,
+  delete,
+  batchDelete,
+}
+
 // * Result model untuk bulk create di state
 class BulkCreateStateResult {
   final int successCount;
@@ -49,6 +59,7 @@ final class TransactionState extends Equatable {
 
   // * Write state (terpisah dari read)
   final TransactionWriteStatus writeStatus;
+  final TransactionWriteAction writeAction;
   final String? writeSuccessMessage;
   final String? writeErrorMessage;
   final Transaction? lastCreatedTransaction;
@@ -74,6 +85,7 @@ final class TransactionState extends Equatable {
     this.currentMinAmount,
     this.currentMaxAmount,
     this.writeStatus = TransactionWriteStatus.initial,
+    this.writeAction = TransactionWriteAction.none,
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedTransaction,
@@ -131,6 +143,7 @@ final class TransactionState extends Equatable {
     double? Function()? currentMinAmount,
     double? Function()? currentMaxAmount,
     TransactionWriteStatus? writeStatus,
+    TransactionWriteAction? writeAction,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
     Transaction? Function()? lastCreatedTransaction,
@@ -168,6 +181,7 @@ final class TransactionState extends Equatable {
           ? currentMaxAmount()
           : this.currentMaxAmount,
       writeStatus: writeStatus ?? this.writeStatus,
+      writeAction: writeAction ?? this.writeAction,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
           : this.writeSuccessMessage,
@@ -202,6 +216,7 @@ final class TransactionState extends Equatable {
     currentMinAmount,
     currentMaxAmount,
     writeStatus,
+    writeAction,
     writeSuccessMessage,
     writeErrorMessage,
     lastCreatedTransaction,

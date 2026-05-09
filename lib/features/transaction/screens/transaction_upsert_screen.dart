@@ -111,6 +111,11 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
 
   void _handleWriteStatus(BuildContext context, TransactionState state) {
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final action = state.writeAction;
+    if (action != TransactionWriteAction.create &&
+        action != TransactionWriteAction.update) {
+      return;
+    }
 
     if (state.writeStatus == TransactionWriteStatus.success) {
       ToastHelper.instance.showSuccess(

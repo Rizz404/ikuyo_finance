@@ -93,6 +93,12 @@ class _TransactionScreenState extends State<TransactionScreen>
     return BlocConsumer<TransactionBloc, TransactionState>(
       listenWhen: (prev, curr) => prev.writeStatus != curr.writeStatus,
       listener: (context, state) {
+        if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+        final action = state.writeAction;
+        if (action != TransactionWriteAction.delete &&
+            action != TransactionWriteAction.batchDelete) {
+          return;
+        }
         if (state.writeStatus == TransactionWriteStatus.success) {
           ToastHelper.instance.showSuccess(
             context: context,

@@ -537,7 +537,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     TransactionCreated event,
     Emitter<TransactionState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: TransactionWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: TransactionWriteStatus.loading,
+        writeAction: TransactionWriteAction.create,
+      ),
+    );
 
     final result = await _transactionRepository
         .createTransaction(event.params)
@@ -547,12 +552,14 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: TransactionWriteStatus.failure,
+          writeAction: TransactionWriteAction.create,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: TransactionWriteStatus.success,
+          writeAction: TransactionWriteAction.create,
           writeSuccessMessage: () => success.message,
           lastCreatedTransaction: () => success.data,
           // * Tambah ke list langsung untuk UX responsif
@@ -567,7 +574,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     TransactionBulkCreated event,
     Emitter<TransactionState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: TransactionWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: TransactionWriteStatus.loading,
+        writeAction: TransactionWriteAction.bulkCreate,
+      ),
+    );
 
     final result = await _transactionRepository
         .createManyTransactions(event.paramsList)
@@ -577,6 +589,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: TransactionWriteStatus.failure,
+          writeAction: TransactionWriteAction.bulkCreate,
           writeErrorMessage: () => failure.message,
         ),
       ),
@@ -593,6 +606,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         emit(
           state.copyWith(
             writeStatus: TransactionWriteStatus.success,
+            writeAction: TransactionWriteAction.bulkCreate,
             writeSuccessMessage: () => success.message,
             bulkCreateResult: () => stateResult,
             // * Tambah ke list langsung untuk UX responsif
@@ -611,7 +625,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     TransactionUpdated event,
     Emitter<TransactionState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: TransactionWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: TransactionWriteStatus.loading,
+        writeAction: TransactionWriteAction.update,
+      ),
+    );
 
     final result = await _transactionRepository
         .updateTransaction(event.params)
@@ -621,12 +640,14 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: TransactionWriteStatus.failure,
+          writeAction: TransactionWriteAction.update,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: TransactionWriteStatus.success,
+          writeAction: TransactionWriteAction.update,
           writeSuccessMessage: () => success.message,
           // * Update item di list
           transactions: state.transactions.map((transaction) {
@@ -644,7 +665,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     TransactionDeleted event,
     Emitter<TransactionState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: TransactionWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: TransactionWriteStatus.loading,
+        writeAction: TransactionWriteAction.delete,
+      ),
+    );
 
     final result = await _transactionRepository
         .deleteTransaction(ulid: event.ulid)
@@ -654,12 +680,14 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: TransactionWriteStatus.failure,
+          writeAction: TransactionWriteAction.delete,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: TransactionWriteStatus.success,
+          writeAction: TransactionWriteAction.delete,
           writeSuccessMessage: () => success.message,
           // * Hapus dari list
           transactions: state.transactions
@@ -675,7 +703,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     TransactionBatchDeleted event,
     Emitter<TransactionState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: TransactionWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: TransactionWriteStatus.loading,
+        writeAction: TransactionWriteAction.batchDelete,
+      ),
+    );
 
     final results = await Future.wait(
       event.ulids.map(
@@ -697,6 +730,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
         writeStatus: deleted.length == event.ulids.length
             ? TransactionWriteStatus.success
             : TransactionWriteStatus.failure,
+        writeAction: TransactionWriteAction.batchDelete,
         writeSuccessMessage: deleted.isNotEmpty
             ? () => '${deleted.length} transaksi berhasil dihapus'
             : null,
@@ -716,6 +750,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     emit(
       state.copyWith(
         writeStatus: TransactionWriteStatus.initial,
+        writeAction: TransactionWriteAction.none,
         writeSuccessMessage: () => null,
         writeErrorMessage: () => null,
         lastCreatedTransaction: () => null,
