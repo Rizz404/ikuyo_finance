@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\" -Directory | ForEach-Object { $_.Name } | Sort-Object)"
+    ],
+    "additionalDirectories": [
+      "d:\\kodingan\\personal\\ikuyo_finance\\lib\\features\\security\\service"
+    ]
+  }
+}

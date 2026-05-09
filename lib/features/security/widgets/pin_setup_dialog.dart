@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
+import 'package:ikuyo_finance/features/security/validators/pin_validator.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 /// Dialog untuk setup / ubah PIN (4-6 digit)
@@ -39,8 +40,9 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
     if (!_isConfirming) {
       // * Step 1: enter PIN
       final pin = _pinController.text.trim();
-      if (pin.length != _pinLength) {
-        setState(() => _errorText = LocaleKeys.securityPinTooShort.tr());
+      final error = PinValidator.pin(pin, _pinLength);
+      if (error != null) {
+        setState(() => _errorText = error);
         return;
       }
       setState(() {
@@ -55,9 +57,10 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
       // * Step 2: confirm PIN
       final pin = _pinController.text.trim();
       final confirm = _confirmController.text.trim();
-      if (pin != confirm) {
+      final error = PinValidator.confirmPin(pin, confirm);
+      if (error != null) {
         setState(() {
-          _errorText = LocaleKeys.securityPinMismatch.tr();
+          _errorText = error;
           _confirmController.clear();
         });
         _confirmFocus.requestFocus();

@@ -19,8 +19,8 @@ import 'package:ikuyo_finance/features/auto_transaction/services/auto_transactio
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
 import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
-import 'package:ikuyo_finance/features/security/service/biometric_service.dart';
-import 'package:ikuyo_finance/features/security/service/security_storage_service.dart';
+import 'package:ikuyo_finance/features/security/services/biometric_service.dart';
+import 'package:ikuyo_finance/features/security/services/security_storage_service.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';

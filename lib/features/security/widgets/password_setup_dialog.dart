@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
+import 'package:ikuyo_finance/features/security/validators/password_validator.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 /// Dialog untuk setup / ubah password
@@ -34,13 +35,10 @@ class _PasswordSetupDialogState extends State<PasswordSetupDialog> {
     final password = _passwordController.text.trim();
     final confirm = _confirmController.text.trim();
 
-    if (password.length < 6) {
-      setState(() => _errorText = LocaleKeys.securityPasswordTooShort.tr());
-      return;
-    }
-
-    if (password != confirm) {
-      setState(() => _errorText = LocaleKeys.securityPasswordMismatch.tr());
+    final error = PasswordValidator.password(password) ??
+        PasswordValidator.confirmPassword(password, confirm);
+    if (error != null) {
+      setState(() => _errorText = error);
       return;
     }
 
