@@ -60,6 +60,12 @@ class _CategoryScreenState extends State<CategoryScreen>
     return BlocConsumer<CategoryBloc, CategoryState>(
       listenWhen: (prev, curr) => curr.writeStatus != prev.writeStatus,
       listener: (context, state) {
+        if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+        final action = state.writeAction;
+        if (action != CategoryWriteAction.delete &&
+            action != CategoryWriteAction.batchDelete) {
+          return;
+        }
         if (state.writeStatus == CategoryWriteStatus.success) {
           ToastHelper.instance.showSuccess(
             context: context,

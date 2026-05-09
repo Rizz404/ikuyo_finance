@@ -191,6 +191,13 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
   }
 
   void _handleWriteStatus(BuildContext context, CategoryState state) {
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final action = state.writeAction;
+    if (action != CategoryWriteAction.create &&
+        action != CategoryWriteAction.update &&
+        action != CategoryWriteAction.delete) {
+      return;
+    }
     if (state.writeStatus == CategoryWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,

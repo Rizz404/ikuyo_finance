@@ -6,6 +6,9 @@ enum CategoryStatus { initial, loading, loadingMore, success, failure }
 // * Status untuk write operations (create, update, delete)
 enum CategoryWriteStatus { initial, loading, success, failure }
 
+// * Action type for write operations
+enum CategoryWriteAction { none, create, update, delete, batchDelete }
+
 final class CategoryState extends Equatable {
   // * Read state
   final CategoryStatus status;
@@ -24,6 +27,7 @@ final class CategoryState extends Equatable {
 
   // * Write state (terpisah dari read)
   final CategoryWriteStatus writeStatus;
+  final CategoryWriteAction writeAction;
   final String? writeSuccessMessage;
   final String? writeErrorMessage;
   final Category? lastCreatedCategory;
@@ -48,6 +52,7 @@ final class CategoryState extends Equatable {
     this.currentParentUlidFilter,
     this.currentIsRootOnlyFilter,
     this.writeStatus = CategoryWriteStatus.initial,
+    this.writeAction = CategoryWriteAction.none,
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedCategory,
@@ -95,6 +100,7 @@ final class CategoryState extends Equatable {
     String? Function()? currentParentUlidFilter,
     bool? Function()? currentIsRootOnlyFilter,
     CategoryWriteStatus? writeStatus,
+    CategoryWriteAction? writeAction,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
     Category? Function()? lastCreatedCategory,
@@ -123,6 +129,7 @@ final class CategoryState extends Equatable {
           ? currentIsRootOnlyFilter()
           : this.currentIsRootOnlyFilter,
       writeStatus: writeStatus ?? this.writeStatus,
+      writeAction: writeAction ?? this.writeAction,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
           : this.writeSuccessMessage,
@@ -156,6 +163,7 @@ final class CategoryState extends Equatable {
     currentParentUlidFilter,
     currentIsRootOnlyFilter,
     writeStatus,
+    writeAction,
     writeSuccessMessage,
     writeErrorMessage,
     lastCreatedCategory,

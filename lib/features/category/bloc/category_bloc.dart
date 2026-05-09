@@ -371,7 +371,12 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     CategoryCreated event,
     Emitter<CategoryState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: CategoryWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: CategoryWriteStatus.loading,
+        writeAction: CategoryWriteAction.create,
+      ),
+    );
 
     final result = await _categoryRepository.createCategory(event.params).run();
 
@@ -379,12 +384,14 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: CategoryWriteStatus.failure,
+          writeAction: CategoryWriteAction.create,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: CategoryWriteStatus.success,
+          writeAction: CategoryWriteAction.create,
           writeSuccessMessage: () => success.message,
           lastCreatedCategory: () => success.data,
           // * Tambah ke list langsung untuk UX responsif
@@ -399,7 +406,12 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     CategoryUpdated event,
     Emitter<CategoryState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: CategoryWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: CategoryWriteStatus.loading,
+        writeAction: CategoryWriteAction.update,
+      ),
+    );
 
     final result = await _categoryRepository.updateCategory(event.params).run();
 
@@ -407,12 +419,14 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: CategoryWriteStatus.failure,
+          writeAction: CategoryWriteAction.update,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: CategoryWriteStatus.success,
+          writeAction: CategoryWriteAction.update,
           writeSuccessMessage: () => success.message,
           // * Update item di list
           categories: state.categories.map((cat) {
@@ -428,7 +442,12 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     CategoryDeleted event,
     Emitter<CategoryState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: CategoryWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: CategoryWriteStatus.loading,
+        writeAction: CategoryWriteAction.delete,
+      ),
+    );
 
     final result = await _categoryRepository
         .deleteCategory(ulid: event.ulid)
@@ -438,12 +457,14 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: CategoryWriteStatus.failure,
+          writeAction: CategoryWriteAction.delete,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: CategoryWriteStatus.success,
+          writeAction: CategoryWriteAction.delete,
           writeSuccessMessage: () => success.message,
           // * Hapus dari list
           categories: state.categories
@@ -459,7 +480,12 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     CategoryBatchDeleted event,
     Emitter<CategoryState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: CategoryWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: CategoryWriteStatus.loading,
+        writeAction: CategoryWriteAction.batchDelete,
+      ),
+    );
 
     final results = await Future.wait(
       event.ulids.map(
@@ -481,6 +507,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
         writeStatus: deleted.length == event.ulids.length
             ? CategoryWriteStatus.success
             : CategoryWriteStatus.failure,
+        writeAction: CategoryWriteAction.batchDelete,
         writeSuccessMessage: deleted.isNotEmpty
             ? () => '${deleted.length} kategori berhasil dihapus'
             : null,
@@ -500,6 +527,7 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     emit(
       state.copyWith(
         writeStatus: CategoryWriteStatus.initial,
+        writeAction: CategoryWriteAction.none,
         writeSuccessMessage: () => null,
         writeErrorMessage: () => null,
         lastCreatedCategory: () => null,
