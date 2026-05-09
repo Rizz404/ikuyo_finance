@@ -1,0 +1,191 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag (e.g. v1.0.0)'
+        required: true
+      pre_release:
+        description: 'Mark as pre-release'
+        type: boolean
+        default: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.35.1'
+          channel: 'stable'
+          cache: true
+
+      - name: Create .env file
+        run: |
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" >> .env
+          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build universal APK
+        run: flutter build apk --release
+
+      - name: Build split APKs per ABI
+        run: flutter build apk --release --split-per-abi
+
+      - name: Rename APKs
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p dist
+          cp build/app/outputs/flutter-apk/app-release.apk             dist/ikuyo-finance-${VERSION}-universal.apk
+          cp build/app/outputs/flutter-apk/app-arm64-v8a-release.apk   dist/ikuyo-finance-${VERSION}-arm64-v8a.apk
+          cp build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk dist/ikuyo-finance-${VERSION}-armeabi-v7a.apk
+          cp build/app/outputs/flutter-apk/app-x86_64-release.apk      dist/ikuyo-finance-${VERSION}-x86_64.apk
+
+      - name: Upload APKs as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: apks-${{ steps.version.outputs.version }}
+          path: dist/
+          retention-days: 7
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        run: |
+          CURRENT_TAG="${{ steps.version.outputs.version }}"
+          PREVIOUS_TAG=$(git tag --sort=-version:refname | grep -v "^${CURRENT_TAG}$" | head -1)
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"%s" "${PREVIOUS_TAG}..HEAD")
+          fi
+
+          FEATURES=""
+          FIXES=""
+          PERFS=""
+          REFACTORS=""
+
+          while IFS= read -r line; do
+            if echo "$line" | grep -qE "^feat(\(.+\))?:"; then
+              FEATURES="${FEATURES}\n- ✨ ${line}"
+            elif echo "$line" | grep -qE "^fix(\(.+\))?:"; then
+              FIXES="${FIXES}\n- 🐛 ${line}"
+            elif echo "$line" | grep -qE "^perf(\(.+\))?:"; then
+              PERFS="${PERFS}\n- ⚡ ${line}"
+            elif echo "$line" | grep -qE "^refactor(\(.+\))?:"; then
+              REFACTORS="${REFACTORS}\n- ♻️ ${line}"
+            fi
+          done <<< "$COMMITS"
+
+          {
+            echo "## What's New in ${CURRENT_TAG}"
+            echo ""
+            if [ -n "$FEATURES" ]; then
+              echo "### ✨ Features"
+              echo -e "$FEATURES"
+              echo ""
+            fi
+            if [ -n "$FIXES" ]; then
+              echo "### 🐛 Bug Fixes"
+              echo -e "$FIXES"
+              echo ""
+            fi
+            if [ -n "$PERFS" ]; then
+              echo "### ⚡ Performance"
+              echo -e "$PERFS"
+              echo ""
+            fi
+            if [ -n "$REFACTORS" ]; then
+              echo "### ♻️ Refactors"
+              echo -e "$REFACTORS"
+              echo ""
+            fi
+            echo "---"
+            echo ""
+            echo "## 📥 Download"
+            echo ""
+            echo "| File | Architecture | Recommended For |"
+            echo "|------|-------------|-----------------|"
+            echo "| \`ikuyo-finance-${CURRENT_TAG}-arm64-v8a.apk\` | ARM 64-bit | Most modern phones (2019+) |"
+            echo "| \`ikuyo-finance-${CURRENT_TAG}-armeabi-v7a.apk\` | ARM 32-bit | Older Android devices |"
+            echo "| \`ikuyo-finance-${CURRENT_TAG}-x86_64.apk\` | x86 64-bit | Emulators / x86 devices |"
+            echo "| \`ikuyo-finance-${CURRENT_TAG}-universal.apk\` | Universal | If unsure which to pick |"
+            echo ""
+            echo "## 📋 Requirements"
+            echo ""
+            echo "- Android 6.0+ (API 23)"
+            echo "- Storage: ~84 MB (universal) / ~30 MB (split APK)"
+          } > RELEASE_NOTES.md
+
+      - name: Download APKs
+        uses: actions/download-artifact@v4
+        with:
+          name: apks-${{ steps.version.outputs.version }}
+          path: dist/
+
+      - name: Create GitHub Release
+        run: |
+          PRE_RELEASE_FLAG=""
+          if [ "${{ github.event.inputs.pre_release }}" = "true" ]; then
+            PRE_RELEASE_FLAG="--prerelease"
+          fi
+          gh release create "${{ steps.version.outputs.version }}" \
+            dist/*.apk \
+            --title "Ikuyo Finance ${{ steps.version.outputs.version }}" \
+            --notes-file RELEASE_NOTES.md \
+            --clobber \
+            $PRE_RELEASE_FLAG
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
