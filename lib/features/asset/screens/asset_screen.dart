@@ -41,6 +41,12 @@ class _AssetScreenState extends State<AssetScreen>
     return BlocConsumer<AssetBloc, AssetState>(
       listenWhen: (prev, curr) => curr.writeStatus != prev.writeStatus,
       listener: (context, state) {
+        if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+        final action = state.writeAction;
+        if (action != AssetWriteAction.delete &&
+            action != AssetWriteAction.batchDelete) {
+          return;
+        }
         if (state.writeStatus == AssetWriteStatus.success) {
           ToastHelper.instance.showSuccess(
             context: context,

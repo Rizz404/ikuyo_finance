@@ -6,6 +6,9 @@ enum AssetStatus { initial, loading, loadingMore, success, failure }
 // * Status untuk write operations (create, update, delete)
 enum AssetWriteStatus { initial, loading, success, failure }
 
+// * Action type for write operations
+enum AssetWriteAction { none, create, update, delete, batchDelete }
+
 final class AssetState extends Equatable {
   // * Read state
   final AssetStatus status;
@@ -24,6 +27,7 @@ final class AssetState extends Equatable {
 
   // * Write state (terpisah dari read)
   final AssetWriteStatus writeStatus;
+  final AssetWriteAction writeAction;
   final String? writeSuccessMessage;
   final String? writeErrorMessage;
   final Asset? lastCreatedAsset;
@@ -41,6 +45,7 @@ final class AssetState extends Equatable {
     this.currentMinBalance,
     this.currentMaxBalance,
     this.writeStatus = AssetWriteStatus.initial,
+    this.writeAction = AssetWriteAction.none,
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedAsset,
@@ -85,6 +90,7 @@ final class AssetState extends Equatable {
     double? Function()? currentMinBalance,
     double? Function()? currentMaxBalance,
     AssetWriteStatus? writeStatus,
+    AssetWriteAction? writeAction,
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
     Asset? Function()? lastCreatedAsset,
@@ -110,6 +116,7 @@ final class AssetState extends Equatable {
           ? currentMaxBalance()
           : this.currentMaxBalance,
       writeStatus: writeStatus ?? this.writeStatus,
+      writeAction: writeAction ?? this.writeAction,
       writeSuccessMessage: writeSuccessMessage != null
           ? writeSuccessMessage()
           : this.writeSuccessMessage,
@@ -136,6 +143,7 @@ final class AssetState extends Equatable {
     currentMinBalance,
     currentMaxBalance,
     writeStatus,
+    writeAction,
     writeSuccessMessage,
     writeErrorMessage,
     lastCreatedAsset,

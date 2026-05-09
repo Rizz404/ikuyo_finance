@@ -113,7 +113,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
     final action = state.writeAction;
     if (action != TransactionWriteAction.create &&
-        action != TransactionWriteAction.update) {
+        action != TransactionWriteAction.update &&
+        action != TransactionWriteAction.delete) {
       return;
     }
 

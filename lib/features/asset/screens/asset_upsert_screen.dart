@@ -43,6 +43,13 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
   final _filePickerKey = GlobalKey<AppFilePickerState>();
 
   void _handleWriteStatus(BuildContext context, AssetState state) {
+    if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
+    final action = state.writeAction;
+    if (action != AssetWriteAction.create &&
+        action != AssetWriteAction.update &&
+        action != AssetWriteAction.delete) {
+      return;
+    }
     if (state.writeStatus == AssetWriteStatus.success) {
       ToastHelper.instance.showSuccess(
         context: context,

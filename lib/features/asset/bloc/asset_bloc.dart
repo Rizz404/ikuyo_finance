@@ -367,7 +367,12 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     AssetCreated event,
     Emitter<AssetState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: AssetWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: AssetWriteStatus.loading,
+        writeAction: AssetWriteAction.create,
+      ),
+    );
 
     final result = await _assetRepository.createAsset(event.params).run();
 
@@ -375,12 +380,14 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: AssetWriteStatus.failure,
+          writeAction: AssetWriteAction.create,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: AssetWriteStatus.success,
+          writeAction: AssetWriteAction.create,
           writeSuccessMessage: () => success.message,
           lastCreatedAsset: () => success.data,
           // * Tambah ke list langsung untuk UX responsif
@@ -395,7 +402,12 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     AssetUpdated event,
     Emitter<AssetState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: AssetWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: AssetWriteStatus.loading,
+        writeAction: AssetWriteAction.update,
+      ),
+    );
 
     final result = await _assetRepository.updateAsset(event.params).run();
 
@@ -403,12 +415,14 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: AssetWriteStatus.failure,
+          writeAction: AssetWriteAction.update,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: AssetWriteStatus.success,
+          writeAction: AssetWriteAction.update,
           writeSuccessMessage: () => success.message,
           // * Update item di list
           assets: state.assets.map((asset) {
@@ -424,7 +438,12 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     AssetDeleted event,
     Emitter<AssetState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: AssetWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: AssetWriteStatus.loading,
+        writeAction: AssetWriteAction.delete,
+      ),
+    );
 
     final result = await _assetRepository.deleteAsset(ulid: event.ulid).run();
 
@@ -432,12 +451,14 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
       (failure) => emit(
         state.copyWith(
           writeStatus: AssetWriteStatus.failure,
+          writeAction: AssetWriteAction.delete,
           writeErrorMessage: () => failure.message,
         ),
       ),
       (success) => emit(
         state.copyWith(
           writeStatus: AssetWriteStatus.success,
+          writeAction: AssetWriteAction.delete,
           writeSuccessMessage: () => success.message,
           // * Hapus dari list
           assets: state.assets
@@ -453,7 +474,12 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     AssetBatchDeleted event,
     Emitter<AssetState> emit,
   ) async {
-    emit(state.copyWith(writeStatus: AssetWriteStatus.loading));
+    emit(
+      state.copyWith(
+        writeStatus: AssetWriteStatus.loading,
+        writeAction: AssetWriteAction.batchDelete,
+      ),
+    );
 
     final results = await Future.wait(
       event.ulids.map((ulid) => _assetRepository.deleteAsset(ulid: ulid).run()),
@@ -473,6 +499,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
         writeStatus: deleted.length == event.ulids.length
             ? AssetWriteStatus.success
             : AssetWriteStatus.failure,
+        writeAction: AssetWriteAction.batchDelete,
         writeSuccessMessage: deleted.isNotEmpty
             ? () => '${deleted.length} aset berhasil dihapus'
             : null,
@@ -490,6 +517,7 @@ class AssetBloc extends Bloc<AssetEvent, AssetState> {
     emit(
       state.copyWith(
         writeStatus: AssetWriteStatus.initial,
+        writeAction: AssetWriteAction.none,
         writeSuccessMessage: () => null,
         writeErrorMessage: () => null,
         lastCreatedAsset: () => null,
