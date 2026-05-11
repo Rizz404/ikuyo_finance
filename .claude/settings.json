@@ -12,10 +12,34 @@
       "Bash(git -C \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\" diff lib/features/auto_transaction/services/auto_transaction_scheduler.dart)",
       "Bash(dart analyze *)",
       "Bash(flutter --version)",
-      "Bash(java -version)"
+      "Bash(java -version)",
+      "Read(//d/kodingan/personal/kawai_notes/**)",
+      "Bash(ls \"d:\\\\kodingan\\\\personal\\\\\" 2>/dev/null || ls \"d:\\\\kodingan\\\\personal\")",
+      "Read(//d/kodingan/personal\" 2>/dev/**)",
+      "Read(//d/kodingan/personal/**)",
+      "Read(//d/kodingan/**)",
+      "Read(//d//**)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:cli.github.com)",
+      "Bash(grep -r \"automaticallyRegisterPlugins\\\\|GeneratedPluginRegistrant\\\\|FlutterEngine\\(\" \"C:/Users/fujiy/.gradle/caches\" --include=\"*.kt\" 2>/dev/null | grep -i \"flutterengine\" | head -10; ls \"d:/kodingan/personal/ikuyo_finance/android/app/src/main/kotlin/rizz/learn/finance/ikuyo_finance/\")",
+      "Read(//c/Users/fujiy/.gradle/caches/**)",
+      "Bash(find \"C:/Users/fujiy/AppData/Local/flutter\" -name \"FlutterEngine.java\" 2>/dev/null | head -3; find \"C:/src/flutter\" -name \"FlutterEngine.java\" 2>/dev/null | head -3; flutter --version 2>/dev/null | head -3)",
+      "Read(//c/Users/fujiy/AppData/Local/**)",
+      "Read(//c/src/flutter/**)",
+      "Bash(flutter analyze *)",
+      "WebFetch(domain:pub.dev)",
+      "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\rizz\\\\learn\\\\finance\\\\ikuyo_finance\\\\AutoTransactionAlarmReceiver.kt\" -Force)",
+      "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\rizz\\\\learn\\\\finance\\\\ikuyo_finance\\\\BootReceiver.kt\" -Force)",
+      "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\rizz\\\\learn\\\\finance\\\\ikuyo_finance\\\\AlarmSchedulerHelper.kt\" -Force)",
+      "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\rizz\\\\learn\\\\finance\\\\ikuyo_finance\\\\AlarmSchedulerPlugin.kt\" -Force)",
+      "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\rizz\\\\learn\\\\finance\\\\ikuyo_finance\\\\MainApplication.kt\" -Force)",
+      "Bash(flutter pub *)",
+      "Bash(xargs grep -l \"NetworkType\")"
     ],
     "additionalDirectories": [
-      "d:\\kodingan\\personal\\ikuyo_finance\\lib\\features\\security\\service"
+      "d:\\kodingan\\personal\\ikuyo_finance\\lib\\features\\security\\service",
+      "d:\\kodingan\\personal\\kawai_notes\\.github\\workflows"
     ]
   }
 }

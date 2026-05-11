@@ -29,11 +29,17 @@
     <!-- Workmanager: reschedule on boot -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
 
+    <!-- android_alarm_manager_plus: keep CPU alive while alarm fires -->
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+
     <!-- Notifications: Android 13+ requires explicit permission -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <!-- Scheduled notifications (flutter_local_notifications exact alarms) -->
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+
+    <!-- AlarmManager exact alarms for auto transaction background execution -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
     <!-- Share Plus - No additional permissions needed -->
 
@@ -47,7 +53,6 @@
 
     <application
         android:label="Ikuyo Finance"
-        android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity
             android:name=".MainActivity"
@@ -71,6 +76,25 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <!-- android_alarm_manager_plus: background alarm execution service -->
+        <service
+            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
+            android:permission="android.permission.BIND_JOB_SERVICE"
+            android:exported="false"/>
+        <!-- android_alarm_manager_plus: receives alarm broadcasts -->
+        <receiver
+            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmBroadcastReceiver"
+            android:exported="false"/>
+        <!-- android_alarm_manager_plus: restores alarms after device reboot -->
+        <receiver
+            android:name="dev.fluttercommunity.plus.androidalarmmanager.RebootBroadcastReceiver"
+            android:enabled="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+            </intent-filter>
+        </receiver>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data
