@@ -9,6 +9,7 @@ import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/widgets/asset_card.dart';
 import 'package:ikuyo_finance/features/asset/widgets/asset_filter_sheet.dart';
+import 'package:ikuyo_finance/features/asset/widgets/asset_statistic_view.dart';
 import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
@@ -95,8 +96,8 @@ class _AssetScreenState extends State<AssetScreen>
             children: [
               // * Tab 1: Daftar Aset
               ScreenWrapper(child: _buildListView(context, state)),
-              // * Tab 2: Statistik (Coming Soon)
-              _buildStatisticView(context),
+              // * Tab 2: Statistik
+              ScreenWrapper(child: AssetStatisticView(assets: state.assets)),
             ],
           ),
           floatingActionButton: FloatingActionButton(
@@ -203,49 +204,6 @@ class _AssetScreenState extends State<AssetScreen>
         final ulids = selected.map((a) => a.ulid).toList();
         context.read<AssetBloc>().add(AssetBatchDeleted(ulids: ulids));
       },
-    );
-  }
-
-  Widget _buildStatisticView(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.bar_chart_outlined,
-            size: 80,
-            color: context.colorScheme.outline.withValues(alpha: 0.5),
-          ),
-          const SizedBox(height: 24),
-          AppText(
-            LocaleKeys.assetScreenStatisticTitle.tr(),
-            style: AppTextStyle.headlineSmall,
-            fontWeight: FontWeight.bold,
-            color: context.colorScheme.outline,
-          ),
-          const SizedBox(height: 8),
-          AppText(
-            LocaleKeys.assetScreenComingSoon.tr(),
-            style: AppTextStyle.bodyLarge,
-            color: context.colorScheme.outline.withValues(alpha: 0.7),
-          ),
-          const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: context.colorScheme.primaryContainer.withValues(
-                alpha: 0.3,
-              ),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: AppText(
-              LocaleKeys.assetScreenFeatureInDevelopment.tr(),
-              style: AppTextStyle.bodySmall,
-              color: context.colorScheme.primary,
-            ),
-          ),
-        ],
-      ),
     );
   }
 

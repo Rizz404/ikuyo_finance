@@ -33,6 +33,13 @@
       "tabStatistic": "Statistic",
       "title": "Assets"
     },
+    "statistic": {
+      "assetCount": "assets",
+      "byType": "Balance by Type",
+      "noData": "No assets yet",
+      "noDataSubtitle": "Add assets to see statistics",
+      "totalBalance": "Total Balance"
+    },
     "search": {
       "hint": "Search assets...",
       "noResults": "No results",

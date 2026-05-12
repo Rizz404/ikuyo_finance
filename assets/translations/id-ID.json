@@ -33,6 +33,13 @@
       "tabStatistic": "Statistik",
       "title": "Aset"
     },
+    "statistic": {
+      "assetCount": "aset",
+      "byType": "Saldo per Tipe",
+      "noData": "Belum ada aset",
+      "noDataSubtitle": "Tambahkan aset untuk melihat statistik",
+      "totalBalance": "Total Saldo"
+    },
     "search": {
       "hint": "Cari aset...",
       "noResults": "Tidak ada hasil",

@@ -199,6 +199,14 @@ abstract class LocaleKeys {
   static const assetScreenFeatureInDevelopment =
       'asset.screen.featureInDevelopment';
 
+  // * Asset — Statistic
+  static const assetStatisticTotalBalance = 'asset.statistic.totalBalance';
+  static const assetStatisticAssetCount = 'asset.statistic.assetCount';
+  static const assetStatisticByType = 'asset.statistic.byType';
+  static const assetStatisticNoData = 'asset.statistic.noData';
+  static const assetStatisticNoDataSubtitle =
+      'asset.statistic.noDataSubtitle';
+
   // * Asset — Search
   static const assetSearchHint = 'asset.search.hint';
   static const assetSearchTitle = 'asset.search.title';
