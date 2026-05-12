@@ -14,7 +14,7 @@ class LocaleCubit extends Cubit<LocaleState> {
 
   LocaleCubit(this._prefs)
     : super(LocaleState(currentLocale: _loadLocale(_prefs))) {
-    this.logInfo('LocaleCubit initialized with ${state.currentLocale}');
+    logInfo('LocaleCubit initialized with ${state.currentLocale}');
   }
 
   static SupportedLocale _loadLocale(SharedPreferences prefs) {
@@ -29,9 +29,9 @@ class LocaleCubit extends Cubit<LocaleState> {
     try {
       await _prefs.setString(StorageKeys.locale, locale.name);
       emit(state.copyWith(currentLocale: locale));
-      this.logInfo('Locale changed to ${locale.name}');
+      logInfo('Locale changed to ${locale.name}');
     } catch (e, s) {
-      this.logError('Failed to change locale', e, s);
+      logError('Failed to change locale', e, s);
     }
   }
 

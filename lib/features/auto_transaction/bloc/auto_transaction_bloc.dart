@@ -202,8 +202,9 @@ class AutoTransactionBloc
         );
       },
     );
-    if (deleted && toDelete != null)
+    if (deleted && toDelete != null) {
       await _alarmService.cancelById(toDelete.id);
+    }
   }
 
   Future<void> _onGroupToggled(

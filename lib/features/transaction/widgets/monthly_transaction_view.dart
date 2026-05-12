@@ -6,7 +6,6 @@ import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 /// * Widget untuk menampilkan transaksi yang dikelompokkan berdasarkan bulan
 /// * Pure UI widget, no bloc logic - all callbacks handled by parent

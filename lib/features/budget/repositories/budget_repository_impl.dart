@@ -269,8 +269,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
         }
 
         // * Update fields jika ada
-        if (params.amountLimit != null)
+        if (params.amountLimit != null) {
           budget.amountLimit = params.amountLimit!;
+        }
         if (params.period != null) budget.period = params.period!.index;
         if (params.startDate != null) budget.startDate = params.startDate;
         if (params.endDate != null) budget.endDate = params.endDate;

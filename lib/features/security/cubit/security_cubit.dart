@@ -35,12 +35,12 @@ class SecurityCubit extends Cubit<SecurityState> {
         ),
       );
 
-      this.logInfo(
+      logInfo(
         'SecurityCubit initialized: enabled=${settings.isEnabled}, '
         'bio=$bioAvailable',
       );
     } catch (e, s) {
-      this.logError('SecurityCubit init failed', e, s);
+      logError('SecurityCubit init failed', e, s);
     }
   }
 
@@ -50,7 +50,7 @@ class SecurityCubit extends Cubit<SecurityState> {
   void onAppPaused() {
     if (!state.settings.isEnabled) return;
     _lastPausedAt = DateTime.now();
-    this.logInfo('App paused, auto-lock timer started');
+    logInfo('App paused, auto-lock timer started');
   }
 
   /// Dipanggil saat app di-resume
@@ -67,7 +67,7 @@ class SecurityCubit extends Cubit<SecurityState> {
     // * Lock jika sudah melebihi threshold
     if (elapsed >= threshold) {
       _lockApp();
-      this.logInfo('Auto-locked after $elapsed min (threshold: $threshold)');
+      logInfo('Auto-locked after $elapsed min (threshold: $threshold)');
     }
     _lastPausedAt = null;
   }
@@ -78,7 +78,7 @@ class SecurityCubit extends Cubit<SecurityState> {
     final trigger = state.settings.lockTrigger;
     if (trigger == LockTrigger.onScreenOff || trigger == LockTrigger.both) {
       _lockApp();
-      this.logInfo('Locked on screen off');
+      logInfo('Locked on screen off');
     }
   }
 
@@ -88,7 +88,7 @@ class SecurityCubit extends Cubit<SecurityState> {
     final trigger = state.settings.lockTrigger;
     if (trigger == LockTrigger.onAppClose || trigger == LockTrigger.both) {
       _lockApp();
-      this.logInfo('Locked on app close');
+      logInfo('Locked on app close');
     }
   }
 
@@ -127,7 +127,7 @@ class SecurityCubit extends Cubit<SecurityState> {
           failedAttempts: 0,
         ),
       );
-      this.logInfo('Biometric auth success');
+      logInfo('Biometric auth success');
     } else {
       // local_auth returns false when user cancels or fails max attempts.
       // We return to locked/idle state so user can retry or use PIN,
@@ -138,7 +138,7 @@ class SecurityCubit extends Cubit<SecurityState> {
           authResult: SecurityAuthResult.idle,
         ),
       );
-      this.logInfo('Biometric auth canceled or failed');
+      logInfo('Biometric auth canceled or failed');
     }
   }
 
@@ -163,7 +163,7 @@ class SecurityCubit extends Cubit<SecurityState> {
           failedAttempts: 0,
         ),
       );
-      this.logInfo('PIN auth success');
+      logInfo('PIN auth success');
     } else {
       emit(
         state.copyWith(
@@ -173,7 +173,7 @@ class SecurityCubit extends Cubit<SecurityState> {
           errorMessage: 'Incorrect PIN',
         ),
       );
-      this.logInfo('PIN auth failed');
+      logInfo('PIN auth failed');
     }
   }
 
@@ -201,7 +201,7 @@ class SecurityCubit extends Cubit<SecurityState> {
           failedAttempts: 0,
         ),
       );
-      this.logInfo('Password auth success');
+      logInfo('Password auth success');
     } else {
       emit(
         state.copyWith(
@@ -211,7 +211,7 @@ class SecurityCubit extends Cubit<SecurityState> {
           errorMessage: 'Incorrect password',
         ),
       );
-      this.logInfo('Password auth failed');
+      logInfo('Password auth failed');
     }
   }
 
@@ -230,9 +230,9 @@ class SecurityCubit extends Cubit<SecurityState> {
       emit(
         state.copyWith(settings: newSettings, biometricAvailable: bioAvailable),
       );
-      this.logInfo('Security settings updated');
+      logInfo('Security settings updated');
     } catch (e, s) {
-      this.logError('Failed to update settings', e, s);
+      logError('Failed to update settings', e, s);
     }
   }
 
@@ -260,7 +260,7 @@ class SecurityCubit extends Cubit<SecurityState> {
       pinLength: pin.length,
     );
     await updateSettings(newSettings);
-    this.logInfo('PIN set successfully');
+    logInfo('PIN set successfully');
   }
 
   /// Hapus PIN
@@ -276,7 +276,7 @@ class SecurityCubit extends Cubit<SecurityState> {
       pinLength: 6,
     );
     await updateSettings(newSettings);
-    this.logInfo('PIN removed');
+    logInfo('PIN removed');
   }
 
   /// Set password baru
@@ -287,7 +287,7 @@ class SecurityCubit extends Cubit<SecurityState> {
       passwordHash: hash,
     );
     await updateSettings(newSettings);
-    this.logInfo('Password set successfully');
+    logInfo('Password set successfully');
   }
 
   /// Hapus password
@@ -303,7 +303,7 @@ class SecurityCubit extends Cubit<SecurityState> {
       pinLength: state.settings.pinLength,
     );
     await updateSettings(newSettings);
-    this.logInfo('Password removed');
+    logInfo('Password removed');
   }
 
   /// Toggle biometric
@@ -328,7 +328,7 @@ class SecurityCubit extends Cubit<SecurityState> {
   Future<void> resetSecurity() async {
     await _storageService.clear();
     emit(const SecurityState());
-    this.logInfo('Security settings reset');
+    logInfo('Security settings reset');
   }
 
   /// Refresh biometric availability

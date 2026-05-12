@@ -11,7 +11,6 @@ import 'package:ikuyo_finance/features/auto_transaction/widgets/auto_log_tile.da
 import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
-import 'package:intl/intl.dart';
 
 class AutoTransactionLogScreen extends StatefulWidget {
   final AutoTransactionGroup group;

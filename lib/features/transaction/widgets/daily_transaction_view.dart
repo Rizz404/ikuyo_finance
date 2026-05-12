@@ -7,7 +7,6 @@ import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/widgets/transaction_tile.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 /// * Widget untuk menampilkan transaksi yang dikelompokkan berdasarkan hari
 /// * Pure UI widget, no bloc logic - all callbacks handled by parent

@@ -4,7 +4,6 @@ import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/features/statistic/models/statistic_period.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 /// * Widget untuk navigasi periode (prev/next) dengan dropdown tipe periode
 class StatisticPeriodNavigator extends StatelessWidget {

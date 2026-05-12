@@ -18,7 +18,7 @@ class ThemeCubit extends Cubit<ThemeState> {
           darkTheme: AppTheme.darkTheme,
         ),
       ) {
-    this.logInfo('ThemeCubit initialized with ${state.themeMode}');
+    logInfo('ThemeCubit initialized with ${state.themeMode}');
   }
 
   static ThemeMode _loadThemeMode(SharedPreferences prefs) {
@@ -33,9 +33,9 @@ class ThemeCubit extends Cubit<ThemeState> {
     try {
       await _prefs.setString(StorageKeys.themeMode, mode.name);
       emit(state.copyWith(themeMode: mode));
-      this.logInfo('Theme changed to ${mode.name}');
+      logInfo('Theme changed to ${mode.name}');
     } catch (e, s) {
-      this.logError('Failed to change theme', e, s);
+      logError('Failed to change theme', e, s);
     }
   }
 

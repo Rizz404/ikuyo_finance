@@ -22,11 +22,11 @@ class DatabaseSeeder {
 
     // * Skip jika sudah ada data
     if (box.count() > 0) {
-      this.logInfo('Categories already seeded, skipping...');
+      logInfo('Categories already seeded, skipping...');
       return;
     }
 
-    this.logInfo('Seeding default categories...');
+    logInfo('Seeding default categories...');
 
     final categories = [
       // * Income categories
@@ -143,7 +143,7 @@ class DatabaseSeeder {
     ];
 
     box.putMany(categories);
-    this.logInfo('Seeded ${categories.length} categories');
+    logInfo('Seeded ${categories.length} categories');
   }
 
   /// Seed asset default
@@ -152,11 +152,11 @@ class DatabaseSeeder {
 
     // * Skip jika sudah ada data
     if (box.count() > 0) {
-      this.logInfo('Assets already seeded, skipping...');
+      logInfo('Assets already seeded, skipping...');
       return;
     }
 
-    this.logInfo('Seeding default assets...');
+    logInfo('Seeding default assets...');
 
     final assets = [
       Asset(
@@ -216,6 +216,6 @@ class DatabaseSeeder {
     ];
 
     box.putMany(assets);
-    this.logInfo('Seeded ${assets.length} assets');
+    logInfo('Seeded ${assets.length} assets');
   }
 }

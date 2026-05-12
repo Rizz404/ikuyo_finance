@@ -2,7 +2,6 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
-import 'package:intl/intl.dart';
 
 /// * Active filters indicator with clear button (pure UI, no bloc logic)
 class TransactionActiveFilters extends StatelessWidget {

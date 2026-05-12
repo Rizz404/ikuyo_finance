@@ -37,7 +37,7 @@ class AppButton extends StatelessWidget {
     final theme = Theme.of(context);
 
     ({Color backgroundColor, Color foregroundColor, BorderSide? side})
-    _getColorProps() {
+    getColorProps() {
       // *  Udah dibennerin harusnya
       final colorMap = {
         AppButtonColor.primary: (
@@ -91,7 +91,7 @@ class AppButton extends StatelessWidget {
     }
 
     ({EdgeInsetsGeometry padding, TextStyle? textStyle, double height})
-    _getSizingProps() {
+    getSizingProps() {
       switch (size) {
         case AppButtonSize.small:
           return (
@@ -114,8 +114,8 @@ class AppButton extends StatelessWidget {
       }
     }
 
-    final colorProps = _getColorProps();
-    final sizingProps = _getSizingProps();
+    final colorProps = getColorProps();
+    final sizingProps = getSizingProps();
 
     // Progress indicator color should always contrast with background
     final progressIndicatorColor = variant == AppButtonVariant.filled

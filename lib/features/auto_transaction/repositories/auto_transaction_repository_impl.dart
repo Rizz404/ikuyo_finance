@@ -145,10 +145,12 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
         if (params.monthOfYear != null) {
           group.monthOfYear = params.monthOfYear!();
         }
-        if (params.intervalDays != null)
+        if (params.intervalDays != null) {
           group.intervalDays = params.intervalDays!;
-        if (params.activeDaysMask != null)
+        }
+        if (params.activeDaysMask != null) {
           group.activeDaysMask = params.activeDaysMask!;
+        }
         if (params.startDate != null) group.startDate = params.startDate!;
         if (params.endDate != null) group.endDate = params.endDate!();
         if (params.isActive != null) group.isActive = params.isActive!;

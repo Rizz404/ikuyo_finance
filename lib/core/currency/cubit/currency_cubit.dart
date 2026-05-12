@@ -18,7 +18,7 @@ class CurrencyCubit extends Cubit<CurrencyState> {
 
   CurrencyCubit(this._prefs, this._migrationService, this._exchangeRateService)
     : super(CurrencyState(currentCurrency: _loadCurrency(_prefs))) {
-    this.logInfo('CurrencyCubit initialized with ${state.currentCurrency}');
+    logInfo('CurrencyCubit initialized with ${state.currentCurrency}');
     // * Fetch live exchange rates on init
     refreshExchangeRates();
   }
@@ -64,11 +64,11 @@ class CurrencyCubit extends Cubit<CurrencyState> {
       // * Save new currency preference
       await _prefs.setString(StorageKeys.currency, code.name);
       emit(state.copyWith(currentCurrency: code, isMigrating: false));
-      this.logInfo('Currency migrated to ${code.name}');
+      logInfo('Currency migrated to ${code.name}');
 
       return result;
     } catch (e, s) {
-      this.logError('Failed to migrate currency', e, s);
+      logError('Failed to migrate currency', e, s);
       emit(state.copyWith(isMigrating: false));
       return CurrencyMigrationResult.failure(e.toString());
     }
@@ -79,9 +79,9 @@ class CurrencyCubit extends Cubit<CurrencyState> {
     try {
       await _prefs.setString(StorageKeys.currency, code.name);
       emit(state.copyWith(currentCurrency: code));
-      this.logInfo('Display currency changed to ${code.name}');
+      logInfo('Display currency changed to ${code.name}');
     } catch (e, s) {
-      this.logError('Failed to change display currency', e, s);
+      logError('Failed to change display currency', e, s);
     }
   }
 
@@ -114,9 +114,9 @@ class CurrencyCubit extends Cubit<CurrencyState> {
       emit(
         state.copyWith(isLoadingRates: false, ratesLastUpdated: DateTime.now()),
       );
-      this.logInfo('Exchange rates refreshed successfully');
+      logInfo('Exchange rates refreshed successfully');
     } catch (e, s) {
-      this.logError('Failed to refresh exchange rates', e, s);
+      logError('Failed to refresh exchange rates', e, s);
       emit(state.copyWith(isLoadingRates: false));
     }
   }
