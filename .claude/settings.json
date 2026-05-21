@@ -35,7 +35,10 @@
       "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\rizz\\\\learn\\\\finance\\\\ikuyo_finance\\\\AlarmSchedulerPlugin.kt\" -Force)",
       "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\android\\\\app\\\\src\\\\main\\\\kotlin\\\\rizz\\\\learn\\\\finance\\\\ikuyo_finance\\\\MainApplication.kt\" -Force)",
       "Bash(flutter pub *)",
-      "Bash(xargs grep -l \"NetworkType\")"
+      "Bash(xargs grep -l \"NetworkType\")",
+      "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\\\\auto_transaction\\\\services\\\\auto_transaction_permission_service.dart\" -Force)",
+      "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\\\\auto_transaction\\\\widgets\\\\auto_transaction_permission_dialog.dart\" -Force)",
+      "Bash(Write-Output \"deleted\")"
     ],
     "additionalDirectories": [
       "d:\\kodingan\\personal\\ikuyo_finance\\lib\\features\\security\\service",

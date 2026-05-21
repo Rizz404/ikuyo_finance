@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
@@ -135,30 +137,22 @@ Future<void> setupCurrency() async {
   );
 }
 
-/// * Init notification service + Workmanager — dipanggil setelah setupRepositories & setupBlocs
 Future<void> setupAutoTransactionServices() async {
-  // * Register alarm services
   getIt.registerLazySingleton<AutoTransactionAlarmService>(
     () => AutoTransactionAlarmService(),
   );
   getIt.registerLazySingleton<AutoBackupAlarmService>(
     () => AutoBackupAlarmService(),
   );
-
-  // * Register AutoBackupService singleton (with alarm service)
   getIt.registerLazySingleton<AutoBackupService>(
     () => AutoBackupService(
       getIt<SharedPreferences>(),
       getIt<AutoBackupAlarmService>(),
     ),
   );
-
-  // * Register notification service singleton
   getIt.registerLazySingleton<AutoTransactionNotificationService>(
     () => AutoTransactionNotificationService(),
   );
-
-  // * Register scheduler singleton (with alarm service for exact re-arming)
   getIt.registerLazySingleton<AutoTransactionScheduler>(
     () => AutoTransactionScheduler(
       repo: getIt<AutoTransactionRepository>(),
@@ -168,45 +162,19 @@ Future<void> setupAutoTransactionServices() async {
     ),
   );
 
-  // * Init notification channels
   await getIt<AutoTransactionNotificationService>().initialize();
-
-  // * Init exact alarm service (registers background handler)
-  await getIt<AutoTransactionAlarmService>().initialize();
-  await getIt<AutoBackupAlarmService>().initialize();
-
-  // * Request notification + exact alarm permission from user
   await getIt<AutoTransactionNotificationService>().requestPermission();
-  await getIt<AutoTransactionAlarmService>().requestExactAlarmPermission();
+
+  await getIt<AutoBackupAlarmService>().initialize();
   await getIt<AutoBackupAlarmService>().requestExactAlarmPermission();
 
-  // * Init Workmanager dengan callback dispatcher
   await Workmanager().initialize(workmanagerCallbackDispatcher);
 
-  // * Register periodic task — replace agar selalu fresh setiap app launch
-  await Workmanager().registerPeriodicTask(
-    autoTransactionTaskUniqueName,
-    autoTransactionTaskName,
-    frequency: const Duration(minutes: 15),
-    existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
-  );
-
-  // * Schedule exact alarms for all active groups on startup (restores alarms
-  //   lost after reboot or first install of this feature)
-  final groupsResult = await getIt<AutoTransactionRepository>().getGroups().run();
-  groupsResult.fold(
-    (failure) => talker.error('Gagal load groups untuk alarm startup: ${failure.message}'),
-    (success) async {
-      final active = (success.data ?? [])
-          .where((g) => g.isActive && !g.isCurrentlyPaused())
-          .toList();
-      await getIt<AutoTransactionAlarmService>().scheduleAlarmsForAllGroups(active);
-    },
-  );
-
-  // * Restore backup exact alarm if enabled
   final backupSettings = getIt<AutoBackupService>().loadSettings();
   if (backupSettings.isEnabled) {
     await getIt<AutoBackupAlarmService>().scheduleFromSettings(backupSettings);
   }
+
+  // * Jalankan pending auto transactions saat app dibuka
+  unawaited(getIt<AutoTransactionScheduler>().runPendingExecutions());
 }
