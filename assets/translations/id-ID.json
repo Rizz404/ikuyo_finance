@@ -33,13 +33,6 @@
       "tabStatistic": "Statistik",
       "title": "Aset"
     },
-    "statistic": {
-      "assetCount": "aset",
-      "byType": "Saldo per Tipe",
-      "noData": "Belum ada aset",
-      "noDataSubtitle": "Tambahkan aset untuk melihat statistik",
-      "totalBalance": "Total Saldo"
-    },
     "search": {
       "hint": "Cari aset...",
       "noResults": "Tidak ada hasil",
@@ -179,7 +172,7 @@
       "emptySubtitle": "Tekan + untuk membuat grup transaksi otomatis baru",
       "emptyTitle": "Belum ada grup transaksi otomatis",
       "errorOccurred": "Terjadi kesalahan",
-      "schedulerNotice": "Beta: Transaksi otomatis hanya dijalankan saat aplikasi dibuka. Buka aplikasi secara berkala agar transaksi terjadwal tidak terlewat.",
+      "schedulerNotice": "Transaksi dijalankan saat kamu membuka aplikasi. Karena keterbatasan Android, eksekusi latar belakang bisa tertunda hingga 15 menit.",
       "title": "Transaksi Otomatis"
     },
     "tile": {
@@ -585,6 +578,17 @@
     }
   },
   "sharedWidgets": {
+    "batchDelete": {
+      "cancel": "Batal",
+      "confirmMessage": "{count} item akan dihapus secara permanen.",
+      "confirmTitle": "Hapus item?",
+      "delete": "Hapus",
+      "deleteButton": "Hapus {count} item",
+      "deselectAll": "Batal pilih semua",
+      "noItems": "Tidak ada item",
+      "noResults": "Tidak ada hasil",
+      "selectAll": "Pilih semua"
+    },
     "colorPicker": {
       "customColorLabel": "Warna Custom (Hex)"
     },

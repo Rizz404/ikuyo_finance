@@ -1,6 +1,8 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/extensions/currency_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
 import 'package:ikuyo_finance/shared/utils/icon_registry.dart';
 import 'package:ikuyo_finance/shared/widgets/app_image.dart';
@@ -29,7 +31,9 @@ class CategorySummaryList extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
           child: AppText(
-            isIncome ? 'Pendapatan per Kategori' : 'Pengeluaran per Kategori',
+            isIncome
+                ? LocaleKeys.statisticCategoryIncome.tr()
+                : LocaleKeys.statisticCategoryExpense.tr(),
             style: AppTextStyle.titleSmall,
             fontWeight: FontWeight.w600,
           ),
@@ -106,7 +110,8 @@ class _CategorySummaryTile extends StatelessWidget {
                 Row(
                   children: [
                     AppText(
-                      '${summary.transactionCount} transaksi',
+                      '${summary.transactionCount} '
+                      '${LocaleKeys.statisticCommonTransactionCount.tr()}',
                       style: AppTextStyle.labelSmall,
                       color: context.colorScheme.onSurfaceVariant,
                     ),

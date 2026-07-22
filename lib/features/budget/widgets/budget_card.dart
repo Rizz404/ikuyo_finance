@@ -1,10 +1,11 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/extensions/currency_extension.dart';
 import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
-import 'package:intl/intl.dart';
 
 class BudgetCard extends StatelessWidget {
   final Budget budget;
@@ -15,7 +16,8 @@ class BudgetCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = _getPeriodColor(context);
-    final categoryName = budget.category.target?.name ?? 'Tanpa Kategori';
+    final categoryName =
+        budget.category.target?.name ?? LocaleKeys.transactionNoCategory.tr();
 
     return GestureDetector(
       onTap: onTap ?? () => context.pushToEditBudget(budget),

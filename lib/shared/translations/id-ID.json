@@ -39,6 +39,17 @@
       "clearAll": "Hapus semua",
       "done": "Selesai"
     },
+    "batchDelete": {
+      "confirmTitle": "Hapus item?",
+      "confirmMessage": "{count} item akan dihapus secara permanen.",
+      "cancel": "Batal",
+      "delete": "Hapus",
+      "selectAll": "Pilih semua",
+      "deselectAll": "Batal pilih semua",
+      "noItems": "Tidak ada item",
+      "noResults": "Tidak ada hasil",
+      "deleteButton": "Hapus {count} item"
+    },
     "searchField": {
       "noResultFound": "Tidak ada hasil ditemukan",
       "searchHint": "Cari...",

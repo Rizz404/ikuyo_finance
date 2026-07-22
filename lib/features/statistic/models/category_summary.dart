@@ -1,3 +1,5 @@
+import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 
 /// * Model untuk menyimpan summary transaksi per kategori
@@ -25,7 +27,8 @@ class CategorySummary {
   }
 
   /// * Nama kategori dengan fallback
-  String get categoryName => category?.name ?? 'Tanpa Kategori';
+  String get categoryName =>
+      category?.name ?? LocaleKeys.transactionNoCategory.tr();
 
   /// * Icon kategori
   String? get categoryIcon => category?.icon;

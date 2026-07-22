@@ -39,6 +39,17 @@
       "clearAll": "Clear all",
       "done": "Done"
     },
+    "batchDelete": {
+      "confirmTitle": "Delete item?",
+      "confirmMessage": "{count} item(s) will be permanently deleted.",
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "selectAll": "Select all",
+      "deselectAll": "Deselect all",
+      "noItems": "No items",
+      "noResults": "No results",
+      "deleteButton": "Delete {count} item(s)"
+    },
     "searchField": {
       "noResultFound": "No result found",
       "searchHint": "Search...",

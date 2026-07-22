@@ -69,6 +69,26 @@ abstract class LocaleKeys {
   static const sharedWidgetsMultiSelectDropdownDone =
       'sharedWidgets.multiSelectDropdown.done';
 
+  // * SharedWidgets — BatchDeleteDialog
+  static const sharedWidgetsBatchDeleteConfirmTitle =
+      'sharedWidgets.batchDelete.confirmTitle';
+  static const sharedWidgetsBatchDeleteConfirmMessage =
+      'sharedWidgets.batchDelete.confirmMessage';
+  static const sharedWidgetsBatchDeleteCancel =
+      'sharedWidgets.batchDelete.cancel';
+  static const sharedWidgetsBatchDeleteDelete =
+      'sharedWidgets.batchDelete.delete';
+  static const sharedWidgetsBatchDeleteSelectAll =
+      'sharedWidgets.batchDelete.selectAll';
+  static const sharedWidgetsBatchDeleteDeselectAll =
+      'sharedWidgets.batchDelete.deselectAll';
+  static const sharedWidgetsBatchDeleteNoItems =
+      'sharedWidgets.batchDelete.noItems';
+  static const sharedWidgetsBatchDeleteNoResults =
+      'sharedWidgets.batchDelete.noResults';
+  static const sharedWidgetsBatchDeleteDeleteButton =
+      'sharedWidgets.batchDelete.deleteButton';
+
   // * SharedWidgets — SearchField
   static const sharedWidgetsSearchFieldNoResultFound =
       'sharedWidgets.searchField.noResultFound';

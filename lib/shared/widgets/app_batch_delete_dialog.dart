@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
@@ -139,17 +141,21 @@ class _AppBatchDeleteDialogState<T> extends State<AppBatchDeleteDialog<T>> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Hapus item?'),
-        content: Text('$count item akan dihapus secara permanen.'),
+        title: Text(LocaleKeys.sharedWidgetsBatchDeleteConfirmTitle.tr()),
+        content: Text(
+          LocaleKeys.sharedWidgetsBatchDeleteConfirmMessage.tr(
+            namedArgs: {'count': '$count'},
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal'),
+            child: Text(LocaleKeys.sharedWidgetsBatchDeleteCancel.tr()),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
-              'Hapus',
+              LocaleKeys.sharedWidgetsBatchDeleteDelete.tr(),
               style: TextStyle(color: ctx.colorScheme.error),
             ),
           ),
@@ -215,7 +221,9 @@ class _AppBatchDeleteDialogState<T> extends State<AppBatchDeleteDialog<T>> {
             ),
           ),
           IconButton(
-            tooltip: _allFilteredSelected ? 'Batal pilih semua' : 'Pilih semua',
+            tooltip: _allFilteredSelected
+                ? LocaleKeys.sharedWidgetsBatchDeleteDeselectAll.tr()
+                : LocaleKeys.sharedWidgetsBatchDeleteSelectAll.tr(),
             icon: Icon(
               _allFilteredSelected ? Icons.deselect : Icons.select_all,
             ),
@@ -232,7 +240,9 @@ class _AppBatchDeleteDialogState<T> extends State<AppBatchDeleteDialog<T>> {
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: widget.searchHint ?? 'Cari...',
+          hintText:
+              widget.searchHint ??
+              LocaleKeys.sharedWidgetsSearchFieldSearchHint.tr(),
           prefixIcon: const Icon(Icons.search),
           suffixIcon: _searchController.text.isNotEmpty
               ? IconButton(
@@ -259,7 +269,9 @@ class _AppBatchDeleteDialogState<T> extends State<AppBatchDeleteDialog<T>> {
     if (_filtered.isEmpty) {
       return Center(
         child: AppText(
-          _searchController.text.isEmpty ? 'Tidak ada item' : 'Tidak ada hasil',
+          _searchController.text.isEmpty
+              ? LocaleKeys.sharedWidgetsBatchDeleteNoItems.tr()
+              : LocaleKeys.sharedWidgetsBatchDeleteNoResults.tr(),
           style: AppTextStyle.bodyMedium,
           color: context.colorScheme.outline,
         ),
@@ -326,7 +338,9 @@ class _AppBatchDeleteDialogState<T> extends State<AppBatchDeleteDialog<T>> {
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
         child: AppButton(
-          text: 'Hapus ${_selectedIds.length} item',
+          text: LocaleKeys.sharedWidgetsBatchDeleteDeleteButton.tr(
+            namedArgs: {'count': '${_selectedIds.length}'},
+          ),
           color: AppButtonColor.error,
           onPressed: _confirmDelete,
         ),

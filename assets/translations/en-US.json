@@ -33,13 +33,6 @@
       "tabStatistic": "Statistic",
       "title": "Assets"
     },
-    "statistic": {
-      "assetCount": "assets",
-      "byType": "Balance by Type",
-      "noData": "No assets yet",
-      "noDataSubtitle": "Add assets to see statistics",
-      "totalBalance": "Total Balance"
-    },
     "search": {
       "hint": "Search assets...",
       "noResults": "No results",
@@ -179,7 +172,7 @@
       "emptySubtitle": "Press + to create a new auto transaction group",
       "emptyTitle": "No auto transaction groups",
       "errorOccurred": "An error occurred",
-      "schedulerNotice": "Beta: Auto transactions only run when the app is opened. Open the app regularly to ensure scheduled transactions are not missed.",
+      "schedulerNotice": "Transactions run when you open the app. Due to Android limits, background execution may be delayed up to 15 minutes.",
       "title": "Auto Transactions"
     },
     "tile": {
@@ -585,6 +578,17 @@
     }
   },
   "sharedWidgets": {
+    "batchDelete": {
+      "cancel": "Cancel",
+      "confirmMessage": "{count} item(s) will be permanently deleted.",
+      "confirmTitle": "Delete item?",
+      "delete": "Delete",
+      "deleteButton": "Delete {count} item(s)",
+      "deselectAll": "Deselect all",
+      "noItems": "No items",
+      "noResults": "No results",
+      "selectAll": "Select all"
+    },
     "colorPicker": {
       "customColorLabel": "Custom Color (Hex)"
     },
