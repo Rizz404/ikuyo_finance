@@ -381,51 +381,57 @@ class _ExportScreenState extends State<ExportScreen> {
 
   Widget _buildAssetCheckItem(Asset asset) {
     final isIncluded = !_excludedAssetUlids.contains(asset.ulid);
-    return CheckboxListTile(
-      value: isIncluded,
-      onChanged: (checked) {
-        setState(() {
-          if (checked == true) {
-            _excludedAssetUlids.remove(asset.ulid);
-          } else {
-            _excludedAssetUlids.add(asset.ulid);
-          }
-        });
-      },
-      title: AppText(asset.name, style: AppTextStyle.bodyMedium),
-      dense: true,
-      contentPadding: EdgeInsets.zero,
+    return Material(
+      color: Colors.transparent,
+      child: CheckboxListTile(
+        value: isIncluded,
+        onChanged: (checked) {
+          setState(() {
+            if (checked == true) {
+              _excludedAssetUlids.remove(asset.ulid);
+            } else {
+              _excludedAssetUlids.add(asset.ulid);
+            }
+          });
+        },
+        title: AppText(asset.name, style: AppTextStyle.bodyMedium),
+        dense: true,
+        contentPadding: EdgeInsets.zero,
+      ),
     );
   }
 
   Widget _buildCategoryCheckItem(Category category) {
     final isIncluded = !_excludedCategoryUlids.contains(category.ulid);
-    return CheckboxListTile(
-      value: isIncluded,
-      onChanged: (checked) {
-        setState(() {
-          if (checked == true) {
-            _excludedCategoryUlids.remove(category.ulid);
-          } else {
-            _excludedCategoryUlids.add(category.ulid);
-          }
-        });
-      },
-      title: Row(
-        children: [
-          Expanded(
-            child: AppText(category.name, style: AppTextStyle.bodyMedium),
-          ),
-          if (category.parent.target != null)
-            AppText(
-              '← ${category.parent.target!.name}',
-              style: AppTextStyle.bodySmall,
-              color: context.colors.textSecondary,
+    return Material(
+      color: Colors.transparent,
+      child: CheckboxListTile(
+        value: isIncluded,
+        onChanged: (checked) {
+          setState(() {
+            if (checked == true) {
+              _excludedCategoryUlids.remove(category.ulid);
+            } else {
+              _excludedCategoryUlids.add(category.ulid);
+            }
+          });
+        },
+        title: Row(
+          children: [
+            Expanded(
+              child: AppText(category.name, style: AppTextStyle.bodyMedium),
             ),
-        ],
+            if (category.parent.target != null)
+              AppText(
+                '← ${category.parent.target!.name}',
+                style: AppTextStyle.bodySmall,
+                color: context.colors.textSecondary,
+              ),
+          ],
+        ),
+        dense: true,
+        contentPadding: EdgeInsets.zero,
       ),
-      dense: true,
-      contentPadding: EdgeInsets.zero,
     );
   }
 

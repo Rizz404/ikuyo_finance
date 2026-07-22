@@ -458,32 +458,40 @@ class _AutoTransactionGroupUpsertScreenState
               : context.colorScheme.outlineVariant.withValues(alpha: 0.5),
         ),
       ),
-      child: SwitchListTile(
-        value: _isSingleMode,
-        onChanged: (val) => setState(() {
-          _isSingleMode = val;
-          if (!val) {
-            _formKey.currentState?.fields['transactionUlid']?.reset();
-          }
-        }),
-        title: AppText(
-          LocaleKeys.autoTransactionGroupUpsertSingleItemModeLabel.tr(),
-          style: AppTextStyle.bodyMedium,
-          fontWeight: FontWeight.w500,
+      child: Material(
+        color: Colors.transparent,
+        child: SwitchListTile(
+          value: _isSingleMode,
+          onChanged: (val) => setState(() {
+            _isSingleMode = val;
+            if (!val) {
+              _formKey.currentState?.fields['transactionUlid']?.reset();
+            }
+          }),
+          title: AppText(
+            LocaleKeys.autoTransactionGroupUpsertSingleItemModeLabel.tr(),
+            style: AppTextStyle.bodyMedium,
+            fontWeight: FontWeight.w500,
+          ),
+          subtitle: AppText(
+            LocaleKeys.autoTransactionGroupUpsertSingleItemModeHint.tr(),
+            style: AppTextStyle.bodySmall,
+            color: context.colorScheme.outline,
+          ),
+          secondary: Icon(
+            Icons.looks_one_outlined,
+            color: _isSingleMode
+                ? context.colorScheme.primary
+                : context.colorScheme.outline,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 4,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        subtitle: AppText(
-          LocaleKeys.autoTransactionGroupUpsertSingleItemModeHint.tr(),
-          style: AppTextStyle.bodySmall,
-          color: context.colorScheme.outline,
-        ),
-        secondary: Icon(
-          Icons.looks_one_outlined,
-          color: _isSingleMode
-              ? context.colorScheme.primary
-              : context.colorScheme.outline,
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -554,33 +562,41 @@ class _AutoTransactionGroupUpsertScreenState
           color: context.colorScheme.primary.withValues(alpha: 0.25),
         ),
       ),
-      child: SwitchListTile(
-        value: _syncWithItem,
-        onChanged: (val) {
-          setState(() => _syncWithItem = val);
-          if (val) {
-            _formKey.currentState?.fields['name']?.didChange(txName);
-            _formKey.currentState?.fields['description']?.didChange(null);
-          }
-        },
-        title: AppText(
-          LocaleKeys.autoTransactionGroupUpsertSyncWithItemLabel.tr(),
-          style: AppTextStyle.bodyMedium,
-          fontWeight: FontWeight.w500,
+      child: Material(
+        color: Colors.transparent,
+        child: SwitchListTile(
+          value: _syncWithItem,
+          onChanged: (val) {
+            setState(() => _syncWithItem = val);
+            if (val) {
+              _formKey.currentState?.fields['name']?.didChange(txName);
+              _formKey.currentState?.fields['description']?.didChange(null);
+            }
+          },
+          title: AppText(
+            LocaleKeys.autoTransactionGroupUpsertSyncWithItemLabel.tr(),
+            style: AppTextStyle.bodyMedium,
+            fontWeight: FontWeight.w500,
+          ),
+          subtitle: AppText(
+            LocaleKeys.autoTransactionGroupUpsertSyncWithItemHint.tr(),
+            style: AppTextStyle.bodySmall,
+            color: context.colorScheme.outline,
+          ),
+          secondary: Icon(
+            Icons.link,
+            color: _syncWithItem
+                ? context.colorScheme.primary
+                : context.colorScheme.outline,
+          ),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 4,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        subtitle: AppText(
-          LocaleKeys.autoTransactionGroupUpsertSyncWithItemHint.tr(),
-          style: AppTextStyle.bodySmall,
-          color: context.colorScheme.outline,
-        ),
-        secondary: Icon(
-          Icons.link,
-          color: _syncWithItem
-              ? context.colorScheme.primary
-              : context.colorScheme.outline,
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
