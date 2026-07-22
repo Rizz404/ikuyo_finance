@@ -25,11 +25,15 @@ class _LockScreenState extends State<LockScreen> {
   final _passwordFocus = FocusNode();
   bool _obscurePassword = true;
   bool _hasTriedBiometric = false;
+  // * True setelah user pilih metode auth secara manual — auto-select berhenti ikut campur
+  bool _userSelectedView = false;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _autoStart());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => _autoStart(context.read<SecurityCubit>().state),
+    );
   }
 
   @override
@@ -41,14 +45,22 @@ class _LockScreenState extends State<LockScreen> {
     super.dispose();
   }
 
-  void _autoStart() {
-    final state = context.read<SecurityCubit>().state;
+  /// Pilih metode auth yang tepat berdasarkan [state] terbaru dari SecurityCubit.
+  ///
+  /// Dipanggil sekali di post-frame callback DAN setiap kali SecurityCubit
+  /// selesai memuat settings-nya secara async (lihat BlocListener di [build]).
+  /// Tanpa ini, layar bisa nyangkut di view awal ("biometric") kalau
+  /// _init() cubit belum selesai saat frame pertama dirender.
+  void _autoStart(SecurityState state) {
+    if (_userSelectedView) return;
 
     // * Otomatis coba biometric dulu jika tersedia
-    if (state.canUseBiometric && !_hasTriedBiometric) {
-      _hasTriedBiometric = true;
-      _currentView = _AuthView.biometric;
-      context.read<SecurityCubit>().authenticateWithBiometric();
+    if (state.canUseBiometric) {
+      if (!_hasTriedBiometric) {
+        _hasTriedBiometric = true;
+        setState(() => _currentView = _AuthView.biometric);
+        context.read<SecurityCubit>().authenticateWithBiometric();
+      }
     } else if (state.canUsePin) {
       setState(() => _currentView = _AuthView.pin);
     } else if (state.canUsePassword) {
@@ -57,6 +69,7 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void _switchToPin() {
+    _userSelectedView = true;
     setState(() => _currentView = _AuthView.pin);
     _pinController.clear();
     context.read<SecurityCubit>().clearAuthResult();
@@ -67,6 +80,7 @@ class _LockScreenState extends State<LockScreen> {
   }
 
   void _switchToPassword() {
+    _userSelectedView = true;
     setState(() => _currentView = _AuthView.password);
     _passwordController.clear();
     context.read<SecurityCubit>().clearAuthResult();
@@ -96,16 +110,30 @@ class _LockScreenState extends State<LockScreen> {
   Widget build(BuildContext context) {
     final colors = context.colors;
 
-    return BlocListener<SecurityCubit, SecurityState>(
-      listenWhen: (prev, curr) => prev.authResult != curr.authResult,
-      listener: (context, state) {
-        if (state.authResult == SecurityAuthResult.failed) {
-          // * Haptic feedback saat gagal
-          HapticFeedback.heavyImpact();
-          _pinController.clear();
-          _passwordController.clear();
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<SecurityCubit, SecurityState>(
+          listenWhen: (prev, curr) => prev.authResult != curr.authResult,
+          listener: (context, state) {
+            if (state.authResult == SecurityAuthResult.failed) {
+              // * Haptic feedback saat gagal
+              HapticFeedback.heavyImpact();
+              _pinController.clear();
+              _passwordController.clear();
+            }
+          },
+        ),
+        BlocListener<SecurityCubit, SecurityState>(
+          // * SecurityCubit._init() memuat settings secara async — begitu
+          // * canUseX berubah (mis. dari false ke true saat load selesai),
+          // * evaluasi ulang view awal alih-alih terjebak di pilihan lama.
+          listenWhen: (prev, curr) =>
+              prev.canUseBiometric != curr.canUseBiometric ||
+              prev.canUsePin != curr.canUsePin ||
+              prev.canUsePassword != curr.canUsePassword,
+          listener: (context, state) => _autoStart(state),
+        ),
+      ],
       child: Scaffold(
         backgroundColor: colors.background,
         body: SafeArea(
@@ -398,6 +426,7 @@ class _LockScreenState extends State<LockScreen> {
             icon: Icons.fingerprint,
             label: LocaleKeys.securityUseBiometric.tr(),
             onTap: () {
+              _userSelectedView = true;
               setState(() => _currentView = _AuthView.biometric);
               _retryBiometric();
             },

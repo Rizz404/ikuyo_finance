@@ -22,23 +22,14 @@ import '../test/support/test_logger.dart';
 /// purely to avoid touching the real device's secure storage; the settings
 /// it returns are otherwise the real production `SecuritySettings` model.
 ///
-/// DISCOVERED BUG (confirmed on a real Android emulator, not a test
-/// artifact): `LockScreen._autoStart()` runs from `addPostFrameCallback`
-/// after the FIRST frame, but `SecurityCubit._init()` loads settings
-/// asynchronously (`await _storageService.load()`). On the very first
-/// frame the cubit is still in its default `SecurityState()`
-/// (`canUseBiometric`/`canUsePin` both false), so `_autoStart()` sees
-/// nothing it can use and leaves `_currentView` at its initial value
-/// (`.biometric`) — even once real settings load a moment later and
-/// `canUsePin` becomes true, nothing re-evaluates `_currentView` since
-/// `_autoStart()` only runs once. In practice this means real users can
-/// land on the "Use Biometric" button screen on cold start even when
-/// biometric is disabled/unavailable and PIN is the intended method,
-/// requiring an extra manual tap on "Use PIN" that shouldn't be needed.
-/// This test documents and works around that actual behavior rather than
-/// the intended one — worth a real fix in `lock_screen.dart` separately
-/// (e.g. re-run `_autoStart()`'s decision reactively via `BlocListener`
-/// instead of a one-shot post-frame callback).
+/// Regression test for a fixed race condition: `SecurityCubit._init()`
+/// loads settings asynchronously (`await _storageService.load()`), so on
+/// the very first frame the cubit is still in its default `SecurityState()`
+/// (`canUseBiometric`/`canUsePin` both false). `LockScreen` now re-evaluates
+/// its initial view reactively via `BlocListener` whenever `canUseBiometric`
+/// / `canUsePin` / `canUsePassword` change, so once settings finish loading
+/// the screen lands on the PIN view on its own — no manual "Use PIN" tap
+/// required, even though biometric is unavailable here.
 class MockSecurityStorageService extends Mock implements SecurityStorageService {}
 
 class MockBiometricService extends Mock implements BiometricService {}
@@ -79,31 +70,21 @@ void main() {
     );
   }
 
-  /// Works around the `_autoStart()` timing bug documented above: pumps
-  /// until settings have actually loaded, then explicitly switches to the
-  /// PIN view if the screen didn't land there on its own.
   Future<void> goToPinView(WidgetTester tester) async {
     await tester.pumpWidget(boot());
     await tester.pumpAndSettle();
-
-    if (find.byType(TextField).evaluate().isEmpty) {
-      // * LockScreen is the very first widget rendered by boot(), with no
-      // * intervening navigation — easy_localization's async asset load
-      // * sometimes hasn't finished by the first build, so `.tr()` calls
-      // * here can render the raw key instead of "Use PIN". Target the
-      // * switch button by its icon instead, which doesn't depend on
-      // * localization having finished loading.
-      await tester.tap(find.byIcon(Icons.dialpad_rounded));
-      await tester.pumpAndSettle();
-    }
   }
 
-  testWidgets('lands on the PIN view (directly, or via "Use PIN" if the '
-      'race documented above puts it on the biometric view first)', (tester) async {
-    await goToPinView(tester);
+  testWidgets(
+    'lands directly on the PIN view once settings finish loading, '
+    'with no manual "Use PIN" tap needed',
+    (tester) async {
+      await goToPinView(tester);
 
-    expect(find.byType(TextField), findsOneWidget);
-  });
+      expect(find.byType(TextField), findsOneWidget);
+      expect(find.byIcon(Icons.fingerprint), findsNothing);
+    },
+  );
 
   testWidgets('entering the correct PIN unlocks the cubit', (tester) async {
     await goToPinView(tester);
