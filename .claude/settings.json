@@ -38,7 +38,9 @@
       "Bash(xargs grep -l \"NetworkType\")",
       "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\\\\auto_transaction\\\\services\\\\auto_transaction_permission_service.dart\" -Force)",
       "Bash(Remove-Item \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\\\\auto_transaction\\\\widgets\\\\auto_transaction_permission_dialog.dart\" -Force)",
-      "Bash(Write-Output \"deleted\")"
+      "Bash(Write-Output \"deleted\")",
+      "Bash(not exist *)",
+      "PowerShell(New-Item -ItemType Directory -Force \"d:\\\\kodingan\\\\personal\\\\ikuyo_finance\\\\lib\\\\features\\\\auth\\\\services\")"
     ],
     "additionalDirectories": [
       "d:\\kodingan\\personal\\ikuyo_finance\\lib\\features\\security\\service",
