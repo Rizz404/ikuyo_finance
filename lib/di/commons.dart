@@ -25,6 +25,7 @@ import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart'
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
 import 'package:ikuyo_finance/features/security/services/biometric_service.dart';
 import 'package:ikuyo_finance/features/security/services/security_storage_service.dart';
+import 'package:ikuyo_finance/features/auth/services/supabase_status_service.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -36,6 +37,7 @@ Future<void> setupCommons() async {
   _setupLogger();
   await _setupStorage();
   await _setupSupabase();
+  _setupSupabaseStatus();
   await _setupTheme();
 }
 
@@ -87,21 +89,36 @@ Future<void> seedDatabaseIfNeeded() async {
 }
 
 Future<void> _setupSupabase() async {
+  if (!SupabaseConfig.isConfigured) {
+    talker.logWarning('Supabase tidak dikonfigurasi — app berjalan tanpa cloud');
+    return;
+  }
+
   final secureStorage = getIt<FlutterSecureStorage>();
 
-  await Supabase.initialize(
-    url: SupabaseConfig.url,
-    anonKey: SupabaseConfig.anonKey,
-    authOptions: FlutterAuthClientOptions(
-      authFlowType: AuthFlowType.pkce,
-      localStorage: SecureLocalStorage(secureStorage),
-    ),
-    realtimeClientOptions: const RealtimeClientOptions(
-      logLevel: RealtimeLogLevel.info,
-    ),
-  );
+  try {
+    await Supabase.initialize(
+      url: SupabaseConfig.url,
+      anonKey: SupabaseConfig.anonKey,
+      authOptions: FlutterAuthClientOptions(
+        authFlowType: AuthFlowType.pkce,
+        localStorage: SecureLocalStorage(secureStorage),
+      ),
+      realtimeClientOptions: const RealtimeClientOptions(
+        logLevel: RealtimeLogLevel.info,
+      ),
+    );
+    getIt.registerSingleton<SupabaseClient>(Supabase.instance.client);
+  } catch (e, stack) {
+    // ! Supabase init gagal (project dihapus / key tidak valid) — app
+    // ! tetap berjalan dalam mode offline. SupabaseClient tidak terdaftar.
+    talker.logError('Supabase init gagal — mode offline', e, stack);
+  }
+}
 
-  getIt.registerSingleton<SupabaseClient>(Supabase.instance.client);
+void _setupSupabaseStatus() {
+  final client = getIt.isRegistered<SupabaseClient>() ? getIt<SupabaseClient>() : null;
+  getIt.registerSingleton<SupabaseStatusService>(SupabaseStatusService(client));
 }
 
 Future<void> _setupTheme() async {

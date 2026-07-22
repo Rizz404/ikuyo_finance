@@ -22,7 +22,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 void setupRepositories() {
   getIt
     ..registerLazySingleton<AuthRepository>(
-      () => AuthRepositoryImpl(getIt<SupabaseClient>()),
+      () => AuthRepositoryImpl(
+        getIt.isRegistered<SupabaseClient>() ? getIt<SupabaseClient>() : null,
+      ),
     )
     ..registerLazySingleton<CategoryRepository>(
       () => CategoryRepositoryImpl(

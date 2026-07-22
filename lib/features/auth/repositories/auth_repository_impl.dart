@@ -8,7 +8,7 @@ import 'package:ikuyo_finance/features/auth/repositories/auth_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
-  final SupabaseClient _supabase;
+  final SupabaseClient? _supabase;
 
   const AuthRepositoryImpl(this._supabase);
 
@@ -18,8 +18,10 @@ class AuthRepositoryImpl implements AuthRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
+        final supabase = _supabase;
+        if (supabase == null) throw const AuthException('Tidak dapat terhubung ke server');
         logService('Masuk dengan email', params.email);
-        final response = await _supabase.auth.signInWithPassword(
+        final response = await supabase.auth.signInWithPassword(
           email: params.email,
           password: params.password,
         );
@@ -43,8 +45,10 @@ class AuthRepositoryImpl implements AuthRepository {
   ) {
     return TaskEither.tryCatch(
       () async {
+        final supabase = _supabase;
+        if (supabase == null) throw const AuthException('Tidak dapat terhubung ke server');
         logService('Daftar dengan email', params.email);
-        final response = await _supabase.auth.signUp(
+        final response = await supabase.auth.signUp(
           email: params.email,
           password: params.password,
         );
@@ -67,13 +71,15 @@ class AuthRepositoryImpl implements AuthRepository {
   TaskEither<Failure, Success<AuthResponse>> signInWithGoogle() {
     return TaskEither.tryCatch(
       () async {
+        final supabase = _supabase;
+        if (supabase == null) throw const AuthException('Tidak dapat terhubung ke server');
         logService('Masuk dengan Google');
-        await _supabase.auth.signInWithOAuth(OAuthProvider.google);
+        await supabase.auth.signInWithOAuth(OAuthProvider.google);
 
         // TODO: Handle OAuth callback and get auth response
         // ! OAuth requires deep linking setup
-        final user = _supabase.auth.currentUser;
-        final session = _supabase.auth.currentSession;
+        final user = supabase.auth.currentUser;
+        final session = supabase.auth.currentSession;
 
         if (user == null || session == null) {
           throw const AuthException('Masuk OAuth tidak lengkap');
@@ -98,8 +104,10 @@ class AuthRepositoryImpl implements AuthRepository {
   TaskEither<Failure, ActionSuccess> signOut() {
     return TaskEither.tryCatch(
       () async {
+        final supabase = _supabase;
+        if (supabase == null) throw const AuthException('Tidak dapat terhubung ke server');
         logService('Keluar');
-        await _supabase.auth.signOut();
+        await supabase.auth.signOut();
         logInfo('Berhasil keluar');
         return const ActionSuccess(message: 'Berhasil keluar');
       },
@@ -118,8 +126,10 @@ class AuthRepositoryImpl implements AuthRepository {
   TaskEither<Failure, Success<User>> getCurrentUser() {
     return TaskEither.tryCatch(
       () async {
+        final supabase = _supabase;
+        if (supabase == null) throw const AuthException('Tidak dapat terhubung ke server');
         logService('Ambil pengguna saat ini');
-        final user = _supabase.auth.currentUser;
+        final user = supabase.auth.currentUser;
         if (user == null) {
           throw const AuthException('Tidak ada pengguna yang masuk');
         }
@@ -138,5 +148,6 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
+  Stream<AuthState> get authStateChanges =>
+      _supabase?.auth.onAuthStateChange ?? const Stream.empty();
 }
