@@ -46,3 +46,7 @@ app.*.map.json
 
 # Environment variables
 .env
+
+# ObjectBox native lib, downloaded locally so `flutter test` can load the DB
+# outside of a built app bundle (see test/support/objectbox_test_store.dart)
+/lib/objectbox.dll

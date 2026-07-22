@@ -9,6 +9,13 @@ class ObjectBoxStorage {
 
   Store get store => _store;
 
+  ObjectBoxStorage();
+
+  /// Wraps an already-open [Store] (e.g. a temp test store) without touching disk.
+  ObjectBoxStorage.forTesting(Store store) {
+    _store = store;
+  }
+
   /// Initialize ObjectBox Store
   /// Harus dipanggil sebelum menggunakan ObjectBox
   Future<void> init() async {
