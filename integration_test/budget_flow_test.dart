@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/budget/models/get_budgets_params.dart';
@@ -39,7 +41,7 @@ void main() {
 
     await goToBudgetScreen(tester);
 
-    expect(find.text('No budgets yet'), findsOneWidget);
+    expect(find.text(LocaleKeys.budgetScreenEmptyTitle.tr()), findsOneWidget);
   });
 
   testWidgets(
@@ -58,13 +60,13 @@ void main() {
 
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
-      expect(find.text('Add Budget'), findsWidgets);
+      expect(find.text(LocaleKeys.budgetUpsertAddTitle.tr()), findsWidgets);
 
       // * Open the category dropdown and select the seeded category. It's a
       // * standard FormBuilderDropdown/DropdownButtonFormField, so the item
       // * text appears twice once opened (closed-field vs menu) — use .last
       // * for the menu entry.
-      await tester.tap(find.text('Select category'));
+      await tester.tap(find.text(LocaleKeys.budgetUpsertCategoryHint.tr()));
       await tester.pumpAndSettle();
       await tester.tap(find.text(category.name).last);
       await tester.pumpAndSettle();

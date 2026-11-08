@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/models/create_category_params.dart';
@@ -36,7 +38,7 @@ void main() {
     app.router.go('/backup');
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('0 items'), findsOneWidget);
+    expect(find.textContaining(LocaleKeys.backupScreenTotalItems.tr(namedArgs: {'count': '0'})), findsOneWidget);
   });
 
   testWidgets(
@@ -54,8 +56,8 @@ void main() {
       app.router.go('/backup');
       await tester.pumpAndSettle();
 
-      expect(find.text('Categories'), findsOneWidget);
-      expect(find.textContaining('1 items'), findsOneWidget);
+      expect(find.text(LocaleKeys.backupScreenCategories.tr()), findsOneWidget);
+      expect(find.textContaining(LocaleKeys.backupScreenTotalItems.tr(namedArgs: {'count': '1'})), findsOneWidget);
     },
   );
 }

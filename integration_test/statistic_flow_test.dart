@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
@@ -36,7 +38,7 @@ void main() {
   tearDown(() => app.close());
 
   Future<void> goToStatisticScreen(WidgetTester tester) async {
-    await tester.tap(find.text('Statistics'));
+    await tester.tap(find.text(LocaleKeys.sharedWidgetsUserShellStatistics.tr()));
     await tester.pumpAndSettle();
   }
 
@@ -49,7 +51,7 @@ void main() {
     // * CategorySummaryList itself renders nothing when empty (SizedBox.shrink) —
     // * the "0 categories • 0 transactions" count line in the summary card
     // * (above the fold, no scrolling needed) is the real observable signal.
-    expect(find.textContaining('0 categories'), findsOneWidget);
+    expect(find.textContaining('0 ${LocaleKeys.statisticCommonCategoryCount.tr()}'), findsOneWidget);
   });
 
   testWidgets(
@@ -81,7 +83,7 @@ void main() {
       await goToStatisticScreen(tester);
 
       // * Summary card is above the fold — visible without scrolling.
-      expect(find.textContaining('1 categories'), findsOneWidget);
+      expect(find.textContaining('1 ${LocaleKeys.statisticCommonCategoryCount.tr()}'), findsOneWidget);
 
       // * Scroll past the chart to build+reveal CategorySummaryList's sliver.
       await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));

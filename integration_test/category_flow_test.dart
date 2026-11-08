@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/models/create_category_params.dart';
@@ -27,9 +29,9 @@ void main() {
   tearDown(() => app.close());
 
   Future<void> goToCategoryScreen(WidgetTester tester) async {
-    await tester.tap(find.text('Others'));
+    await tester.tap(find.text(LocaleKeys.sharedWidgetsUserShellOthers.tr()));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Manage Categories'));
+    await tester.tap(find.text(LocaleKeys.otherScreenManageCategories.tr()));
     await tester.pumpAndSettle();
   }
 
@@ -39,7 +41,7 @@ void main() {
 
     await goToCategoryScreen(tester);
 
-    expect(find.text('No categories yet'), findsOneWidget);
+    expect(find.text(LocaleKeys.categoryScreenEmptyTitle.tr()), findsOneWidget);
   });
 
   testWidgets(
@@ -52,7 +54,7 @@ void main() {
       // * Tap the FAB to open the add-category screen.
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
-      expect(find.text('Add Category'), findsWidgets);
+      expect(find.text(LocaleKeys.categoryUpsertAddTitle.tr()), findsWidgets);
 
       // * Fill in the name (type already defaults to Expense). The parent
       // * category dropdown also contains a hidden search TextField, so
@@ -95,8 +97,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byType(AppButton).last);
       await tester.pumpAndSettle();
-      // * Confirm the "Hapus item?" dialog.
-      await tester.tap(find.text('Hapus').last);
+      // * Confirm the delete dialog (locale-independent key).
+      await tester.tap(find.byKey(const ValueKey('batch-delete-confirm')));
       await tester.pumpAndSettle();
 
       expect(find.text('Groceries'), findsNothing);
@@ -127,7 +129,7 @@ void main() {
     // * "Expense" also appears as a per-card type label, so scope the tap
     // * to the TabBar itself.
     await tester.tap(
-      find.descendant(of: find.byType(TabBar), matching: find.text('Expense')),
+      find.descendant(of: find.byType(TabBar), matching: find.text(LocaleKeys.categoryScreenTabExpense.tr())),
     );
     await tester.pumpAndSettle();
 

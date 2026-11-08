@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
@@ -50,7 +52,7 @@ void main() {
 
       await tester.tap(find.widgetWithIcon(FloatingActionButton, Icons.add));
       await tester.pumpAndSettle();
-      expect(find.text('Add Transaction'), findsWidgets);
+      expect(find.text(LocaleKeys.transactionUpsertAddTitle.tr()), findsWidgets);
 
       // * Amount (currency-formatted field).
       await tester.enterText(
@@ -63,7 +65,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // * Asset — required searchable dropdown, opened by tapping its hint.
-      await tester.tap(find.text('Select asset'));
+      await tester.tap(find.text(LocaleKeys.transactionUpsertAssetHint.tr()));
       await tester.pumpAndSettle();
       await tester.tap(find.text(asset.name).last);
       await tester.pumpAndSettle();

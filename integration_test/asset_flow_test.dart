@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/get_assets_params.dart';
@@ -24,7 +26,7 @@ void main() {
   tearDown(() => app.close());
 
   Future<void> goToAssetScreen(WidgetTester tester) async {
-    await tester.tap(find.text('Assets'));
+    await tester.tap(find.text(LocaleKeys.sharedWidgetsUserShellAssets.tr()));
     await tester.pumpAndSettle();
   }
 
@@ -34,7 +36,7 @@ void main() {
 
     await goToAssetScreen(tester);
 
-    expect(find.text('No assets yet'), findsOneWidget);
+    expect(find.text(LocaleKeys.assetScreenEmptyTitle.tr()), findsOneWidget);
   });
 
   testWidgets(
@@ -46,7 +48,7 @@ void main() {
 
       await tester.tap(find.byType(FloatingActionButton));
       await tester.pumpAndSettle();
-      expect(find.text('Add Asset'), findsWidgets);
+      expect(find.text(LocaleKeys.assetUpsertAddTitle.tr()), findsWidgets);
 
       // * Name field (type defaults to Cash, balance defaults to 0). The
       // * first AppTextField on this screen is 'name', the second 'balance'.
@@ -82,7 +84,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byType(AppButton).last);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Hapus').last);
+      await tester.tap(find.byKey(const ValueKey('batch-delete-confirm')));
       await tester.pumpAndSettle();
 
       expect(find.text('BCA Savings'), findsNothing);

@@ -1,5 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_frequency.dart';
@@ -44,7 +46,7 @@ void main() {
 
     await goToAutoTransactionScreen(tester);
 
-    expect(find.text('No auto transaction groups'), findsOneWidget);
+    expect(find.text(LocaleKeys.autoTransactionScreenEmptyTitle.tr()), findsOneWidget);
   });
 
   testWidgets(

@@ -153,6 +153,7 @@ class _AppBatchDeleteDialogState<T> extends State<AppBatchDeleteDialog<T>> {
             child: Text(LocaleKeys.sharedWidgetsBatchDeleteCancel.tr()),
           ),
           TextButton(
+            key: const ValueKey('batch-delete-confirm'),
             onPressed: () => Navigator.pop(ctx, true),
             child: Text(
               LocaleKeys.sharedWidgetsBatchDeleteDelete.tr(),
