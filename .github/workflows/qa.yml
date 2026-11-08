@@ -161,7 +161,16 @@ jobs:
         run: flutter pub get --enforce-lockfile
 
       - name: Build universal release APK (QA, pubspec version)
-        run: flutter build apk --release --no-pub
+        run: |
+          # * Build WITH pub so flutter_tools regenerates the plugin registrant in
+          # * release mode (dev_dependency plugins excluded, matching the release
+          # * Gradle graph); `pub get` alone writes the debug-mode registrant.
+          # * Touching the lock makes the build's own pub step skip as up to date,
+          # * and the lock must stay byte-identical (no re-resolution).
+          set -euo pipefail
+          touch pubspec.lock
+          flutter build apk --release
+          git diff --exit-code -- pubspec.lock
 
       - name: Verify APK signing certificate (fail closed)
         run: |

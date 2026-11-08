@@ -6,6 +6,11 @@
 // a plain `flutter pub get` silently re-resolves). CI must build with the
 // tested SDK and the exact lock: every dependency resolution enforces the
 // lockfile and the later flutter commands do not resolve again (--no-pub).
+// CI-REG (QA run 42444037238): `flutter build --no-pub` compiles the debug-mode
+// plugin registrant written by `pub get` (dev_dependency plugins included)
+// against the release Gradle graph (dev_dependency plugins excluded). Builds
+// run with pub so the registrant is regenerated in release mode; the lock is
+// touched so that pub step is skipped as up to date, then must be unchanged.
 // Existing secrets / signing / version / permission guards stay in place.
 import 'dart:io';
 
@@ -43,10 +48,10 @@ void main() {
   }
 
   /// Whole shell commands with `\` continuations joined.
-  List<String> commands() {
+  List<String> commands([List<String>? from]) {
     final out = <String>[];
     var cur = '';
-    for (final l in runLines()) {
+    for (final l in from ?? runLines()) {
       if (l.endsWith('\\')) {
         cur += '${l.substring(0, l.length - 1)} ';
       } else {
@@ -114,9 +119,58 @@ void main() {
       others.map((c) => c.split(RegExp(r'\s+')).take(2).join(' ')).toSet(),
       containsAll(<String>['flutter analyze', 'flutter test', 'flutter build']),
     );
-    for (final c in others) {
+    for (final c in others.where((c) => !c.startsWith('flutter build'))) {
       expect(c, contains('--no-pub'), reason: c);
     }
+  });
+
+  /// Release builds that would compile a non-release plugin registrant or
+  /// could re-resolve the lock unnoticed; empty means every build is safe.
+  List<String> buildViolations(List<String> cmds) {
+    final v = <String>[];
+    for (var i = 0; i < cmds.length; i++) {
+      final c = cmds[i];
+      if (!c.startsWith('flutter build')) continue;
+      if (c.contains('--no-pub')) v.add('debug-mode registrant (--no-pub): $c');
+      if (i == 0 || cmds[i - 1] != 'touch pubspec.lock') {
+        v.add('lock not touched before: $c');
+      }
+      if (i + 1 >= cmds.length ||
+          cmds[i + 1] != 'git diff --exit-code -- pubspec.lock') {
+        v.add('lock not checked unchanged after: $c');
+      }
+    }
+    return v;
+  }
+
+  test('CI-REG release builds regenerate the release registrant on the '
+      'unchanged lock', () {
+    expect(
+      commands().where((c) => c.startsWith('flutter build')),
+      hasLength(2),
+    );
+    expect(buildViolations(commands()), isEmpty);
+  });
+
+  test('CI-REG the published --no-pub builds and unguarded builds are '
+      'rejected', () {
+    List<String> mutate(String from, String to) {
+      expect(from.allMatches(workflow).length, greaterThan(0), reason: from);
+      final m = workflow.replaceAll(from, to).split('\n');
+      return commands(
+        m.where((l) => l.trim().isNotEmpty).map((l) => l.trim()).toList(),
+      );
+    }
+
+    final noPub = mutate(
+      'flutter build apk --release',
+      'flutter build apk --release --no-pub',
+    );
+    expect(buildViolations(noPub).join('\n'), contains('--no-pub'));
+    final noTouch = mutate('touch pubspec.lock\n', '');
+    expect(buildViolations(noTouch).join('\n'), contains('not touched'));
+    final noDiff = mutate('git diff --exit-code -- pubspec.lock\n', '');
+    expect(buildViolations(noDiff).join('\n'), contains('not checked'));
   });
 
   test('CI-LOCK lock is enforced before analyze, test and build', () {

@@ -6,6 +6,11 @@
 // fail the job when the APK certificate is not the expected release cert.
 // The workflow is parsed structurally (mappings/sequences/block scalars, LF or
 // CRLF); unsafe candidates are mutated from the real file and must be rejected.
+// QA-REG (run 42444037238: `flutter build apk --release --no-pub` compiled the
+// debug-mode GeneratedPluginRegistrant written by `pub get`, which references
+// the dev_dependency plugins integration_test / flutter_native_splash that the
+// release Gradle graph omits): the signed build must run with pub so the
+// registrant is regenerated in release mode, against a provably unchanged lock.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -30,6 +35,7 @@ const _signingSecrets = {
   'KEY_PASSWORD',
   'KEY_ALIAS',
 };
+const _signedBuild = 'flutter build apk --release';
 const _uploadPaths = [
   'qa-out/ikuyo-finance-qa-*-universal.apk',
   'qa-out/apk-cert.txt',
@@ -377,7 +383,8 @@ List<String> _qaWorkflowViolations(String source) {
             !c.contains('--enforce-lockfile')) {
           v.add('$name: pub get must use --enforce-lockfile: $c');
         }
-      } else if (!c.contains('--no-pub')) {
+      } else if (!c.contains('--no-pub') &&
+          !(name == 'signed-apk' && c == _signedBuild)) {
         v.add('$name: flutter command must use --no-pub: $c');
       }
     }
@@ -445,14 +452,27 @@ List<String> _qaWorkflowViolations(String source) {
       final builds = flutter
           .where((r) => r.$2.startsWith('flutter build'))
           .toList();
-      if (builds.length != 1 ||
-          builds.single.$2 != 'flutter build apk --release --no-pub') {
+      if (builds.length != 1 || builds.single.$2 != _signedBuild) {
         v.add(
           'signed-apk: must build exactly one universal APK with '
-          'flutter build apk --release --no-pub (pubspec version)',
+          '$_signedBuild (pubspec version)',
         );
       }
       final build = builds.isEmpty ? -1 : builds.first.$1;
+      final buildRun = build < 0 ? '' : steps[build]['run'] as String;
+      final bc = _commands(buildRun);
+      final b = bc.indexOf(_signedBuild);
+      if (!buildRun.contains('set -euo pipefail') ||
+          b < 1 ||
+          bc[b - 1] != 'touch pubspec.lock' ||
+          b + 1 >= bc.length ||
+          bc[b + 1] != 'git diff --exit-code -- pubspec.lock') {
+        v.add(
+          'signed-apk: build must regenerate the release registrant against '
+          'the unchanged lock (touch pubspec.lock; $_signedBuild; '
+          'git diff --exit-code -- pubspec.lock)',
+        );
+      }
       final check = runStep(
         (r) =>
             r.contains('Missing required signing secrets') &&
@@ -734,10 +754,40 @@ void main() {
       'split-per-abi build': (
         (s) => sub(
           s,
-          'run: flutter build apk --release --no-pub',
-          'run: flutter build apk --release --split-per-abi --no-pub',
+          '$_signedBuild\n',
+          '$_signedBuild --split-per-abi\n',
         ),
         'universal APK',
+      ),
+      'published --no-pub build (debug-mode registrant)': (
+        (s) {
+          const name =
+              '      - name: Build universal release APK (QA, pubspec version)\n';
+          final a = s.indexOf(name);
+          final b = s.indexOf('\n      - name: Verify APK signing');
+          expect(a, greaterThan(0));
+          expect(b, greaterThan(a));
+          return '${s.substring(0, a)}$name'
+              '        run: flutter build apk --release --no-pub\n'
+              '${s.substring(b)}';
+        },
+        'release registrant',
+      ),
+      'build without lock touch': (
+        (s) => sub(s, '          touch pubspec.lock\n', ''),
+        'release registrant',
+      ),
+      'lock change not checked': (
+        (s) => sub(s, '          git diff --exit-code -- pubspec.lock\n', ''),
+        'release registrant',
+      ),
+      'build step not errexit': (
+        (s) => sub(
+          s,
+          '          set -euo pipefail\n          touch pubspec.lock\n',
+          '          touch pubspec.lock\n',
+        ),
+        'release registrant',
       ),
       'verify job reads secrets': (
         (s) => sub(

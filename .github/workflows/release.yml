@@ -132,15 +132,24 @@ jobs:
 
       - name: Build universal APK
         run: |
-          flutter build apk --release --no-pub \
+          # * Build WITH pub so flutter_tools regenerates the plugin registrant in
+          # * release mode (dev_dependency plugins excluded, matching the release
+          # * Gradle graph); `pub get` alone writes the debug-mode registrant.
+          # * Touching the lock makes the build's own pub step skip as up to date,
+          # * and the lock must stay byte-identical (no re-resolution).
+          touch pubspec.lock
+          flutter build apk --release \
             --build-name=${{ steps.version.outputs.build_name }} \
             --build-number=${{ steps.version.outputs.build_number }}
+          git diff --exit-code -- pubspec.lock
 
       - name: Build ABI-split APKs
         run: |
-          flutter build apk --release --split-per-abi --no-pub \
+          touch pubspec.lock
+          flutter build apk --release --split-per-abi \
             --build-name=${{ steps.version.outputs.build_name }} \
             --build-number=${{ steps.version.outputs.build_number }}
+          git diff --exit-code -- pubspec.lock
 
       - name: Rename APKs
         run: |
