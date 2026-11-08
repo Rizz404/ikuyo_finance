@@ -44,10 +44,27 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
     if (widget.isEdit) {
       _selectedPeriod = widget.budget!.budgetPeriod;
     }
-    // * Fetch categories for dropdown
-    context.read<CategoryBloc>().add(
-      const CategoryFetched(type: CategoryType.expense),
-    );
+    _loadCategories();
+  }
+
+  List<Category> _categories = const [];
+
+  // * Semua kategori pengeluaran, bukan hanya halaman pertama (AAOB-7)
+  Future<void> _loadCategories() async {
+    final categories = await context
+        .read<CategoryBloc>()
+        .fetchAllCategoriesForDropdown(type: CategoryType.expense);
+    if (mounted) setState(() => _categories = categories);
+  }
+
+  // * Kategori budget yang sedang diedit selalu ada di daftar agar
+  // * initialValue dropdown valid
+  List<Category> get _dropdownCategories {
+    final current = widget.budget?.category.target;
+    if (current == null || _categories.any((c) => c.ulid == current.ulid)) {
+      return _categories;
+    }
+    return [current, ..._categories];
   }
 
   void _handleWriteStatus(BuildContext context, BudgetState state) {
@@ -190,9 +207,9 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // * Category Dropdown
-                  BlocBuilder<CategoryBloc, CategoryState>(
-                    builder: (context, state) {
-                      final categories = state.categories;
+                  Builder(
+                    builder: (context) {
+                      final categories = _dropdownCategories;
                       return AppDropdown<String>(
                         name: 'categoryUlid',
                         label: LocaleKeys.budgetUpsertCategoryLabel.tr(),

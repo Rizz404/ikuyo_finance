@@ -12,6 +12,7 @@ import 'package:ikuyo_finance/features/asset/widgets/asset_filter_sheet.dart';
 import 'package:ikuyo_finance/features/asset/widgets/asset_statistic_view.dart';
 import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
+import 'package:ikuyo_finance/shared/widgets/load_more_listener.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
 class AssetScreen extends StatefulWidget {
@@ -97,7 +98,7 @@ class _AssetScreenState extends State<AssetScreen>
               // * Tab 1: Daftar Aset
               ScreenWrapper(child: _buildListView(context, state)),
               // * Tab 2: Statistik
-              ScreenWrapper(child: AssetStatisticView(assets: state.assets)),
+              ScreenWrapper(child: _AssetStatisticTab(state: state)),
             ],
           ),
           floatingActionButton: FloatingActionButton(
@@ -170,17 +171,22 @@ class _AssetScreenState extends State<AssetScreen>
     return RefreshIndicator(
       onRefresh: () async =>
           context.read<AssetBloc>().add(const AssetRefreshed()),
-      child: ListView.separated(
-        itemCount: state.assets.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final asset = state.assets[index];
-          return AssetCard(
-            asset: asset,
-            onLongPress: () =>
-                _openBatchDeleteDialog(context, state.assets, asset),
-          );
-        },
+      child: LoadMoreListener(
+        canLoadMore: !state.hasReachedMax && !state.isLoadingMore,
+        onLoadMore: () =>
+            context.read<AssetBloc>().add(const AssetFetchedMore()),
+        child: ListView.separated(
+          itemCount: state.assets.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final asset = state.assets[index];
+            return AssetCard(
+              asset: asset,
+              onLongPress: () =>
+                  _openBatchDeleteDialog(context, state.assets, asset),
+            );
+          },
+        ),
       ),
     );
   }
@@ -239,5 +245,31 @@ class _AssetScreenState extends State<AssetScreen>
         context.read<AssetBloc>().add(const AssetFilterCleared());
       },
     );
+  }
+}
+
+// * Statistik butuh seluruh aset, bukan hanya halaman pertama (AAOB-3):
+// * muat halaman berikutnya sampai habis selama tab ini tampil
+class _AssetStatisticTab extends StatelessWidget {
+  final AssetState state;
+
+  const _AssetStatisticTab({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    if (state.status == AssetStatus.success && !state.hasReachedMax) {
+      final bloc = context.read<AssetBloc>();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (bloc.isClosed) return;
+        final s = bloc.state;
+        if (s.status == AssetStatus.success && !s.hasReachedMax) {
+          bloc.add(const AssetFetchedMore());
+        }
+      });
+    }
+    if (!state.hasReachedMax && state.status != AssetStatus.failure) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return AssetStatisticView(assets: state.assets);
   }
 }

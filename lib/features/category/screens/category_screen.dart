@@ -11,6 +11,7 @@ import 'package:ikuyo_finance/features/category/widgets/category_card.dart';
 import 'package:ikuyo_finance/features/category/widgets/category_filter_sheet.dart';
 import 'package:ikuyo_finance/shared/widgets/app_batch_delete_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
+import 'package:ikuyo_finance/shared/widgets/load_more_listener.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
 class CategoryScreen extends StatefulWidget {
@@ -181,22 +182,27 @@ class _CategoryScreenState extends State<CategoryScreen>
     return RefreshIndicator(
       onRefresh: () async =>
           context.read<CategoryBloc>().add(const CategoryRefreshed()),
-      child: GridView.builder(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 0.95,
+      child: LoadMoreListener(
+        canLoadMore: !state.hasReachedMax && !state.isLoadingMore,
+        onLoadMore: () =>
+            context.read<CategoryBloc>().add(const CategoryFetchedMore()),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.95,
+          ),
+          itemCount: state.categories.length,
+          itemBuilder: (context, index) {
+            final category = state.categories[index];
+            return CategoryCard(
+              category: category,
+              onLongPress: () =>
+                  _openBatchDeleteDialog(context, state.categories, category),
+            );
+          },
         ),
-        itemCount: state.categories.length,
-        itemBuilder: (context, index) {
-          final category = state.categories[index];
-          return CategoryCard(
-            category: category,
-            onLongPress: () =>
-                _openBatchDeleteDialog(context, state.categories, category),
-          );
-        },
       ),
     );
   }

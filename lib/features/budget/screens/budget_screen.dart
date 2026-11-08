@@ -10,6 +10,7 @@ import 'package:ikuyo_finance/features/budget/widgets/budget_card.dart';
 import 'package:ikuyo_finance/features/budget/widgets/budget_filter_sheet.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
+import 'package:ikuyo_finance/shared/widgets/load_more_listener.dart';
 import 'package:ikuyo_finance/shared/widgets/screen_wrapper.dart';
 
 class BudgetScreen extends StatefulWidget {
@@ -164,14 +165,19 @@ class _BudgetScreenState extends State<BudgetScreen>
     return RefreshIndicator(
       onRefresh: () async =>
           context.read<BudgetBloc>().add(const BudgetRefreshed()),
-      child: ListView.separated(
-        padding: const EdgeInsets.all(16),
-        itemCount: state.budgets.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (context, index) {
-          final budget = state.budgets[index];
-          return BudgetCard(budget: budget);
-        },
+      child: LoadMoreListener(
+        canLoadMore: !state.hasReachedMax && !state.isLoadingMore,
+        onLoadMore: () =>
+            context.read<BudgetBloc>().add(const BudgetFetchedMore()),
+        child: ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: state.budgets.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final budget = state.budgets[index];
+            return BudgetCard(budget: budget);
+          },
+        ),
       ),
     );
   }

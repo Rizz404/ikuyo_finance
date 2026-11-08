@@ -602,6 +602,28 @@ class CategoryBloc extends Bloc<CategoryEvent, CategoryState> {
     return result.fold((failure) => [], (success) => success.data ?? []);
   }
 
+  // * Seluruh kategori (semua halaman) untuk dropdown yang nilai awalnya
+  // * bisa berada di luar halaman pertama (AAOB-7). Tidak mengubah state.
+  Future<List<Category>> fetchAllCategoriesForDropdown({
+    CategoryType? type,
+  }) async {
+    final all = <Category>[];
+    String? cursor;
+    while (true) {
+      final result = await _categoryRepository
+          .getCategories(
+            GetCategoriesParams(cursor: cursor, limit: 100, type: type),
+          )
+          .run();
+      final page = result.fold((failure) => null, (success) => success);
+      if (page == null) break;
+      all.addAll(page.data ?? const []);
+      if (!page.cursor.hasNextPage) break;
+      cursor = page.cursor.nextCursor;
+    }
+    return all;
+  }
+
   // * Public method for searching valid parent categories
   Future<List<Category>> searchParentCategoriesForDropdown({
     String? query,
