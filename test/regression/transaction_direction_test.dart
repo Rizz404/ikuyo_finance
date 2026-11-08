@@ -185,13 +185,14 @@ void main() {
     final template = await tx(a.ulid, 10, type: CategoryType.expense);
     expect(bal(a.ulid), 990);
     final now = DateTime.now();
+    final due = now.subtract(const Duration(hours: 1));
     final g = AutoTransactionGroup(
       name: 'G',
       frequency: AutoScheduleFrequency.daily.index,
-      scheduleHour: now.hour,
-      scheduleMinute: now.minute,
+      scheduleHour: due.hour,
+      scheduleMinute: due.minute,
       startDate: now.subtract(const Duration(days: 1)),
-      nextExecutedAt: now.subtract(const Duration(hours: 1)),
+      nextExecutedAt: due,
     );
     store.storage.box<AutoTransactionGroup>().put(g);
     store.storage.box<AutoTransactionItem>().put(AutoTransactionItem()
@@ -265,13 +266,14 @@ void main() {
       expect(template.direction, CategoryType.expense);
 
       final now = DateTime.now();
+      final due = now.subtract(const Duration(hours: 1));
       final g = AutoTransactionGroup(
         name: 'G',
         frequency: AutoScheduleFrequency.daily.index,
-        scheduleHour: now.hour,
-        scheduleMinute: now.minute,
+        scheduleHour: due.hour,
+        scheduleMinute: due.minute,
         startDate: now.subtract(const Duration(days: 1)),
-        nextExecutedAt: now.subtract(const Duration(hours: 1)),
+        nextExecutedAt: due,
       );
       store.storage.box<AutoTransactionGroup>().put(g);
       store.storage.box<AutoTransactionItem>().put(AutoTransactionItem()
