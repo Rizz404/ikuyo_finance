@@ -52,6 +52,13 @@ String backupCryptoErrorMessage(BackupCryptoError error) {
     BackupCryptoError.invalidParameters =>
       LocaleKeys.backupEncryptionUnsupported.tr(),
     BackupCryptoError.notABackup => LocaleKeys.backupEncryptionNotABackup.tr(),
+    BackupCryptoError.tooLarge => LocaleKeys.backupEncryptionTooLarge.tr(
+      namedArgs: {'max': '${BackupCrypto.maxBackupBytes ~/ (1024 * 1024)}'},
+    ),
+    BackupCryptoError.exportTooLarge =>
+      LocaleKeys.backupEncryptionExportTooLarge.tr(
+        namedArgs: {'max': '${BackupCrypto.maxBackupBytes ~/ (1024 * 1024)}'},
+      ),
   };
 }
 

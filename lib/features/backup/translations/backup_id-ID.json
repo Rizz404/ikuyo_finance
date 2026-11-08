@@ -60,6 +60,8 @@
       "truncated": "File backup tidak lengkap atau rusak. Tidak ada data yang diimpor.",
       "unsupported": "Backup ini memakai versi format yang tidak didukung. Tidak ada data yang diimpor.",
       "notABackup": "File ini bukan backup Ikuyo. Tidak ada data yang diimpor.",
+      "tooLarge": "File backup ini melebihi batas maksimum {max} MB. Tidak ada data yang diimpor. Pilih file backup lain.",
+      "exportTooLarge": "Data Anda terlalu besar untuk backup portabel (maksimum {max} MB). Tidak ada file yang ditulis. Hapus data lama yang tidak diperlukan, lalu coba lagi.",
       "legacyWarning": "Ini backup lama tanpa enkripsi. Masih bisa diimpor, tetapi export baru dienkripsi.",
       "pickerHint": "Pilih file backup (.ikuyo atau .json)"
     }

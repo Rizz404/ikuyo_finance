@@ -18,6 +18,8 @@ enum BackupCryptoError {
   unsupportedVersion,
   invalidParameters,
   notABackup,
+  tooLarge,
+  exportTooLarge,
 }
 
 /// Galat kripto backup; sengaja tidak membawa passphrase/kunci/isi file
@@ -185,6 +187,38 @@ class BackupCrypto {
   static const formatVersion = 1;
   static const fileExtension = 'ikuyo';
 
+  /// Batas ukuran file backup portabel (impor & ekspor), terdokumentasi
+  static const maxBackupBytes = 32 * 1024 * 1024;
+
+  /// Overhead envelope terenkripsi: header v1 + tag GCM
+  static const envelopeOverhead = BackupEnvelopeHeader.v1Length + _tagLength;
+
+  /// Membaca file backup dengan batas [maxBackupBytes]:
+  /// * panjang file dicek sebelum file dibuka
+  /// * jumlah byte yang benar-benar terbaca dicek lagi (file bisa berubah)
+  static Future<Uint8List> readBounded({
+    required Future<int> Function() length,
+    required Stream<List<int>> Function() openRead,
+  }) async {
+    if (await length() > maxBackupBytes) {
+      throw const BackupCryptoException(BackupCryptoError.tooLarge);
+    }
+    final b = BytesBuilder(copy: false);
+    await for (final chunk in openRead()) {
+      if (b.length + chunk.length > maxBackupBytes) {
+        throw const BackupCryptoException(BackupCryptoError.tooLarge);
+      }
+      b.add(chunk);
+    }
+    return b.toBytes();
+  }
+
+  static void _checkInputSize(List<int> bytes) {
+    if (bytes.length > maxBackupBytes) {
+      throw const BackupCryptoException(BackupCryptoError.tooLarge);
+    }
+  }
+
   static const _magic = [0x49, 0x4B, 0x59, 0x42]; // "IKYB"
   static const _kdfArgon2id = 1;
   static const _memoryKiB = 19 * 1024;
@@ -230,12 +264,19 @@ class BackupCrypto {
     BackupData data, {
     String? passphrase,
   }) async {
-    final json = data.toJsonString();
+    final clear = utf8.encode(data.toJsonString());
+    // * Gagal jelas daripada menulis file yang akan ditolak saat impor (F2)
+    final overhead = passphrase == null ? 0 : envelopeOverhead;
+    if (clear.length + overhead > maxBackupBytes) {
+      _zero(clear);
+      talker.warning('[BackupCrypto] ekspor ditolak: melebihi batas ukuran');
+      throw const BackupCryptoException(BackupCryptoError.exportTooLarge);
+    }
     if (passphrase == null) {
       talker.warning('[BackupCrypto] ekspor tanpa enkripsi (opt-out pengguna)');
-      return Uint8List.fromList(utf8.encode(json));
+      return clear;
     }
-    return encrypt(json, passphrase);
+    return _encryptBytes(clear, passphrase);
   }
 
   /// Membaca file backup: dekripsi + parse penuh sebelum apa pun ditulis ke DB
@@ -243,6 +284,7 @@ class BackupCrypto {
     List<int> bytes, {
     String? passphrase,
   }) async {
+    _checkInputSize(bytes);
     final String json;
     final bool wasEncrypted;
     switch (detect(bytes)) {
@@ -276,8 +318,25 @@ class BackupCrypto {
     }
   }
 
-  static Future<Uint8List> encrypt(String plaintext, String passphrase) async {
-    _checkPassphrase(passphrase);
+  static Future<Uint8List> encrypt(String plaintext, String passphrase) {
+    final clear = utf8.encode(plaintext);
+    if (clear.length + envelopeOverhead > maxBackupBytes) {
+      _zero(clear);
+      throw const BackupCryptoException(BackupCryptoError.exportTooLarge);
+    }
+    return _encryptBytes(clear, passphrase);
+  }
+
+  static Future<Uint8List> _encryptBytes(
+    Uint8List clear,
+    String passphrase,
+  ) async {
+    try {
+      _checkPassphrase(passphrase);
+    } catch (_) {
+      _zero(clear);
+      rethrow;
+    }
     final random = Random.secure();
     final header = BackupEnvelopeHeader(
       formatVersion: formatVersion,
@@ -291,7 +350,6 @@ class BackupCrypto {
     );
     final headerBytes = header.encode();
     final passBytes = Uint8List.fromList(utf8.encode(passphrase));
-    final clear = Uint8List.fromList(utf8.encode(plaintext));
     talker.info('[BackupCrypto] enkripsi backup (Argon2id + AES-256-GCM)');
     final sealed = await Isolate.run(
       () => _seal(passBytes, headerBytes, header, clear),
@@ -302,6 +360,7 @@ class BackupCrypto {
   }
 
   static Future<String> decrypt(List<int> bytes, String passphrase) async {
+    _checkInputSize(bytes);
     final header = BackupEnvelopeHeader.parse(bytes);
     if (bytes.length < header.length + _tagLength + 1) {
       throw const BackupCryptoException(BackupCryptoError.truncated);

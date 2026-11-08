@@ -60,6 +60,8 @@
       "truncated": "The backup file is incomplete or damaged. Nothing was imported.",
       "unsupported": "This backup was made with an unsupported format version. Nothing was imported.",
       "notABackup": "This file is not an Ikuyo backup. Nothing was imported.",
+      "tooLarge": "This backup file is larger than the supported maximum of {max} MB. Nothing was imported. Choose a different backup file.",
+      "exportTooLarge": "Your data is too large for a portable backup (maximum {max} MB). No file was written. Delete old data you no longer need, then try again.",
       "legacyWarning": "This is an old unencrypted backup. It can still be imported, but new exports are encrypted.",
       "pickerHint": "Choose backup file (.ikuyo or .json)"
     }

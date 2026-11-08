@@ -347,6 +347,9 @@ abstract class LocaleKeys {
   static const backupEncryptionTruncated = 'backup.encryption.truncated';
   static const backupEncryptionUnsupported = 'backup.encryption.unsupported';
   static const backupEncryptionNotABackup = 'backup.encryption.notABackup';
+  static const backupEncryptionTooLarge = 'backup.encryption.tooLarge';
+  static const backupEncryptionExportTooLarge =
+      'backup.encryption.exportTooLarge';
   static const backupEncryptionLegacyWarning =
       'backup.encryption.legacyWarning';
   static const backupEncryptionPickerHint = 'backup.encryption.pickerHint';

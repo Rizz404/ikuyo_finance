@@ -5,6 +5,7 @@
 // live DB is untouched; legacy .json still imports with a warning.
 // Real ObjectBox, real BackupRepositoryImpl/BackupBloc, real router/screen;
 // only the OS file picker is faked.
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:easy_localization/easy_localization.dart';
@@ -15,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
+import 'package:ikuyo_finance/features/backup/screens/backup_screen.dart';
 import 'package:ikuyo_finance/features/backup/services/backup_crypto.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -398,4 +400,99 @@ void main() {
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
+
+  // * F2: batas 32 MiB ditegakkan sebelum file dibaca
+  testWidgets('an import file over 32 MiB is refused before it is read, '
+      'with a localized message, and the DB is untouched', (tester) async {
+    seedCategory('Live');
+    final path = '${dir.path}/huge.ikuyo';
+    // sparse file: real length check without writing 32 MiB of data
+    final raf = File(path).openSync(mode: FileMode.write);
+    raf.truncateSync(BackupCrypto.maxBackupBytes + 1);
+    raf.closeSync();
+
+    var lengthCalls = 0;
+    var openCalls = 0;
+    final original = BackupScreen.importFileReader;
+    BackupScreen.importFileReader = (p) {
+      final f = File(p);
+      return BackupCrypto.readBounded(
+        length: () {
+          lengthCalls++;
+          return f.length();
+        },
+        openRead: () {
+          openCalls++;
+          return f.openRead();
+        },
+      );
+    };
+    addTearDown(() => BackupScreen.importFileReader = original);
+
+    await open(tester);
+    picker.nextPath = path;
+    await tapText(tester, LocaleKeys.backupEncryptionPickerHint.tr());
+    await tapText(
+      tester,
+      LocaleKeys.backupScreenImportButton.tr(),
+      settle: false,
+    );
+    final message = LocaleKeys.backupEncryptionTooLarge.tr(
+      namedArgs: {'max': '32'},
+    );
+    await settleReal(tester, () => shown(message));
+    expect(find.text(message), findsOneWidget);
+    expect(lengthCalls, 1);
+    expect(openCalls, 0, reason: 'oversized file must not be opened');
+    expect(
+      find.byKey(const Key('backup_import_passphrase_field')),
+      findsNothing,
+    );
+    expect(
+      find.text(LocaleKeys.backupScreenImportConfirmTitle.tr()),
+      findsNothing,
+    );
+    expect(app.storage.box<Category>().getAll().map((c) => c.name), ['Live']);
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets('the default import reader uses the bounded reader on the real '
+      'file', (tester) async {
+    final path = '${dir.path}/huge.json';
+    final raf = File(path).openSync(mode: FileMode.write);
+    raf.truncateSync(BackupCrypto.maxBackupBytes + 1);
+    raf.closeSync();
+    Object? error;
+    await tester.runAsync(() async {
+      try {
+        await BackupScreen.importFileReader(path);
+      } catch (e) {
+        error = e;
+      }
+    });
+    expect(error, isA<BackupCryptoException>());
+    expect((error! as BackupCryptoException).error, BackupCryptoError.tooLarge);
+  });
+
+  test('size-limit messages are localized in en-US and id-ID', () {
+    for (final locale in ['en-US', 'id-ID']) {
+      final json =
+          jsonDecode(
+                File('assets/translations/$locale.json').readAsStringSync(),
+              )
+              as Map<String, dynamic>;
+      final enc =
+          (json['backup'] as Map<String, dynamic>)['encryption']
+              as Map<String, dynamic>;
+      for (final key in ['tooLarge', 'exportTooLarge']) {
+        expect(enc[key], isA<String>(), reason: '$locale $key');
+        expect(enc[key] as String, contains('{max}'), reason: '$locale $key');
+      }
+    }
+    expect(
+      LocaleKeys.backupEncryptionExportTooLarge,
+      'backup.encryption.exportTooLarge',
+    );
+  });
 }

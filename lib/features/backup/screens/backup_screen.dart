@@ -26,6 +26,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 class BackupScreen extends StatefulWidget {
   const BackupScreen({super.key});
 
+  /// Pembaca file impor; dapat diganti di test
+  @visibleForTesting
+  static Future<Uint8List> Function(String path) importFileReader = (path) {
+    // * Batas 32 MiB dicek dari panjang file sebelum dibaca (F2)
+    final file = File(path);
+    return BackupCrypto.readBounded(
+      length: file.length,
+      openRead: file.openRead,
+    );
+  };
+
   @override
   State<BackupScreen> createState() => _BackupScreenState();
 }
@@ -125,7 +136,9 @@ class _BackupScreenState extends State<BackupScreen> {
   Future<void> _handleImport() async {
     if (_importFiles.isEmpty || _isProcessing) return;
     try {
-      final bytes = await File(_importFiles.first.path!).readAsBytes();
+      final bytes = await BackupScreen.importFileReader(
+        _importFiles.first.path!,
+      );
 
       // * Dekripsi + validasi penuh sebelum DB disentuh (A14)
       String? passphrase;
