@@ -19,6 +19,7 @@ import 'package:ikuyo_finance/di/service_locator.dart';
 import 'package:ikuyo_finance/features/transaction/services/transaction_type_backfill.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_alarm_service.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_background_task.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
 import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
@@ -209,6 +210,14 @@ Future<void> setupAutoTransactionServices() async {
         backupSettings,
         keepExisting: true,
       ),
+    );
+  }
+
+  // * Eksekusi auto transaction di latar belakang (AUTO-8)
+  if (workmanagerReady) {
+    await _guardStartup(
+      'Registrasi auto transaction background',
+      AutoTransactionBackgroundTask.register,
     );
   }
 
