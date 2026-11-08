@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/config/supabase_config.dart';
@@ -49,9 +50,10 @@ void _setupLogger() {
   // * Setup TalkerBlocObserver untuk auto-logging semua bloc events/states
   Bloc.observer = TalkerBlocObserver(
     talker: talker,
+    // * Event/transition memuat data keuangan; hanya di debug/profile (P04)
     settings: const TalkerBlocLoggerSettings(
-      printEvents: true,
-      printTransitions: true,
+      printEvents: !kReleaseMode,
+      printTransitions: !kReleaseMode,
       printClosings: false,
       printCreations: false,
     ),
