@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -106,6 +108,7 @@ class _AppSearchFieldState<T> extends State<AppSearchField<T>> {
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _removeOverlay();
     _focusNode.dispose();
     _scrollController.dispose();
@@ -146,12 +149,15 @@ class _AppSearchFieldState<T> extends State<AppSearchField<T>> {
       return;
     }
 
+    final searchId = ++_searchId;
     setState(() {
       _isLoadingSuggestions = true;
     });
 
     try {
       final results = await widget.onSearch!(query);
+      // * Abaikan hasil usang atau widget yang sudah dibuang
+      if (!mounted || searchId != _searchId) return;
       _allSuggestions = results;
       _currentDisplayCount = widget.initialItemsToShow;
       _displayedSuggestions = results.take(_currentDisplayCount).toList();
@@ -162,11 +168,13 @@ class _AppSearchFieldState<T> extends State<AppSearchField<T>> {
         _hideSuggestions();
       }
     } catch (e) {
-      _hideSuggestions();
+      if (mounted && searchId == _searchId) _hideSuggestions();
     } finally {
-      setState(() {
-        _isLoadingSuggestions = false;
-      });
+      if (mounted && searchId == _searchId) {
+        setState(() {
+          _isLoadingSuggestions = false;
+        });
+      }
     }
   }
 
@@ -184,16 +192,16 @@ class _AppSearchFieldState<T> extends State<AppSearchField<T>> {
     }
   }
 
-  DateTime? _lastSearchTime;
+  Timer? _debounceTimer;
+  int _searchId = 0;
   void _debounceSearch(String query) {
-    _lastSearchTime = DateTime.now();
-    Future.delayed(Duration(milliseconds: widget.debounceMilliseconds), () {
-      if (_lastSearchTime != null &&
-          DateTime.now().difference(_lastSearchTime!) >=
-              Duration(milliseconds: widget.debounceMilliseconds)) {
-        _performSearch(query);
-      }
-    });
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(
+      Duration(milliseconds: widget.debounceMilliseconds),
+      () {
+        if (mounted) _performSearch(query);
+      },
+    );
   }
 
   void _clearText() {

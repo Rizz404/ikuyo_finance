@@ -56,7 +56,7 @@ class AppFilePickerState extends State<AppFilePicker> {
   void initState() {
     super.initState();
     if (widget.initialFiles != null) {
-      _selectedFiles = widget.initialFiles!;
+      _selectedFiles = List.of(widget.initialFiles!);
     }
   }
 
@@ -74,8 +74,12 @@ class AppFilePickerState extends State<AppFilePicker> {
       );
 
       if (result != null) {
-        // * Validate max files
-        if (widget.maxFiles != null && result.files.length > widget.maxFiles!) {
+        if (!mounted) return;
+        // * Validate max files (termasuk file yang sudah dipilih sebelumnya)
+        final totalFiles = widget.allowMultiple
+            ? _selectedFiles.length + result.files.length
+            : result.files.length;
+        if (widget.maxFiles != null && totalFiles > widget.maxFiles!) {
           if (!mounted) return;
           ToastHelper.instance.showWarning(
             context: context,
@@ -116,9 +120,6 @@ class AppFilePickerState extends State<AppFilePicker> {
         });
 
         // * Update form value
-        if (!mounted) {
-          return;
-        }
         FormBuilder.of(context)?.fields[widget.name]?.didChange(_selectedFiles);
         widget.onChanged?.call(_selectedFiles);
         logData('Files selected: ${_selectedFiles.length}');
@@ -137,7 +138,7 @@ class AppFilePickerState extends State<AppFilePicker> {
   }
 
   void _removeFile(int index) {
-    setState(() => _selectedFiles.removeAt(index));
+    setState(() => _selectedFiles = List.of(_selectedFiles)..removeAt(index));
     FormBuilder.of(context)?.fields[widget.name]?.didChange(_selectedFiles);
     widget.onChanged?.call(_selectedFiles);
   }
