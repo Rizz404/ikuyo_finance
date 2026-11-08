@@ -1,4 +1,5 @@
 import 'package:fpdart/fpdart.dart' hide Order;
+import 'package:ikuyo_finance/core/storage/query_extensions.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
@@ -28,8 +29,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
         // * Get category
         final category = _categoryBox
             .query(Category_.ulid.equals(params.categoryUlid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (category == null) {
           throw Exception('Kategori tidak ditemukan');
@@ -232,8 +232,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
         final budget = _box
             .query(Budget_.ulid.equals(ulid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (budget == null) {
           throw Exception('Anggaran tidak ditemukan');
@@ -261,8 +260,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
         final budget = _box
             .query(Budget_.ulid.equals(params.ulid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (budget == null) {
           throw Exception('Anggaran tidak ditemukan');
@@ -280,8 +278,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
         if (params.categoryUlid != null) {
           final category = _categoryBox
               .query(Category_.ulid.equals(params.categoryUlid!))
-              .build()
-              .findFirst();
+              .findFirstAndClose();
 
           if (category == null) {
             throw Exception('Kategori tidak ditemukan');
@@ -315,8 +312,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
         final budget = _box
             .query(Budget_.ulid.equals(ulid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (budget == null) {
           throw Exception('Anggaran tidak ditemukan');

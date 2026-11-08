@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
+import 'package:ikuyo_finance/core/storage/query_extensions.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
@@ -51,8 +52,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         if (params.parentUlid != null) {
           final parent = _box
               .query(Category_.ulid.equals(params.parentUlid!))
-              .build()
-              .findFirst();
+              .findFirstAndClose();
 
           if (parent == null) {
             throw Exception('Kategori induk tidak ditemukan');
@@ -204,8 +204,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
         final category = _box
             .query(Category_.ulid.equals(ulid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (category == null) {
           throw Exception('Kategori tidak ditemukan');
@@ -235,8 +234,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
         final category = _box
             .query(Category_.ulid.equals(params.ulid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (category == null) {
           throw Exception('Kategori tidak ditemukan');
@@ -275,8 +273,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
           final parent = _box
               .query(Category_.ulid.equals(params.parentUlid!))
-              .build()
-              .findFirst();
+              .findFirstAndClose();
 
           if (parent == null) {
             throw Exception('Kategori induk tidak ditemukan');
@@ -290,7 +287,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
           }
 
           // * Validate: category being edited must not have children
-          final allCategories = _box.query().build().find();
+          final allCategories = _box.query().findAndClose();
           final categoryHasChildren = allCategories.any(
             (cat) => cat.parent.target?.ulid == category.ulid,
           );
@@ -332,15 +329,14 @@ class CategoryRepositoryImpl implements CategoryRepository {
 
         final category = _box
             .query(Category_.ulid.equals(ulid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (category == null) {
           throw Exception('Kategori tidak ditemukan');
         }
 
         // * Check jika ada child categories
-        final hasChildren = _box.query().build().find().any(
+        final hasChildren = _box.query().findAndClose().any(
           (cat) => cat.parent.target?.ulid == ulid,
         );
 
@@ -398,8 +394,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         // * Get all categories with the same type
         final allCategories = _box
             .query(Category_.type.equals(type.index))
-            .build()
-            .find();
+            .findAndClose();
 
         // * Filter valid parents:
         // * 1. Must be root (no parent) - children tidak boleh punya children lagi
@@ -436,7 +431,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
       () async {
         logService('Cek kategori memiliki anak', ulid);
 
-        final allCategories = _box.query().build().find();
+        final allCategories = _box.query().findAndClose();
         final hasChildren = allCategories.any(
           (cat) => cat.parent.target?.ulid == ulid,
         );

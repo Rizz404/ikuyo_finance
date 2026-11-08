@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
+import 'package:ikuyo_finance/core/storage/query_extensions.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
@@ -167,7 +168,7 @@ class AssetRepositoryImpl implements AssetRepository {
       () async {
         logService('Ambil aset berdasarkan id', ulid);
 
-        final asset = _box.query(Asset_.ulid.equals(ulid)).build().findFirst();
+        final asset = _box.query(Asset_.ulid.equals(ulid)).findFirstAndClose();
 
         if (asset == null) {
           throw Exception('Aset tidak ditemukan');
@@ -195,8 +196,7 @@ class AssetRepositoryImpl implements AssetRepository {
 
         final asset = _box
             .query(Asset_.ulid.equals(params.ulid))
-            .build()
-            .findFirst();
+            .findFirstAndClose();
 
         if (asset == null) {
           throw Exception('Aset tidak ditemukan');
@@ -240,7 +240,7 @@ class AssetRepositoryImpl implements AssetRepository {
       () async {
         logService('Hapus aset', ulid);
 
-        final asset = _box.query(Asset_.ulid.equals(ulid)).build().findFirst();
+        final asset = _box.query(Asset_.ulid.equals(ulid)).findFirstAndClose();
 
         if (asset == null) {
           throw Exception('Aset tidak ditemukan');
