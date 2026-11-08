@@ -499,38 +499,51 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       ),
     );
 
-    final result = await _transactionRepository
-        .getTransactions(
-          GetTransactionsParams(
-            assetUlid: state.currentAssetFilter,
-            categoryUlid: state.currentCategoryFilter,
-            startDate: startDate,
-            endDate: endDate,
-            searchQuery: state.currentSearchQuery,
-            sortBy: state.currentSortBy,
-            sortOrder: state.currentSortOrder,
-            minAmount: state.currentMinAmount,
-            maxAmount: state.currentMaxAmount,
-            limit: 500, // * Fetch more for yearly view
-          ),
-        )
-        .run();
+    // * Ambil semua halaman tahun ini agar total bulanan lengkap (TX-8)
+    final all = <Transaction>[];
+    String? cursor;
+    while (true) {
+      final result = await _transactionRepository
+          .getTransactions(
+            GetTransactionsParams(
+              cursor: cursor,
+              assetUlid: state.currentAssetFilter,
+              categoryUlid: state.currentCategoryFilter,
+              startDate: startDate,
+              endDate: endDate,
+              searchQuery: state.currentSearchQuery,
+              sortBy: state.currentSortBy,
+              sortOrder: state.currentSortOrder,
+              minAmount: state.currentMinAmount,
+              maxAmount: state.currentMaxAmount,
+              limit: 500,
+            ),
+          )
+          .run();
 
-    result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: TransactionStatus.failure,
-          errorMessage: () => failure.message,
-        ),
-      ),
-      (success) => emit(
-        state.copyWith(
-          status: TransactionStatus.success,
-          transactions: success.data,
-          hasReachedMax: !success.cursor.hasNextPage,
-          nextCursor: () => success.cursor.nextCursor,
-          errorMessage: () => null,
-        ),
+      final failure = result.getLeft().toNullable();
+      if (failure != null) {
+        emit(
+          state.copyWith(
+            status: TransactionStatus.failure,
+            errorMessage: () => failure.message,
+          ),
+        );
+        return;
+      }
+      final success = result.getRight().toNullable()!;
+      all.addAll(success.data ?? const []);
+      cursor = success.cursor.nextCursor;
+      if (!success.cursor.hasNextPage) break;
+    }
+
+    emit(
+      state.copyWith(
+        status: TransactionStatus.success,
+        transactions: all,
+        hasReachedMax: true,
+        nextCursor: () => null,
+        errorMessage: () => null,
       ),
     );
   }

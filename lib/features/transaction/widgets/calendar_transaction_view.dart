@@ -16,8 +16,11 @@ class CalendarTransactionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // * Total harian kalender butuh seluruh transaksi bulan ini (TX-7):
+    // * muat halaman berikutnya sampai habis
     return BlocBuilder<TransactionBloc, TransactionState>(
       builder: (context, state) {
+        _loadRemaining(context, state);
         if (state.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -34,6 +37,19 @@ class CalendarTransactionView extends StatelessWidget {
       },
     );
   }
+}
+
+void _loadRemaining(BuildContext context, TransactionState state) {
+  if (state.status != TransactionStatus.success || state.hasReachedMax) return;
+  // * Dijadwalkan setelah frame agar build tetap bebas side effect
+  final bloc = context.read<TransactionBloc>();
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (bloc.isClosed) return;
+    final s = bloc.state;
+    if (s.status == TransactionStatus.success && !s.hasReachedMax) {
+      bloc.add(const TransactionFetchedMore());
+    }
+  });
 }
 
 class _CalendarBody extends StatelessWidget {
