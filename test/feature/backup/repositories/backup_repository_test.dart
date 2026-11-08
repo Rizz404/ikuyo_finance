@@ -279,7 +279,8 @@ void main() {
       expect(budget.category.target?.ulid, 'cat-1');
     });
 
-    test('skips transactions referencing an asset ulid absent from the backup', () async {
+    // * R06/BKSEC-6: referensi yatim kini ditolak (sebelumnya dilewati diam-diam)
+    test('rejects transactions referencing an asset ulid absent from the backup', () async {
       final now = DateTime.now();
       final backupData = BackupData(
         version: '1.0.0',
@@ -301,11 +302,11 @@ void main() {
 
       final result = await repository.importData(backupData).run();
 
-      expect(result.isRight(), isTrue);
+      expect(result.isLeft(), isTrue);
       expect(testStore.storage.box<Transaction>().getAll(), isEmpty);
     });
 
-    test('skips budgets referencing a category ulid absent from the backup', () async {
+    test('rejects budgets referencing a category ulid absent from the backup', () async {
       final now = DateTime.now();
       final backupData = BackupData(
         version: '1.0.0',
@@ -328,11 +329,11 @@ void main() {
 
       final result = await repository.importData(backupData).run();
 
-      expect(result.isRight(), isTrue);
+      expect(result.isLeft(), isTrue);
       expect(testStore.storage.box<Budget>().getAll(), isEmpty);
     });
 
-    test('skips auto items referencing a group or transaction ulid absent from the backup', () async {
+    test('rejects auto items referencing a group or transaction ulid absent from the backup', () async {
       final now = DateTime.now();
       final backupData = BackupData(
         version: '1.0.0',
@@ -382,12 +383,13 @@ void main() {
 
       final result = await repository.importData(backupData).run();
 
-      expect(result.isRight(), isTrue);
+      expect(result.isLeft(), isTrue);
       expect(testStore.storage.box<AutoTransactionItem>().getAll(), isEmpty);
-      expect(testStore.storage.box<AutoTransactionGroup>().getAll(), hasLength(1));
+      // * Ditolak sebelum menulis apa pun: grup valid pun tidak diimpor
+      expect(testStore.storage.box<AutoTransactionGroup>().getAll(), isEmpty);
     });
 
-    test('skips auto logs referencing a group ulid absent from the backup', () async {
+    test('rejects auto logs referencing a group ulid absent from the backup', () async {
       final now = DateTime.now();
       final backupData = BackupData(
         version: '1.0.0',
@@ -414,7 +416,7 @@ void main() {
 
       final result = await repository.importData(backupData).run();
 
-      expect(result.isRight(), isTrue);
+      expect(result.isLeft(), isTrue);
       expect(testStore.storage.box<AutoTransactionLog>().getAll(), isEmpty);
     });
 

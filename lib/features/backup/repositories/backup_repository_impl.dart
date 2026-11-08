@@ -137,6 +137,41 @@ class BackupRepositoryImpl implements BackupRepository {
     checkUnique('auto item', data.autoItems.map((e) => e.ulid));
     checkUnique('auto log', data.autoLogs.map((e) => e.ulid));
 
+    // * Referensi harus menunjuk ke entitas di snapshot yang sama; baris
+    // * yatim ditolak (bukan dilewati diam-diam) sebelum data lama dihapus
+    void checkRef(String what, String? ref, Set<String> known) {
+      if (ref != null && !known.contains(ref)) {
+        throw FormatException('Referensi $what tidak ditemukan: $ref');
+      }
+    }
+
+    final categoryUlids = data.categories.map((e) => e.ulid).toSet();
+    final assetUlids = data.assets.map((e) => e.ulid).toSet();
+    final transactionUlids = data.transactions.map((e) => e.ulid).toSet();
+    final groupUlids = data.autoGroups.map((e) => e.ulid).toSet();
+
+    for (final c in data.categories) {
+      checkRef('induk kategori ${c.ulid}', c.parentUlid, categoryUlids);
+    }
+    for (final t in data.transactions) {
+      checkRef('aset transaksi ${t.ulid}', t.assetUlid, assetUlids);
+      checkRef('kategori transaksi ${t.ulid}', t.categoryUlid, categoryUlids);
+    }
+    for (final b in data.budgets) {
+      checkRef('kategori anggaran ${b.ulid}', b.categoryUlid, categoryUlids);
+    }
+    for (final i in data.autoItems) {
+      checkRef('grup auto item ${i.ulid}', i.groupUlid, groupUlids);
+      checkRef(
+        'transaksi auto item ${i.ulid}',
+        i.transactionUlid,
+        transactionUlids,
+      );
+    }
+    for (final l in data.autoLogs) {
+      checkRef('grup auto log ${l.ulid}', l.groupUlid, groupUlids);
+    }
+
     for (final t in data.transactions) {
       final type = t.type;
       if (type != null) {
