@@ -109,6 +109,7 @@ class ExportRepositoryImpl implements ExportRepository {
             23,
             59,
             59,
+            999,
           );
           transactions = transactions
               .where(

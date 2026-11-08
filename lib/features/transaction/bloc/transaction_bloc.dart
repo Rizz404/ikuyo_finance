@@ -54,7 +54,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     final month = state.currentMonth;
     final startDate = event.startDate ?? DateTime(month.year, month.month, 1);
     final endDate =
-        event.endDate ?? DateTime(month.year, month.month + 1, 0, 23, 59, 59);
+        event.endDate ??
+        DateTime(month.year, month.month + 1, 0, 23, 59, 59, 999);
 
     emit(
       state.copyWith(
@@ -372,6 +373,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       23,
       59,
       59,
+      999,
     );
 
     emit(
@@ -429,6 +431,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
       23,
       59,
       59,
+      999,
     );
 
     emit(
@@ -483,7 +486,7 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
     Emitter<TransactionState> emit,
   ) async {
     final startDate = DateTime(event.year, 1, 1);
-    final endDate = DateTime(event.year, 12, 31, 23, 59, 59);
+    final endDate = DateTime(event.year, 12, 31, 23, 59, 59, 999);
 
     emit(
       state.copyWith(

@@ -17,13 +17,17 @@ class StatisticPeriod {
   factory StatisticPeriod.weekly({DateTime? referenceDate}) {
     final ref = referenceDate ?? DateTime.now();
     // * Mulai dari Senin minggu ini
-    final startOfWeek = ref.subtract(Duration(days: ref.weekday - 1));
-    final start = DateTime(
-      startOfWeek.year,
-      startOfWeek.month,
-      startOfWeek.day,
+    // * Pakai aritmetika hari kalender agar aman terhadap DST (CSE-10)
+    final start = DateTime(ref.year, ref.month, ref.day - (ref.weekday - 1));
+    final end = DateTime(
+      start.year,
+      start.month,
+      start.day + 6,
+      23,
+      59,
+      59,
+      999,
     );
-    final end = DateTime(start.year, start.month, start.day + 6, 23, 59, 59);
 
     return StatisticPeriod(
       type: StatisticPeriodType.weekly,
@@ -36,7 +40,7 @@ class StatisticPeriod {
   factory StatisticPeriod.monthly({DateTime? referenceDate}) {
     final ref = referenceDate ?? DateTime.now();
     final start = DateTime(ref.year, ref.month, 1);
-    final end = DateTime(ref.year, ref.month + 1, 0, 23, 59, 59);
+    final end = DateTime(ref.year, ref.month + 1, 0, 23, 59, 59, 999);
 
     return StatisticPeriod(
       type: StatisticPeriodType.monthly,
@@ -49,7 +53,7 @@ class StatisticPeriod {
   factory StatisticPeriod.yearly({DateTime? referenceDate}) {
     final ref = referenceDate ?? DateTime.now();
     final start = DateTime(ref.year, 1, 1);
-    final end = DateTime(ref.year, 12, 31, 23, 59, 59);
+    final end = DateTime(ref.year, 12, 31, 23, 59, 59, 999);
 
     return StatisticPeriod(
       type: StatisticPeriodType.yearly,
@@ -66,7 +70,15 @@ class StatisticPeriod {
     return StatisticPeriod(
       type: StatisticPeriodType.custom,
       startDate: DateTime(startDate.year, startDate.month, startDate.day),
-      endDate: DateTime(endDate.year, endDate.month, endDate.day, 23, 59, 59),
+      endDate: DateTime(
+        endDate.year,
+        endDate.month,
+        endDate.day,
+        23,
+        59,
+        59,
+        999,
+      ),
     );
   }
 
@@ -98,6 +110,7 @@ class StatisticPeriod {
           23,
           59,
           59,
+          999,
         );
         final newStart = DateTime(
           newEnd.year,
@@ -137,6 +150,7 @@ class StatisticPeriod {
           23,
           59,
           59,
+          999,
         );
         return StatisticPeriod.custom(startDate: newStart, endDate: newEnd);
     }
