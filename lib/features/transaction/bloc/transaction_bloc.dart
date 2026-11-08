@@ -44,6 +44,12 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
 
   final TransactionRepository _transactionRepository;
 
+  // * Saat pencarian aktif, rentang bulan diabaikan (TX-10)
+  DateTime? get _rangeStart =>
+      state.currentSearchQuery == null ? state.currentStartDateFilter : null;
+  DateTime? get _rangeEnd =>
+      state.currentSearchQuery == null ? state.currentEndDateFilter : null;
+
   // * Fetch initial transactions with all filter options
   // * Auto-filters by current month if no date filter provided
   Future<void> _onTransactionFetched(
@@ -122,8 +128,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
             cursor: state.nextCursor,
             assetUlid: state.currentAssetFilter,
             categoryUlid: state.currentCategoryFilter,
-            startDate: state.currentStartDateFilter,
-            endDate: state.currentEndDateFilter,
+            startDate: _rangeStart,
+            endDate: _rangeEnd,
             searchQuery: state.currentSearchQuery,
             sortBy: state.currentSortBy,
             sortOrder: state.currentSortOrder,
@@ -170,8 +176,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           GetTransactionsParams(
             assetUlid: state.currentAssetFilter,
             categoryUlid: state.currentCategoryFilter,
-            startDate: state.currentStartDateFilter,
-            endDate: state.currentEndDateFilter,
+            startDate: _rangeStart,
+            endDate: _rangeEnd,
             searchQuery: state.currentSearchQuery,
             sortBy: state.currentSortBy,
             sortOrder: state.currentSortOrder,
@@ -221,8 +227,9 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           GetTransactionsParams(
             assetUlid: state.currentAssetFilter,
             categoryUlid: state.currentCategoryFilter,
-            startDate: state.currentStartDateFilter,
-            endDate: state.currentEndDateFilter,
+            // * Pencarian mencakup semua tanggal, bukan hanya bulan aktif
+            startDate: query.isEmpty ? state.currentStartDateFilter : null,
+            endDate: query.isEmpty ? state.currentEndDateFilter : null,
             searchQuery: query.isEmpty ? null : query,
             sortBy: state.currentSortBy,
             sortOrder: state.currentSortOrder,
@@ -325,8 +332,8 @@ class TransactionBloc extends Bloc<TransactionEvent, TransactionState> {
           GetTransactionsParams(
             assetUlid: state.currentAssetFilter,
             categoryUlid: state.currentCategoryFilter,
-            startDate: state.currentStartDateFilter,
-            endDate: state.currentEndDateFilter,
+            startDate: _rangeStart,
+            endDate: _rangeEnd,
             searchQuery: state.currentSearchQuery,
             sortBy: event.sortBy,
             sortOrder: event.sortOrder,

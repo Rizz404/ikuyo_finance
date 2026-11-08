@@ -18,10 +18,12 @@ class CategorySearchScreen extends StatefulWidget {
 class _CategorySearchScreenState extends State<CategorySearchScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
+  late final CategoryBloc _bloc;
 
   @override
   void initState() {
     super.initState();
+    _bloc = context.read<CategoryBloc>();
     // * Auto-focus on search field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -30,13 +32,18 @@ class _CategorySearchScreenState extends State<CategorySearchScreen> {
 
   @override
   void dispose() {
+    // * Bloc dipakai bersama layar utama: hapus query agar daftar utama
+    // * tidak tetap terfilter setelah keluar dari pencarian
+    if (_bloc.state.currentSearchQuery != null && !_bloc.isClosed) {
+      _bloc.add(const CategorySearched(query: ''));
+    }
     _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
   void _onSearch(String query) {
-    context.read<CategoryBloc>().add(CategorySearched(query: query));
+    _bloc.add(CategorySearched(query: query));
   }
 
   void _clearSearch() {

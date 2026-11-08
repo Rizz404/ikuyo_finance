@@ -18,10 +18,12 @@ class AssetSearchScreen extends StatefulWidget {
 class _AssetSearchScreenState extends State<AssetSearchScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
+  late final AssetBloc _bloc;
 
   @override
   void initState() {
     super.initState();
+    _bloc = context.read<AssetBloc>();
     // * Auto-focus on search field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -30,13 +32,18 @@ class _AssetSearchScreenState extends State<AssetSearchScreen> {
 
   @override
   void dispose() {
+    // * Bloc dipakai bersama layar utama: hapus query agar daftar utama
+    // * tidak tetap terfilter setelah keluar dari pencarian
+    if (_bloc.state.currentSearchQuery != null && !_bloc.isClosed) {
+      _bloc.add(const AssetSearched(query: ''));
+    }
     _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
   void _onSearch(String query) {
-    context.read<AssetBloc>().add(AssetSearched(query: query));
+    _bloc.add(AssetSearched(query: query));
   }
 
   void _clearSearch() {

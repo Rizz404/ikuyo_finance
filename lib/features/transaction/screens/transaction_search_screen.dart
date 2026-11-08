@@ -19,10 +19,12 @@ class TransactionSearchScreen extends StatefulWidget {
 class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
+  late final TransactionBloc _bloc;
 
   @override
   void initState() {
     super.initState();
+    _bloc = context.read<TransactionBloc>();
     // * Auto-focus on search field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -31,13 +33,18 @@ class _TransactionSearchScreenState extends State<TransactionSearchScreen> {
 
   @override
   void dispose() {
+    // * Bloc dipakai bersama layar utama: hapus query agar daftar utama
+    // * tidak tetap terfilter setelah keluar dari pencarian
+    if (_bloc.state.currentSearchQuery != null && !_bloc.isClosed) {
+      _bloc.add(const TransactionSearched(query: ''));
+    }
     _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
   void _onSearch(String query) {
-    context.read<TransactionBloc>().add(TransactionSearched(query: query));
+    _bloc.add(TransactionSearched(query: query));
   }
 
   void _clearSearch() {

@@ -18,10 +18,12 @@ class BudgetSearchScreen extends StatefulWidget {
 class _BudgetSearchScreenState extends State<BudgetSearchScreen> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
+  late final BudgetBloc _bloc;
 
   @override
   void initState() {
     super.initState();
+    _bloc = context.read<BudgetBloc>();
     // * Auto-focus on search field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _focusNode.requestFocus();
@@ -30,13 +32,18 @@ class _BudgetSearchScreenState extends State<BudgetSearchScreen> {
 
   @override
   void dispose() {
+    // * Bloc dipakai bersama layar utama: hapus query agar daftar utama
+    // * tidak tetap terfilter setelah keluar dari pencarian
+    if (_bloc.state.currentSearchQuery != null && !_bloc.isClosed) {
+      _bloc.add(const BudgetSearched(query: ''));
+    }
     _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
   void _onSearch(String query) {
-    context.read<BudgetBloc>().add(BudgetSearched(query: query));
+    _bloc.add(BudgetSearched(query: query));
   }
 
   void _clearSearch() {
