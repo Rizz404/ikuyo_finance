@@ -12,13 +12,19 @@ class AutoScheduleCalculator {
 
     switch (group.scheduleFrequency) {
       case AutoScheduleFrequency.daily:
-        var next = DateTime(from.year, from.month, from.day + 1, h, m);
-        if (group.activeDaysMask != 0) {
-          while (!_isDayActive(next.weekday, group.activeDaysMask)) {
-            next = next.add(const Duration(days: 1));
+        // * Bit hari di luar 0-6 diabaikan; mask tanpa hari valid = setiap hari
+        final mask = group.activeDaysMask & 0x7F;
+        var offset = 1;
+        if (mask != 0) {
+          // * Maju per hari kalender (bukan Duration 24 jam) agar aman DST
+          while (!_isDayActive(
+            DateTime(from.year, from.month, from.day + offset).weekday,
+            mask,
+          )) {
+            offset++;
           }
         }
-        return next;
+        return DateTime(from.year, from.month, from.day + offset, h, m);
 
       case AutoScheduleFrequency.everyNDays:
         final interval = group.intervalDays.clamp(1, 365);
@@ -48,12 +54,11 @@ class AutoScheduleCalculator {
 
     switch (group.scheduleFrequency) {
       case AutoScheduleFrequency.daily:
-        if (group.activeDaysMask != 0) {
+        if (group.activeDaysMask & 0x7F != 0) {
           // * Cari hari aktif pertama mulai dari ref (inklusif)
-          final prev = ref.subtract(const Duration(days: 1));
           candidate = calculateNext(
             group,
-            DateTime(prev.year, prev.month, prev.day, h, m),
+            DateTime(ref.year, ref.month, ref.day - 1, h, m),
           );
         } else {
           candidate = DateTime(ref.year, ref.month, ref.day, h, m);
