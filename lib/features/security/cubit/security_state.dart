@@ -1,6 +1,7 @@
 part of 'security_cubit.dart';
 
-enum SecurityStatus { unlocked, locked, authenticating }
+/// [loading] = settings belum selesai dibaca; diperlakukan sebagai terkunci.
+enum SecurityStatus { unlocked, locked, authenticating, loading }
 
 enum SecurityAuthResult { idle, success, failed, error }
 
@@ -12,6 +13,13 @@ class SecurityState extends Equatable {
   final String? errorMessage;
   final int failedAttempts;
 
+  /// True jika settings tersimpan gagal dibaca; semua penulisan diblokir
+  /// agar settings asli tidak tertimpa.
+  final bool loadFailed;
+
+  /// Apakah device punya kredensial layar kunci (untuk recovery)
+  final bool deviceCredentialAvailable;
+
   const SecurityState({
     this.settings = const SecuritySettings(),
     this.status = SecurityStatus.unlocked,
@@ -19,10 +27,16 @@ class SecurityState extends Equatable {
     this.biometricAvailable = false,
     this.errorMessage,
     this.failedAttempts = 0,
+    this.loadFailed = false,
+    this.deviceCredentialAvailable = false,
   });
 
-  /// Apakah security aktif & app harus dikunci
-  bool get shouldLock => settings.isEnabled && status == SecurityStatus.locked;
+  /// Apakah konten app harus ditutup lock screen (fail-closed)
+  bool get shouldLock {
+    if (status == SecurityStatus.unlocked) return false;
+    if (status == SecurityStatus.loading || loadFailed) return true;
+    return settings.isEnabled;
+  }
 
   /// Apakah biometric bisa dipakai
   bool get canUseBiometric => settings.biometricEnabled && biometricAvailable;
@@ -34,6 +48,11 @@ class SecurityState extends Equatable {
   bool get canUsePassword =>
       settings.passwordEnabled && settings.passwordHash != null;
 
+  /// ! Recovery via kredensial device hanya saat tidak ada metode app yang
+  /// ! bisa dipakai (settings gagal dibaca / data lama tanpa PIN & password)
+  bool get needsRecovery =>
+      loadFailed || (!canUsePin && !canUsePassword && !canUseBiometric);
+
   SecurityState copyWith({
     SecuritySettings? settings,
     SecurityStatus? status,
@@ -41,6 +60,8 @@ class SecurityState extends Equatable {
     bool? biometricAvailable,
     String? errorMessage,
     int? failedAttempts,
+    bool? loadFailed,
+    bool? deviceCredentialAvailable,
   }) {
     return SecurityState(
       settings: settings ?? this.settings,
@@ -49,6 +70,9 @@ class SecurityState extends Equatable {
       biometricAvailable: biometricAvailable ?? this.biometricAvailable,
       errorMessage: errorMessage,
       failedAttempts: failedAttempts ?? this.failedAttempts,
+      loadFailed: loadFailed ?? this.loadFailed,
+      deviceCredentialAvailable:
+          deviceCredentialAvailable ?? this.deviceCredentialAvailable,
     );
   }
 
@@ -62,10 +86,13 @@ class SecurityState extends Equatable {
     settings.passwordHash,
     settings.lockTrigger,
     settings.autoLockMinutes,
+    settings.pinLength,
     status,
     authResult,
     biometricAvailable,
     errorMessage,
     failedAttempts,
+    loadFailed,
+    deviceCredentialAvailable,
   ];
 }

@@ -11,7 +11,10 @@
       "biometricFailed": "Biometric authentication failed",
       "pinIncorrect": "Incorrect PIN",
       "passwordIncorrect": "Incorrect password",
-      "enterPassword": "Enter your password"
+      "enterPassword": "Enter your password",
+      "loadError": "Security settings could not be read. Try again, or verify with your device screen lock.",
+      "retry": "Try Again",
+      "useDeviceCredential": "Use Device Screen Lock"
     },
     "settings": {
       "title": "Security Settings",
@@ -33,7 +36,8 @@
       "autoLock": "Auto Lock Time",
       "manage": "Manage Security",
       "changePin": "Change PIN",
-      "changePassword": "Change Password"
+      "changePassword": "Change Password",
+      "lastMethod": "Keep at least one PIN or password while App Lock is on. Turn off App Lock first."
     },
     "trigger": {
       "appClose": "When App Closed",

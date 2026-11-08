@@ -140,9 +140,12 @@ class TestApp {
     when(() => securityStorageService.load())
         .thenAnswer((_) async => const SecuritySettings());
     when(() => securityStorageService.save(any())).thenAnswer((_) async {});
+    when(() => securityStorageService.lockEnabledHint).thenReturn(null);
 
     final biometricService = MockBiometricService();
     when(() => biometricService.isAvailable).thenAnswer((_) async => false);
+    when(() => biometricService.isDeviceSupported)
+        .thenAnswer((_) async => false);
 
     // * SupabaseStatusService(null) -> no session -> auth-gated redirects
     // * never fire; the app's own redirect logic only kicks people OUT of

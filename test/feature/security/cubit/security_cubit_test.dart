@@ -44,14 +44,24 @@ void main() {
     when(() => mockBiometric.isAvailable).thenAnswer((_) async => false);
     when(() => mockStorage.save(any())).thenAnswer((_) async {});
     when(() => mockStorage.clear()).thenAnswer((_) async {});
+    when(() => mockStorage.lockEnabledHint).thenReturn(null);
+    when(() => mockBiometric.isDeviceSupported).thenAnswer((_) async => false);
   });
+
+  // * Penulisan settings diblokir selama status masih `loading` (fail-closed,
+  // * BKSEC-1/A11). Test penulisan memakai state yang sudah ter-load.
+  const loaded = SecurityState();
 
   group('_init (constructor)', () {
     blocTest<SecurityCubit, SecurityState>(
       'loads settings and biometric availability, locked when security is enabled',
       build: () {
         when(() => mockStorage.load()).thenAnswer(
-          (_) async => const SecuritySettings(isEnabled: true, pinEnabled: true),
+          (_) async => SecuritySettings(
+            isEnabled: true,
+            pinEnabled: true,
+            pinHash: SecurityHasher.hash('123456'),
+          ),
         );
         when(() => mockBiometric.isAvailable).thenAnswer((_) async => true);
         return SecurityCubit(mockStorage, mockBiometric);
@@ -85,13 +95,47 @@ void main() {
     );
 
     blocTest<SecurityCubit, SecurityState>(
-      'does not emit when loading settings throws (error is caught and logged)',
+      'fails closed (locked + loadFailed) when loading settings throws',
       build: () {
         when(() => mockStorage.load()).thenThrow(Exception('disk error'));
         return SecurityCubit(mockStorage, mockBiometric);
       },
       wait: const Duration(milliseconds: 20),
-      expect: () => [],
+      expect: () => [
+        predicate<SecurityState>(
+          (s) => s.status == SecurityStatus.locked && s.loadFailed && s.shouldLock,
+        ),
+      ],
+    );
+
+    blocTest<SecurityCubit, SecurityState>(
+      'stays unlocked on a read error when the lock is known to be disabled',
+      build: () {
+        when(() => mockStorage.load()).thenThrow(Exception('disk error'));
+        when(() => mockStorage.lockEnabledHint).thenReturn(false);
+        return SecurityCubit(mockStorage, mockBiometric);
+      },
+      wait: const Duration(milliseconds: 20),
+      expect: () => [
+        predicate<SecurityState>(
+          (s) => s.status == SecurityStatus.unlocked && s.loadFailed && !s.shouldLock,
+        ),
+      ],
+    );
+
+    blocTest<SecurityCubit, SecurityState>(
+      'does not lock a legacy enabled lock that has no unlock method (no lockout)',
+      build: () {
+        when(() => mockStorage.load()).thenAnswer(
+          (_) async => const SecuritySettings(isEnabled: true),
+        );
+        return SecurityCubit(mockStorage, mockBiometric);
+      },
+      wait: const Duration(milliseconds: 20),
+      expect: () => [
+        predicate<SecurityState>((s) => s.status == SecurityStatus.unlocked),
+      ],
+      verify: (_) => verifyNever(() => mockStorage.save(any())),
     );
   });
 
@@ -309,8 +353,14 @@ void main() {
         when(() => mockBiometric.isAvailable).thenAnswer((_) async => true);
         return SecurityCubit(mockStorage, mockBiometric);
       },
+      seed: () => loaded,
       act: (cubit) => cubit.updateSettings(
-        const SecuritySettings(isEnabled: true, autoLockMinutes: 10),
+        const SecuritySettings(
+          isEnabled: true,
+          autoLockMinutes: 10,
+          pinEnabled: true,
+          pinHash: 'pinhash',
+        ),
       ),
       expect: () => [
         predicate<SecurityState>(
@@ -328,12 +378,31 @@ void main() {
         when(() => mockStorage.save(any())).thenThrow(Exception('write failed'));
         return SecurityCubit(mockStorage, mockBiometric);
       },
-      act: (cubit) => cubit.updateSettings(const SecuritySettings(isEnabled: true)),
+      seed: () => loaded,
+      act: (cubit) => cubit.updateSettings(const SecuritySettings(autoLockMinutes: 5)),
       expect: () => [],
       verify: (_) {
         verify(() => mockStorage.save(any())).called(1);
-        verifyNever(() => mockBiometric.isAvailable);
       },
+    );
+
+    blocTest<SecurityCubit, SecurityState>(
+      'rejects an enabled lock without PIN/password (never saved)',
+      build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
+      act: (cubit) => cubit.updateSettings(
+        const SecuritySettings(isEnabled: true, biometricEnabled: true),
+      ),
+      expect: () => [],
+      verify: (_) => verifyNever(() => mockStorage.save(any())),
+    );
+
+    blocTest<SecurityCubit, SecurityState>(
+      'blocks writes while settings are still loading',
+      build: () => SecurityCubit(mockStorage, mockBiometric),
+      act: (cubit) => cubit.setAutoLockMinutes(5),
+      expect: () => [],
+      verify: (_) => verifyNever(() => mockStorage.save(any())),
     );
   });
 
@@ -341,8 +410,20 @@ void main() {
     blocTest<SecurityCubit, SecurityState>(
       'enabling only updates settings (single emit)',
       build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => const SecurityState(
+        settings: SecuritySettings(pinEnabled: true, pinHash: 'pinhash'),
+      ),
       act: (cubit) => cubit.toggleSecurity(true),
       expect: () => [predicate<SecurityState>((s) => s.settings.isEnabled)],
+    );
+
+    blocTest<SecurityCubit, SecurityState>(
+      'enabling without any PIN/password is rejected',
+      build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
+      act: (cubit) => cubit.toggleSecurity(true),
+      expect: () => [],
+      verify: (_) => verifyNever(() => mockStorage.save(any())),
     );
 
     blocTest<SecurityCubit, SecurityState>(
@@ -366,6 +447,7 @@ void main() {
     blocTest<SecurityCubit, SecurityState>(
       'hashes the PIN and enables it with the correct length',
       build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
       act: (cubit) => cubit.setPin('123456'),
       expect: () => [
         predicate<SecurityState>(
@@ -380,6 +462,7 @@ void main() {
     blocTest<SecurityCubit, SecurityState>(
       'hashes a 4-digit PIN and records its length',
       build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
       act: (cubit) => cubit.setPin('4321'),
       expect: () => [
         predicate<SecurityState>(
@@ -397,6 +480,8 @@ void main() {
           pinEnabled: true,
           pinHash: 'somehash',
           biometricEnabled: true,
+          passwordEnabled: true,
+          passwordHash: 'pwhash',
         ),
       ),
       act: (cubit) => cubit.removePin(),
@@ -406,9 +491,26 @@ void main() {
               !s.settings.pinEnabled &&
               s.settings.pinHash == null &&
               s.settings.isEnabled &&
-              s.settings.biometricEnabled,
+              s.settings.biometricEnabled &&
+              s.settings.passwordHash == 'pwhash',
         ),
       ],
+    );
+
+    blocTest<SecurityCubit, SecurityState>(
+      'rejects removing the PIN when it is the last PIN/password of an enabled lock',
+      build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => const SecurityState(
+        settings: SecuritySettings(
+          isEnabled: true,
+          pinEnabled: true,
+          pinHash: 'somehash',
+          biometricEnabled: true,
+        ),
+      ),
+      act: (cubit) => cubit.removePin(),
+      expect: () => [],
+      verify: (_) => verifyNever(() => mockStorage.save(any())),
     );
   });
 
@@ -416,6 +518,7 @@ void main() {
     blocTest<SecurityCubit, SecurityState>(
       'hashes the password and enables it',
       build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
       act: (cubit) => cubit.setPassword('secret123'),
       expect: () => [
         predicate<SecurityState>(
@@ -456,6 +559,7 @@ void main() {
     blocTest<SecurityCubit, SecurityState>(
       'enables biometric in settings',
       build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
       act: (cubit) => cubit.toggleBiometric(true),
       expect: () => [predicate<SecurityState>((s) => s.settings.biometricEnabled)],
     );
@@ -473,6 +577,7 @@ void main() {
     blocTest<SecurityCubit, SecurityState>(
       'updates the lock trigger',
       build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
       act: (cubit) => cubit.setLockTrigger(LockTrigger.both),
       expect: () => [
         predicate<SecurityState>((s) => s.settings.lockTrigger == LockTrigger.both),
@@ -484,6 +589,7 @@ void main() {
     blocTest<SecurityCubit, SecurityState>(
       'updates the auto-lock duration',
       build: () => SecurityCubit(mockStorage, mockBiometric),
+      seed: () => loaded,
       act: (cubit) => cubit.setAutoLockMinutes(15),
       expect: () => [
         predicate<SecurityState>((s) => s.settings.autoLockMinutes == 15),

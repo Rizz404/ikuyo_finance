@@ -826,6 +826,10 @@ abstract class LocaleKeys {
   static const securityPinIncorrect = 'security.lock.pinIncorrect';
   static const securityPasswordIncorrect = 'security.lock.passwordIncorrect';
   static const securityEnterPassword = 'security.lock.enterPassword';
+  static const securityLoadError = 'security.lock.loadError';
+  static const securityRetry = 'security.lock.retry';
+  static const securityUseDeviceCredential =
+      'security.lock.useDeviceCredential';
 
   // * Security - Settings
   static const securitySettingsTitle = 'security.settings.title';
@@ -1044,6 +1048,7 @@ abstract class LocaleKeys {
   static const securitySettingsChangePin = 'security.settings.changePin';
   static const securitySettingsChangePassword =
       'security.settings.changePassword';
+  static const securitySettingsLastMethod = 'security.settings.lastMethod';
   static const securityPinDigit = 'security.pin.digit';
 
   // * Security - Lock Triggers

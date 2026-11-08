@@ -11,7 +11,14 @@ import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 class PasswordSetupDialog extends StatefulWidget {
   final VoidCallback? onSuccess;
 
-  const PasswordSetupDialog({super.key, this.onSuccess});
+  /// Aktifkan app lock dalam penulisan yang sama dengan password (BKSEC-1)
+  final bool enableLock;
+
+  const PasswordSetupDialog({
+    super.key,
+    this.onSuccess,
+    this.enableLock = false,
+  });
 
   @override
   State<PasswordSetupDialog> createState() => _PasswordSetupDialogState();
@@ -23,6 +30,7 @@ class _PasswordSetupDialogState extends State<PasswordSetupDialog> {
   String? _errorText;
   bool _obscure = true;
   bool _obscureConfirm = true;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -31,20 +39,27 @@ class _PasswordSetupDialogState extends State<PasswordSetupDialog> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     final password = _passwordController.text.trim();
     final confirm = _confirmController.text.trim();
 
-    final error = PasswordValidator.password(password) ??
+    final error =
+        PasswordValidator.password(password) ??
         PasswordValidator.confirmPassword(password, confirm);
     if (error != null) {
       setState(() => _errorText = error);
       return;
     }
 
-    context.read<SecurityCubit>().setPassword(password);
+    if (_saving) return;
+    _saving = true;
+    final saved = await context.read<SecurityCubit>().setPassword(
+      password,
+      enableLock: widget.enableLock,
+    );
+    if (!mounted) return;
     Navigator.of(context).pop();
-    widget.onSuccess?.call();
+    if (saved) widget.onSuccess?.call();
   }
 
   @override

@@ -20,7 +20,7 @@ import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/category/bloc/category_bloc.dart';
 import 'package:ikuyo_finance/features/export/bloc/export_bloc.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
-import 'package:ikuyo_finance/features/security/screens/lock_screen.dart';
+import 'package:ikuyo_finance/features/security/widgets/security_overlay.dart';
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/asset/bloc/asset_bloc.dart';
@@ -200,22 +200,6 @@ class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SecurityCubit, SecurityState>(
-      buildWhen: (prev, curr) => prev.shouldLock != curr.shouldLock,
-      builder: (context, state) {
-        return Stack(
-          children: [
-            widget.child,
-            if (state.shouldLock)
-              Positioned.fill(
-                child: Navigator(
-                  onPopPage: (route, result) => false,
-                  pages: const [MaterialPage(child: LockScreen())],
-                ),
-              ),
-          ],
-        );
-      },
-    );
+    return SecurityOverlay(child: widget.child);
   }
 }

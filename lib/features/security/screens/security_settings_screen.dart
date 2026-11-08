@@ -165,32 +165,38 @@ class SecuritySettingsScreen extends StatelessWidget {
     bool enabled,
     SecurityState state,
   ) {
-    // * Jika enable tapi belum set method apapun, paksa set minimal satu
-    if (enabled &&
-        !state.settings.pinEnabled &&
-        !state.settings.passwordEnabled &&
-        !state.settings.biometricEnabled) {
-      // * Otomatis buka PIN setup dulu
+    // * Lock wajib punya PIN/password; jika belum ada, set PIN sekaligus
+    // * enable dalam satu penulisan (BKSEC-1)
+    if (enabled && !SecurityCubit.hasKnowledgeFactor(state.settings)) {
       _showPinSetup(context, enableSecurityAfter: true);
       return;
     }
     context.read<SecurityCubit>().toggleSecurity(enabled);
   }
 
-  void _handlePinToggle(BuildContext context, bool enabled) {
+  Future<void> _handlePinToggle(BuildContext context, bool enabled) async {
     if (enabled) {
       _showPinSetup(context);
-    } else {
-      context.read<SecurityCubit>().removePin();
+      return;
     }
+    final removed = await context.read<SecurityCubit>().removePin();
+    if (!removed && context.mounted) _showLastMethodWarning(context);
   }
 
-  void _handlePasswordToggle(BuildContext context, bool enabled) {
+  Future<void> _handlePasswordToggle(BuildContext context, bool enabled) async {
     if (enabled) {
       _showPasswordSetup(context);
-    } else {
-      context.read<SecurityCubit>().removePassword();
+      return;
     }
+    final removed = await context.read<SecurityCubit>().removePassword();
+    if (!removed && context.mounted) _showLastMethodWarning(context);
+  }
+
+  void _showLastMethodWarning(BuildContext context) {
+    ToastHelper.instance.showWarning(
+      context: context,
+      title: LocaleKeys.securitySettingsLastMethod.tr(),
+    );
   }
 
   void _showPinSetup(BuildContext context, {bool enableSecurityAfter = false}) {
@@ -200,10 +206,8 @@ class SecuritySettingsScreen extends StatelessWidget {
       builder: (_) => BlocProvider.value(
         value: context.read<SecurityCubit>(),
         child: PinSetupDialog(
+          enableLock: enableSecurityAfter,
           onSuccess: () {
-            if (enableSecurityAfter) {
-              context.read<SecurityCubit>().toggleSecurity(true);
-            }
             ToastHelper.instance.showSuccess(
               context: context,
               title: LocaleKeys.securityPinSetSuccess.tr(),
@@ -224,10 +228,8 @@ class SecuritySettingsScreen extends StatelessWidget {
       builder: (_) => BlocProvider.value(
         value: context.read<SecurityCubit>(),
         child: PasswordSetupDialog(
+          enableLock: enableSecurityAfter,
           onSuccess: () {
-            if (enableSecurityAfter) {
-              context.read<SecurityCubit>().toggleSecurity(true);
-            }
             ToastHelper.instance.showSuccess(
               context: context,
               title: LocaleKeys.securityPasswordSetSuccess.tr(),

@@ -12,7 +12,10 @@ import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 class PinSetupDialog extends StatefulWidget {
   final VoidCallback? onSuccess;
 
-  const PinSetupDialog({super.key, this.onSuccess});
+  /// Aktifkan app lock dalam penulisan yang sama dengan PIN (BKSEC-1)
+  final bool enableLock;
+
+  const PinSetupDialog({super.key, this.onSuccess, this.enableLock = false});
 
   @override
   State<PinSetupDialog> createState() => _PinSetupDialogState();
@@ -26,6 +29,7 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
   String? _errorText;
   bool _isConfirming = false;
   int _pinLength = 6;
+  bool _saving = false;
 
   @override
   void dispose() {
@@ -36,7 +40,7 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
     super.dispose();
   }
 
-  void _proceed() {
+  Future<void> _proceed() async {
     if (!_isConfirming) {
       // * Step 1: enter PIN
       final pin = _pinController.text.trim();
@@ -67,9 +71,15 @@ class _PinSetupDialogState extends State<PinSetupDialog> {
         return;
       }
 
-      context.read<SecurityCubit>().setPin(pin);
+      if (_saving) return;
+      _saving = true;
+      final saved = await context.read<SecurityCubit>().setPin(
+        pin,
+        enableLock: widget.enableLock,
+      );
+      if (!mounted) return;
       Navigator.of(context).pop();
-      widget.onSuccess?.call();
+      if (saved) widget.onSuccess?.call();
     }
   }
 

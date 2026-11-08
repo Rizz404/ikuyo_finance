@@ -15,21 +15,40 @@ class SecurityCubit extends Cubit<SecurityState> {
   /// Timestamp terakhir app di-pause (untuk auto-lock timer)
   DateTime? _lastPausedAt;
 
+  /// * Antrian penulisan: setiap perubahan dihitung dari settings terbaru
+  /// * sehingga dua penulisan beruntun tidak saling menimpa (BKSEC-1)
+  Future<void> _writeQueue = Future.value();
+
   SecurityCubit(this._storageService, this._biometricService)
-    : super(const SecurityState()) {
+    : super(const SecurityState(status: SecurityStatus.loading)) {
     _init();
   }
 
-  Future<void> _init() async {
+  Future<void> _init() => _load();
+
+  Future<void> _load() async {
+    final bioAvailable = await _biometricService.isAvailable;
+    final deviceCredential = await _deviceCredentialAvailable();
+
     try {
       final settings = await _storageService.load();
-      final bioAvailable = await _biometricService.isAvailable;
-
+      if (isClosed) return;
+      final loaded = state.copyWith(
+        settings: settings,
+        biometricAvailable: bioAvailable,
+        deviceCredentialAvailable: deviceCredential,
+        loadFailed: false,
+      );
+      // ! Data lama (BKSEC-1) bisa berisi lock aktif tanpa metode apa pun.
+      // ! Tanpa kredensial device tidak ada jalan buka, jadi jangan kunci
+      // ! (settings tersimpan tidak diubah).
+      final unrecoverable = loaded.needsRecovery && !deviceCredential;
+      if (settings.isEnabled && unrecoverable) {
+        logInfo('Lock enabled without any unlock method; not locking');
+      }
       emit(
-        state.copyWith(
-          settings: settings,
-          biometricAvailable: bioAvailable,
-          status: settings.isEnabled
+        loaded.copyWith(
+          status: settings.isEnabled && !unrecoverable
               ? SecurityStatus.locked
               : SecurityStatus.unlocked,
         ),
@@ -41,6 +60,42 @@ class SecurityCubit extends Cubit<SecurityState> {
       );
     } catch (e, s) {
       logError('SecurityCubit init failed', e, s);
+      if (isClosed) return;
+      // ! Fail-closed: kunci kecuali lock diketahui nonaktif. Lock screen
+      // ! menyediakan retry + kredensial device; penulisan diblokir
+      // ! (loadFailed) agar settings asli tidak tertimpa.
+      final knownDisabled = _storageService.lockEnabledHint == false;
+      emit(
+        state.copyWith(
+          settings: const SecuritySettings(),
+          biometricAvailable: bioAvailable,
+          deviceCredentialAvailable: deviceCredential,
+          loadFailed: true,
+          status: knownDisabled
+              ? SecurityStatus.unlocked
+              : SecurityStatus.locked,
+        ),
+      );
+    }
+  }
+
+  Future<bool> _deviceCredentialAvailable() async {
+    try {
+      return await _biometricService.isDeviceSupported;
+    } catch (e, s) {
+      logError('Device credential check failed', e, s);
+      return false;
+    }
+  }
+
+  /// Coba baca ulang settings setelah gagal (mis. keystore sementara error)
+  Future<void> retryLoad() async {
+    if (!state.loadFailed) return;
+    final wasUnlocked = state.status == SecurityStatus.unlocked;
+    await _load();
+    // * Jangan mengunci ulang user yang sudah terautentikasi
+    if (wasUnlocked && state.status != SecurityStatus.unlocked) {
+      emit(state.copyWith(status: SecurityStatus.unlocked));
     }
   }
 
@@ -142,6 +197,34 @@ class SecurityCubit extends Cubit<SecurityState> {
     }
   }
 
+  /// ! Recovery: buka dengan kredensial layar kunci device, hanya saat
+  /// ! tidak ada metode app yang bisa dipakai (settings rusak / tak terbaca)
+  Future<void> authenticateWithDeviceCredential() async {
+    if (!state.needsRecovery || !state.deviceCredentialAvailable) return;
+
+    emit(
+      state.copyWith(
+        status: SecurityStatus.authenticating,
+        authResult: SecurityAuthResult.idle,
+      ),
+    );
+
+    final success = await _biometricService.authenticateWithDeviceCredential(
+      reason: 'Verify to unlock Ikuyo Finance',
+    );
+
+    emit(
+      state.copyWith(
+        status: success ? SecurityStatus.unlocked : SecurityStatus.locked,
+        authResult: success
+            ? SecurityAuthResult.success
+            : SecurityAuthResult.idle,
+        failedAttempts: success ? 0 : state.failedAttempts,
+      ),
+    );
+    logInfo('Device credential auth ${success ? 'success' : 'failed'}');
+  }
+
   /// Autentikasi PIN
   void authenticateWithPin(String pin) {
     if (!state.canUsePin) return;
@@ -222,8 +305,38 @@ class SecurityCubit extends Cubit<SecurityState> {
 
   // ─── Settings Management ──────────────────────────────
 
-  /// Update seluruh settings sekaligus
-  Future<void> updateSettings(SecuritySettings newSettings) async {
+  /// Lock aktif wajib punya minimal satu faktor yang bisa diketik
+  /// (PIN / password); biometric saja bisa hilang saat sensor di-unenroll.
+  static bool hasKnowledgeFactor(SecuritySettings s) =>
+      (s.pinEnabled && s.pinHash != null) ||
+      (s.passwordEnabled && s.passwordHash != null);
+
+  static bool isValidSettings(SecuritySettings s) =>
+      !s.isEnabled || hasKnowledgeFactor(s);
+
+  /// Jalankan perubahan settings secara berurutan dari settings terbaru.
+  /// Return true jika tersimpan.
+  Future<bool> _mutate(
+    SecuritySettings Function(SecuritySettings current) change,
+  ) {
+    final result = _writeQueue.then((_) async {
+      // ! Jangan menulis sebelum settings asli terbaca (bisa menimpa PIN)
+      if (state.status == SecurityStatus.loading || state.loadFailed) {
+        logInfo('Security settings write blocked: settings not loaded');
+        return false;
+      }
+      final next = change(state.settings);
+      if (!isValidSettings(next)) {
+        logInfo('Security settings write rejected: no unlock method');
+        return false;
+      }
+      return _persist(next);
+    });
+    _writeQueue = result.then((_) {}, onError: (_) {});
+    return result;
+  }
+
+  Future<bool> _persist(SecuritySettings newSettings) async {
     try {
       await _storageService.save(newSettings);
       final bioAvailable = await _biometricService.isAvailable;
@@ -231,17 +344,22 @@ class SecurityCubit extends Cubit<SecurityState> {
         state.copyWith(settings: newSettings, biometricAvailable: bioAvailable),
       );
       logInfo('Security settings updated');
+      return true;
     } catch (e, s) {
       logError('Failed to update settings', e, s);
+      return false;
     }
   }
 
-  /// Toggle security on/off
-  Future<void> toggleSecurity(bool enabled) async {
-    final newSettings = state.settings.copyWith(isEnabled: enabled);
-    await updateSettings(newSettings);
+  /// Update seluruh settings sekaligus
+  Future<bool> updateSettings(SecuritySettings newSettings) =>
+      _mutate((_) => newSettings);
 
-    if (!enabled) {
+  /// Toggle security on/off
+  Future<bool> toggleSecurity(bool enabled) async {
+    final saved = await _mutate((s) => s.copyWith(isEnabled: enabled));
+
+    if (saved && !enabled) {
       emit(
         state.copyWith(
           status: SecurityStatus.unlocked,
@@ -249,80 +367,85 @@ class SecurityCubit extends Cubit<SecurityState> {
         ),
       );
     }
+    return saved;
   }
 
-  /// Set PIN baru
-  Future<void> setPin(String pin) async {
+  /// Set PIN baru; [enableLock] mengaktifkan app lock dalam penulisan yang sama
+  Future<bool> setPin(String pin, {bool enableLock = false}) async {
     final hash = SecurityHasher.hash(pin);
-    final newSettings = state.settings.copyWith(
-      pinEnabled: true,
-      pinHash: hash,
-      pinLength: pin.length,
+    final saved = await _mutate(
+      (s) => s.copyWith(
+        pinEnabled: true,
+        pinHash: hash,
+        pinLength: pin.length,
+        isEnabled: enableLock ? true : null,
+      ),
     );
-    await updateSettings(newSettings);
-    logInfo('PIN set successfully');
+    if (saved) logInfo('PIN set successfully');
+    return saved;
   }
 
-  /// Hapus PIN
-  Future<void> removePin() async {
-    final newSettings = SecuritySettings(
-      isEnabled: state.settings.isEnabled,
-      biometricEnabled: state.settings.biometricEnabled,
-      pinEnabled: false,
-      passwordEnabled: state.settings.passwordEnabled,
-      passwordHash: state.settings.passwordHash,
-      lockTrigger: state.settings.lockTrigger,
-      autoLockMinutes: state.settings.autoLockMinutes,
-      pinLength: 6,
+  /// Hapus PIN (ditolak jika PIN satu-satunya metode lock aktif)
+  Future<bool> removePin() async {
+    final saved = await _mutate(
+      (s) => SecuritySettings(
+        isEnabled: s.isEnabled,
+        biometricEnabled: s.biometricEnabled,
+        pinEnabled: false,
+        passwordEnabled: s.passwordEnabled,
+        passwordHash: s.passwordHash,
+        lockTrigger: s.lockTrigger,
+        autoLockMinutes: s.autoLockMinutes,
+        pinLength: 6,
+      ),
     );
-    await updateSettings(newSettings);
-    logInfo('PIN removed');
+    if (saved) logInfo('PIN removed');
+    return saved;
   }
 
-  /// Set password baru
-  Future<void> setPassword(String password) async {
+  /// Set password baru; [enableLock] mengaktifkan app lock sekaligus
+  Future<bool> setPassword(String password, {bool enableLock = false}) async {
     final hash = SecurityHasher.hash(password);
-    final newSettings = state.settings.copyWith(
-      passwordEnabled: true,
-      passwordHash: hash,
+    final saved = await _mutate(
+      (s) => s.copyWith(
+        passwordEnabled: true,
+        passwordHash: hash,
+        isEnabled: enableLock ? true : null,
+      ),
     );
-    await updateSettings(newSettings);
-    logInfo('Password set successfully');
+    if (saved) logInfo('Password set successfully');
+    return saved;
   }
 
-  /// Hapus password
-  Future<void> removePassword() async {
-    final newSettings = SecuritySettings(
-      isEnabled: state.settings.isEnabled,
-      biometricEnabled: state.settings.biometricEnabled,
-      pinEnabled: state.settings.pinEnabled,
-      pinHash: state.settings.pinHash,
-      passwordEnabled: false,
-      lockTrigger: state.settings.lockTrigger,
-      autoLockMinutes: state.settings.autoLockMinutes,
-      pinLength: state.settings.pinLength,
+  /// Hapus password (ditolak jika password satu-satunya metode lock aktif)
+  Future<bool> removePassword() async {
+    final saved = await _mutate(
+      (s) => SecuritySettings(
+        isEnabled: s.isEnabled,
+        biometricEnabled: s.biometricEnabled,
+        pinEnabled: s.pinEnabled,
+        pinHash: s.pinHash,
+        passwordEnabled: false,
+        lockTrigger: s.lockTrigger,
+        autoLockMinutes: s.autoLockMinutes,
+        pinLength: s.pinLength,
+      ),
     );
-    await updateSettings(newSettings);
-    logInfo('Password removed');
+    if (saved) logInfo('Password removed');
+    return saved;
   }
 
   /// Toggle biometric
-  Future<void> toggleBiometric(bool enabled) async {
-    final newSettings = state.settings.copyWith(biometricEnabled: enabled);
-    await updateSettings(newSettings);
-  }
+  Future<bool> toggleBiometric(bool enabled) =>
+      _mutate((s) => s.copyWith(biometricEnabled: enabled));
 
   /// Set lock trigger
-  Future<void> setLockTrigger(LockTrigger trigger) async {
-    final newSettings = state.settings.copyWith(lockTrigger: trigger);
-    await updateSettings(newSettings);
-  }
+  Future<bool> setLockTrigger(LockTrigger trigger) =>
+      _mutate((s) => s.copyWith(lockTrigger: trigger));
 
   /// Set auto-lock duration (menit)
-  Future<void> setAutoLockMinutes(int minutes) async {
-    final newSettings = state.settings.copyWith(autoLockMinutes: minutes);
-    await updateSettings(newSettings);
-  }
+  Future<bool> setAutoLockMinutes(int minutes) =>
+      _mutate((s) => s.copyWith(autoLockMinutes: minutes));
 
   /// Reset semua security settings
   Future<void> resetSecurity() async {

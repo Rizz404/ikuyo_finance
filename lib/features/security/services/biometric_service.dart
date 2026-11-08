@@ -20,6 +20,34 @@ class BiometricService {
     }
   }
 
+  /// Cek apakah device punya kredensial layar kunci (PIN/pola/biometric)
+  Future<bool> get isDeviceSupported async {
+    try {
+      return await _auth.isDeviceSupported();
+    } catch (e, s) {
+      logError('Device support check failed', e, s);
+      return false;
+    }
+  }
+
+  /// Autentikasi dengan kredensial device (PIN/pola/biometric OS)
+  Future<bool> authenticateWithDeviceCredential({
+    String reason = 'Verify your identity',
+  }) async {
+    try {
+      return await _auth.authenticate(
+        localizedReason: reason,
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: false,
+        ),
+      );
+    } catch (e, s) {
+      logError('Device credential auth failed', e, s);
+      return false;
+    }
+  }
+
   /// Ambil list biometric yang tersedia
   Future<List<BiometricType>> get availableBiometrics async {
     try {

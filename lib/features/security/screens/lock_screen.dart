@@ -202,6 +202,17 @@ class _LockScreenState extends State<LockScreen> {
     SecurityState state,
     AppColorsTheme colors,
   ) {
+    // * Settings belum terbaca: tampilkan loading, bukan konten app
+    if (state.status == SecurityStatus.loading) {
+      return const Padding(
+        key: ValueKey('loading'),
+        padding: EdgeInsets.all(16),
+        child: CircularProgressIndicator(),
+      );
+    }
+    if (state.needsRecovery) {
+      return _buildRecoveryView(context, state, colors);
+    }
     switch (_currentView) {
       case _AuthView.biometric:
         return _buildBiometricView(context, state, colors);
@@ -210,6 +221,63 @@ class _LockScreenState extends State<LockScreen> {
       case _AuthView.password:
         return _buildPasswordView(context, state, colors);
     }
+  }
+
+  // ─── Recovery View ──────────────────────────────────
+
+  /// ! Tampil saat settings gagal dibaca atau tidak ada metode yang bisa
+  /// ! dipakai; tetap terkunci (fail-closed) dengan jalan keluar yang aman
+  Widget _buildRecoveryView(
+    BuildContext context,
+    SecurityState state,
+    AppColorsTheme colors,
+  ) {
+    final cubit = context.read<SecurityCubit>();
+    final busy = state.status == SecurityStatus.authenticating;
+    return Column(
+      key: const ValueKey('recovery'),
+      children: [
+        if (state.loadFailed) ...[
+          _buildErrorBanner(LocaleKeys.securityLoadError.tr(), colors),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              key: const ValueKey('security-load-retry'),
+              onPressed: busy ? null : cubit.retryLoad,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: colors.primary,
+                foregroundColor: colors.textOnPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              child: AppText(
+                LocaleKeys.securityRetry.tr(),
+                style: AppTextStyle.bodyLarge,
+                fontWeight: FontWeight.w600,
+                color: colors.textOnPrimary,
+              ),
+            ),
+          ),
+        ],
+        if (state.deviceCredentialAvailable) ...[
+          const SizedBox(height: 8),
+          TextButton.icon(
+            key: const ValueKey('security-device-credential'),
+            onPressed: busy ? null : cubit.authenticateWithDeviceCredential,
+            icon: Icon(Icons.phonelink_lock, size: 20, color: colors.primary),
+            label: AppText(
+              LocaleKeys.securityUseDeviceCredential.tr(),
+              style: AppTextStyle.bodyMedium,
+              color: colors.primary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ],
+    );
   }
 
   // ─── Biometric View ─────────────────────────────────

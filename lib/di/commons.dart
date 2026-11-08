@@ -141,7 +141,7 @@ Future<void> _setupTheme() async {
   // * Security services & cubit
   final secureStorage = getIt<FlutterSecureStorage>();
   getIt.registerLazySingleton<SecurityStorageService>(
-    () => SecurityStorageService(secureStorage),
+    () => SecurityStorageService(secureStorage, prefs),
   );
   getIt.registerLazySingleton<BiometricService>(() => BiometricService());
   getIt.registerLazySingleton<SecurityCubit>(

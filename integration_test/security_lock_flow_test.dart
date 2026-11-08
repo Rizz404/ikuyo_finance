@@ -47,6 +47,8 @@ void main() {
     storageService = MockSecurityStorageService();
     biometricService = MockBiometricService();
     when(() => biometricService.isAvailable).thenAnswer((_) async => false);
+    when(() => biometricService.isDeviceSupported).thenAnswer((_) async => false);
+    when(() => storageService.lockEnabledHint).thenReturn(null);
     when(() => storageService.load()).thenAnswer(
       (_) async => SecuritySettings(
         isEnabled: true,

@@ -11,7 +11,10 @@
       "biometricFailed": "Autentikasi biometrik gagal",
       "pinIncorrect": "PIN salah",
       "passwordIncorrect": "Kata sandi salah",
-      "enterPassword": "Masukkan kata sandi Anda"
+      "enterPassword": "Masukkan kata sandi Anda",
+      "loadError": "Pengaturan keamanan tidak dapat dibaca. Coba lagi, atau verifikasi dengan kunci layar perangkat.",
+      "retry": "Coba Lagi",
+      "useDeviceCredential": "Gunakan Kunci Layar Perangkat"
     },
     "settings": {
       "title": "Pengaturan Keamanan",
@@ -33,7 +36,8 @@
       "autoLock": "Waktu Kunci Otomatis",
       "manage": "Kelola Keamanan",
       "changePin": "Ubah PIN",
-      "changePassword": "Ubah Kata Sandi"
+      "changePassword": "Ubah Kata Sandi",
+      "lastMethod": "Sisakan minimal satu PIN atau kata sandi selama Kunci Aplikasi aktif. Matikan Kunci Aplikasi terlebih dahulu."
     },
     "trigger": {
       "appClose": "Saat Aplikasi Ditutup",
