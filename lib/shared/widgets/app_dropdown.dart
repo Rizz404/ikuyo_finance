@@ -64,6 +64,7 @@ class AppDropdown<T> extends StatelessWidget {
       enabled: enabled,
       onChanged: onChanged,
       validator: validator,
+      autovalidateMode: AutovalidateMode.onUserInteractionIfError,
       items: items.map((item) {
         return DropdownMenuItem<T>(
           value: item.value,

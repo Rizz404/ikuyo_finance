@@ -241,6 +241,8 @@ class _AppTextFieldState extends State<AppTextField> {
         ),
       ),
       validator: widget.validator,
+      // * Error hilang segera setelah field diperbaiki (setelah submit gagal)
+      autovalidateMode: AutovalidateMode.onUserInteractionIfError,
       enabled: widget.enabled ?? true,
     );
   }

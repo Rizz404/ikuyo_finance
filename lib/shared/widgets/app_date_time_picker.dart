@@ -43,6 +43,7 @@ class AppDateTimePicker extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderDateTimePicker(
       name: name,
+      autovalidateMode: AutovalidateMode.onUserInteractionIfError,
       inputType: inputType,
       decoration: InputDecoration(
         labelText: label,
