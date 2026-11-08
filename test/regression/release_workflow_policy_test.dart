@@ -14,7 +14,10 @@ import 'package:flutter_test/flutter_test.dart';
 const _testedFlutter = '3.44.5';
 
 void main() {
-  final workflow = File('.github/workflows/release.yml').readAsStringSync();
+  // * normalize CRLF (e.g. core.autocrlf=true checkouts) so the parser sees LF
+  final workflow = File(
+    '.github/workflows/release.yml',
+  ).readAsStringSync().replaceAll('\r\n', '\n');
   final lines = workflow.split('\n');
 
   /// Shell lines of every `run:` step (inline and block scalars).
