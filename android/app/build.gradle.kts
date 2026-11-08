@@ -50,6 +50,13 @@ android {
 
     buildTypes {
         release {
+            if (!keyPropertiesFile.exists() &&
+                System.getenv("IKUYO_REQUIRE_RELEASE_SIGNING") == "true"
+            ) {
+                throw GradleException(
+                    "Release signing required but android/key.properties is missing",
+                )
+            }
             signingConfig = if (keyPropertiesFile.exists()) {
                 signingConfigs.getByName("release")
             } else {
