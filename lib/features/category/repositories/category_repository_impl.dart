@@ -248,6 +248,23 @@ class CategoryRepositoryImpl implements CategoryRepository {
           throw Exception(LocaleKeys.categoryUpsertInUseTypeChangeBlocked.tr());
         }
 
+        // * Hierarki satu tipe: induk dan anak harus bertipe sama
+        final targetType = params.type?.index ?? category.type;
+        if (targetType != category.type) {
+          final keepsParent =
+              params.parentUlid == null &&
+              !params.clearParent &&
+              category.parent.target != null;
+          final hasChildren = _box
+              .query(Category_.parent.equals(category.id))
+              .countAndClose();
+          if (keepsParent || hasChildren > 0) {
+            throw Exception(
+              'Tipe kategori harus sama dengan induk/sub-kategori',
+            );
+          }
+        }
+
         // * Update fields jika ada
         if (params.name != null) category.name = params.name!;
         if (params.type != null) category.type = params.type!.index;
@@ -297,11 +314,16 @@ class CategoryRepositoryImpl implements CategoryRepository {
             );
           }
 
+          if (parent.type != targetType) {
+            throw Exception(
+              'Tipe kategori harus sama dengan induk/sub-kategori',
+            );
+          }
+
           category.parent.target = parent;
-        } else if (params.parentUlid == null &&
-            category.parent.target != null) {
-          // * Remove parent if explicitly set to null (promote to root)
-          // * Only allow if we're tracking this - for now keep existing parent
+        } else if (params.clearParent) {
+          // * Promote to root
+          category.parent.target = null;
         }
 
         category.updatedAt = DateTime.now();

@@ -13,6 +13,9 @@ class UpdateCategoryParams extends Equatable {
   final String? color;
   final String? parentUlid;
 
+  /// * null field = unchanged; set to promote a sub-category to root
+  final bool clearParent;
+
   const UpdateCategoryParams({
     required this.ulid,
     required this.name,
@@ -20,6 +23,7 @@ class UpdateCategoryParams extends Equatable {
     this.icon,
     this.color,
     this.parentUlid,
+    this.clearParent = false,
   });
 
   UpdateCategoryParams copyWith({
@@ -29,6 +33,7 @@ class UpdateCategoryParams extends Equatable {
     ValueGetter<String?>? icon,
     ValueGetter<String?>? color,
     ValueGetter<String?>? parentUlid,
+    bool? clearParent,
   }) {
     return UpdateCategoryParams(
       ulid: ulid ?? this.ulid,
@@ -37,6 +42,7 @@ class UpdateCategoryParams extends Equatable {
       icon: icon != null ? icon() : this.icon,
       color: color != null ? color() : this.color,
       parentUlid: parentUlid != null ? parentUlid() : this.parentUlid,
+      clearParent: clearParent ?? this.clearParent,
     );
   }
 
@@ -48,6 +54,7 @@ class UpdateCategoryParams extends Equatable {
       'icon': icon,
       'color': color,
       'parentUlid': parentUlid,
+      'clearParent': clearParent,
     };
   }
 
@@ -61,6 +68,7 @@ class UpdateCategoryParams extends Equatable {
       icon: map['icon'],
       color: map['color'],
       parentUlid: map['parentUlid'],
+      clearParent: map['clearParent'] == true,
     );
   }
 
@@ -71,11 +79,11 @@ class UpdateCategoryParams extends Equatable {
 
   @override
   String toString() {
-    return 'UpdateCategoryParams(ulid: $ulid, name: $name, type: $type, icon: $icon, color: $color, parentUlid: $parentUlid)';
+    return 'UpdateCategoryParams(ulid: $ulid, name: $name, type: $type, icon: $icon, color: $color, parentUlid: $parentUlid, clearParent: $clearParent)';
   }
 
   @override
   List<Object?> get props {
-    return [ulid, name, type, icon, color, parentUlid];
+    return [ulid, name, type, icon, color, parentUlid, clearParent];
   }
 }

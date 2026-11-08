@@ -104,9 +104,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
     // * If category has children, it's a parent - can't become child
     if (state.editingCategoryHasChildren == true) return false;
 
-    // * If category already has a parent, it's a child - can't nest deeper
-    if (widget.category?.parent.target != null) return false;
-
+    // * Sub-categories may move to another parent or be promoted to root
     return true;
   }
 
@@ -122,15 +120,6 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
             return _buildInfoCard(
               icon: Icons.folder_outlined,
               message: LocaleKeys.categoryUpsertParentCantBeChild.tr(),
-            );
-          }
-          // * Show info if category is already a child
-          if (widget.isEdit && widget.category?.parent.target != null) {
-            return _buildInfoCard(
-              icon: Icons.subdirectory_arrow_right,
-              message: LocaleKeys.categoryUpsertSubCategoryOf.tr(
-                namedArgs: {'name': widget.category!.parent.target!.name},
-              ),
             );
           }
           return const SizedBox.shrink();
@@ -245,6 +234,8 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
               icon: iconPath ?? widget.category!.icon,
               color: color,
               parentUlid: parentUlid,
+              clearParent:
+                  parentUlid == null && widget.category!.parent.target != null,
             ),
           ),
         );
