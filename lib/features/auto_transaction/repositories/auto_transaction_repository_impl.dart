@@ -346,6 +346,16 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
 
         if (params.sortOrder != null) item.sortOrder = params.sortOrder!;
         if (params.isActive != null) item.isActive = params.isActive!;
+        if (params.transactionUlid != null) {
+          final transaction = _transactionBox
+              .query(Transaction_.ulid.equals(params.transactionUlid!))
+              .build()
+              .findFirst();
+          if (transaction == null) {
+            throw Exception('Transaksi template tidak ditemukan');
+          }
+          item.transaction.target = transaction;
+        }
 
         item.updatedAt = DateTime.now();
         _itemBox.put(item);

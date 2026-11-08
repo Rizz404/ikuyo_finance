@@ -11,6 +11,7 @@ import 'package:ikuyo_finance/features/auto_transaction/bloc/auto_transaction_bl
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/create_auto_item_params.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/update_auto_item_params.dart';
 import 'package:ikuyo_finance/features/auto_transaction/validators/create_auto_item_validator.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
@@ -53,6 +54,7 @@ class _AutoTransactionItemUpsertScreenState
     if (!(ModalRoute.of(context)?.isCurrent ?? true)) return;
     final action = state.writeAction;
     if (action != AutoTransactionWriteAction.itemCreate &&
+        action != AutoTransactionWriteAction.itemUpdate &&
         action != AutoTransactionWriteAction.itemDelete) {
       return;
     }
@@ -82,6 +84,19 @@ class _AutoTransactionItemUpsertScreenState
     final values = _formKey.currentState!.value;
     final transactionUlid = values['transactionUlid'] as String?;
     if (transactionUlid == null) return;
+
+    // * Mode edit memperbarui item yang ada, bukan membuat duplikat (AUTO-4)
+    if (widget.isEdit) {
+      context.read<AutoTransactionBloc>().add(
+        AutoItemUpdated(
+          params: UpdateAutoItemParams(
+            ulid: widget.item!.ulid,
+            transactionUlid: transactionUlid,
+          ),
+        ),
+      );
+      return;
+    }
 
     final autoState = context.read<AutoTransactionBloc>().state;
     final nextSortOrder = autoState.currentItems.length;
