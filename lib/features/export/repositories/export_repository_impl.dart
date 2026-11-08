@@ -11,6 +11,7 @@ import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/export/models/export_params.dart';
 import 'package:ikuyo_finance/features/export/repositories/export_repository.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction_effective_date.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 import 'package:intl/intl.dart';
 
@@ -93,11 +94,7 @@ class ExportRepositoryImpl implements ExportRepository {
             params.startDate!.day,
           );
           transactions = transactions
-              .where(
-                (t) =>
-                    t.transactionDate != null &&
-                    !t.transactionDate!.isBefore(start),
-              )
+              .where((t) => !t.effectiveDate.isBefore(start))
               .toList();
         }
 
@@ -112,11 +109,7 @@ class ExportRepositoryImpl implements ExportRepository {
             999,
           );
           transactions = transactions
-              .where(
-                (t) =>
-                    t.transactionDate != null &&
-                    !t.transactionDate!.isAfter(end),
-              )
+              .where((t) => !t.effectiveDate.isAfter(end))
               .toList();
         }
 

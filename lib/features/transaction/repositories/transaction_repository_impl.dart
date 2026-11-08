@@ -6,6 +6,7 @@ import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/statistic/models/category_summary.dart';
 import 'package:ikuyo_finance/features/statistic/models/get_statistic_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction_effective_date.dart';
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
@@ -267,23 +268,12 @@ class TransactionRepositoryImpl implements TransactionRepository {
         // * Build conditions list
         final List<Condition<Transaction>> conditions = [];
 
-        // * Date range filter
-        if (params.startDate != null && params.endDate != null) {
-          conditions.add(
-            Transaction_.transactionDate.betweenDate(
-              params.startDate!,
-              params.endDate!,
-            ),
-          );
-        } else if (params.startDate != null) {
-          conditions.add(
-            Transaction_.transactionDate.greaterOrEqualDate(params.startDate!),
-          );
-        } else if (params.endDate != null) {
-          conditions.add(
-            Transaction_.transactionDate.lessOrEqualDate(params.endDate!),
-          );
-        }
+        // * Date range filter: tanggal efektif (transactionDate ?? createdAt)
+        final dateCondition = effectiveDateCondition(
+          from: params.startDate,
+          to: params.endDate,
+        );
+        if (dateCondition != null) conditions.add(dateCondition);
 
         // * Amount range filter
         if (params.minAmount != null && params.maxAmount != null) {
@@ -619,12 +609,9 @@ class TransactionRepositoryImpl implements TransactionRepository {
           'mulai: ${params.startDate}, akhir: ${params.endDate}',
         );
 
-        // * Query transactions within date range
+        // * Query transactions within date range (tanggal efektif, NEW-3)
         final queryBuilder = _box.query(
-          Transaction_.transactionDate.betweenDate(
-            params.startDate,
-            params.endDate,
-          ),
+          effectiveDateCondition(from: params.startDate, to: params.endDate),
         );
 
         final builtQuery = queryBuilder.build();

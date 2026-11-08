@@ -14,6 +14,7 @@ import 'package:ikuyo_finance/features/budget/models/update_budget_params.dart';
 import 'package:ikuyo_finance/features/budget/repositories/budget_repository.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction_effective_date.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
 class BudgetRepositoryImpl implements BudgetRepository {
@@ -472,16 +473,11 @@ class BudgetRepositoryImpl implements BudgetRepository {
         .box<Transaction>()
         .query(
           // * Tanggal efektif = transactionDate ?? createdAt (F6)
-          Transaction_.transactionDate
-              .greaterOrEqualDate(range.start)
-              .and(Transaction_.transactionDate.lessThanDate(range.end))
-              .or(
-                Transaction_.transactionDate.isNull().and(
-                  Transaction_.createdAt
-                      .greaterOrEqualDate(range.start)
-                      .and(Transaction_.createdAt.lessThanDate(range.end)),
-                ),
-              ),
+          effectiveDateCondition(
+            from: range.start,
+            to: range.end,
+            toInclusive: false,
+          ),
         )
         .findAndClose();
     return [
