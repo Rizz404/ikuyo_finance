@@ -4,6 +4,7 @@ import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
+import 'package:ikuyo_finance/objectbox.g.dart';
 
 /// Result of currency migration
 class CurrencyMigrationResult {
@@ -59,21 +60,24 @@ class CurrencyMigrationService {
       final from = Currency.getByCode(fromCurrency);
       final to = Currency.getByCode(toCurrency);
 
-      // * Step 1: Migrate Assets
-      onProgress?.call('Migrating assets...', 0.0);
-      final assetsUpdated = await _migrateAssets(from, to, onProgress);
+      // * Semua langkah dalam satu write transaction: gagal di tengah jalan
+      // * berarti rollback total, sehingga retry tidak mengonversi dua kali
+      final (assetsUpdated, transactionsUpdated, budgetsUpdated) = _storage
+          .store
+          .runInTransaction(TxMode.write, () {
+            // * Step 1: Migrate Assets
+            onProgress?.call('Migrating assets...', 0.0);
+            final assets = _migrateAssets(from, to, onProgress);
 
-      // * Step 2: Migrate Transactions
-      onProgress?.call('Migrating transactions...', 0.33);
-      final transactionsUpdated = await _migrateTransactions(
-        from,
-        to,
-        onProgress,
-      );
+            // * Step 2: Migrate Transactions
+            onProgress?.call('Migrating transactions...', 0.33);
+            final transactions = _migrateTransactions(from, to, onProgress);
 
-      // * Step 3: Migrate Budgets
-      onProgress?.call('Migrating budgets...', 0.66);
-      final budgetsUpdated = await _migrateBudgets(from, to, onProgress);
+            // * Step 3: Migrate Budgets
+            onProgress?.call('Migrating budgets...', 0.66);
+            final budgets = _migrateBudgets(from, to, onProgress);
+            return (assets, transactions, budgets);
+          });
 
       onProgress?.call('Migration complete!', 1.0);
 
@@ -102,11 +106,11 @@ class CurrencyMigrationService {
   }
 
   /// Migrate all assets to new currency
-  Future<int> _migrateAssets(
+  int _migrateAssets(
     Currency from,
     Currency to,
     void Function(String status, double progress)? onProgress,
-  ) async {
+  ) {
     final box = _storage.box<Asset>();
     final assets = box.getAll();
 
@@ -147,11 +151,11 @@ class CurrencyMigrationService {
   }
 
   /// Migrate all transactions to new currency
-  Future<int> _migrateTransactions(
+  int _migrateTransactions(
     Currency from,
     Currency to,
     void Function(String status, double progress)? onProgress,
-  ) async {
+  ) {
     final box = _storage.box<Transaction>();
     final transactions = box.getAll();
 
@@ -191,11 +195,11 @@ class CurrencyMigrationService {
   }
 
   /// Migrate all budgets to new currency
-  Future<int> _migrateBudgets(
+  int _migrateBudgets(
     Currency from,
     Currency to,
     void Function(String status, double progress)? onProgress,
-  ) async {
+  ) {
     final box = _storage.box<Budget>();
     final budgets = box.getAll();
 
