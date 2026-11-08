@@ -560,17 +560,13 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     );
   }
 
-  // * Realisasi per anggaran (AAOB-5); kegagalan satu anggaran tidak
-  //   menggagalkan daftar, kartunya hanya tampil tanpa progres
+  // * Realisasi anggaran (AAOB-5) dalam satu panggilan batch (F7); bila
+  //   gagal, daftar tetap tampil dan kartu hanya tanpa progres
   Future<Map<String, BudgetProgress>> _progressOf(List<Budget> budgets) async {
-    final map = <String, BudgetProgress>{};
-    for (final budget in budgets) {
-      final result = await _budgetRepository
-          .getBudgetProgress(ulid: budget.ulid)
-          .run();
-      final progress = result.toNullable()?.data;
-      if (progress != null) map[budget.ulid] = progress;
-    }
-    return map;
+    if (budgets.isEmpty) return const {};
+    final result = await _budgetRepository
+        .getBudgetsProgress(budgets: budgets)
+        .run();
+    return result.toNullable()?.data ?? const {};
   }
 }

@@ -21,4 +21,10 @@ abstract class BudgetRepository {
     required String ulid,
     DateTime? now,
   });
+
+  /// Realisasi banyak anggaran sekaligus dengan kerja bersama (F7)
+  TaskEither<Failure, Success<Map<String, BudgetProgress>>> getBudgetsProgress({
+    required List<Budget> budgets,
+    DateTime? now,
+  });
 }

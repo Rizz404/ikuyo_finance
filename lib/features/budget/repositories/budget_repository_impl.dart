@@ -390,7 +390,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
         if (budget == null) {
           throw Exception('Anggaran tidak ditemukan');
         }
-        return Success(data: _computeProgress(budget, now ?? DateTime.now()));
+        final progress = _computeProgressBatch([budget], now ?? DateTime.now());
+        return Success(data: progress[budget.ulid]!);
       },
       (error, stackTrace) {
         logError('Gagal menghitung realisasi anggaran', error, stackTrace);
@@ -403,18 +404,84 @@ class BudgetRepositoryImpl implements BudgetRepository {
     );
   }
 
+  @override
+  TaskEither<Failure, Success<Map<String, BudgetProgress>>> getBudgetsProgress({
+    required List<Budget> budgets,
+    DateTime? now,
+  }) {
+    return TaskEither.tryCatch(
+      () async =>
+          Success(data: _computeProgressBatch(budgets, now ?? DateTime.now())),
+      (error, stackTrace) {
+        logError('Gagal menghitung realisasi anggaran', error, stackTrace);
+        return const Failure(message: 'Gagal menghitung realisasi anggaran.');
+      },
+    );
+  }
+
   /// * spent = transaksi arah expense di [start, end) atas kategori anggaran
   ///   beserta seluruh turunannya; tanpa kategori = semua expense.
   /// * Tanggal efektif = transactionDate ?? createdAt (F6).
   /// * Nominal sudah tersimpan dalam mata uang penanda DB (CurrencyMarker),
   ///   jadi tidak ada konversi; dijumlah dalam satuan minor mata uang itu.
-  BudgetProgress _computeProgress(Budget budget, DateTime now) {
-    final range = BudgetPeriodRange.of(budget, now: now);
+  /// * F7: satu panggilan berbagi kerja untuk semua anggaran — satu baca
+  ///   mata uang, satu muat pohon kategori, satu query transaksi per rentang
+  ///   periode berbeda. Tidak ada cache lintas panggilan, jadi setiap
+  ///   refresh membaca ulang store (invalidasi deterministik).
+  Map<String, BudgetProgress> _computeProgressBatch(
+    List<Budget> budgets,
+    DateTime now,
+  ) {
+    if (budgets.isEmpty) return const {};
     final digits = _storedCurrency().decimalDigits;
 
-    final root = budget.category.target;
-    final Set<int>? categoryIds = root == null ? null : _descendantIds(root.id);
+    // * Pohon kategori dimuat sekali, hanya bila ada anggaran berkategori
+    final needsTree = budgets.any((b) => b.category.targetId != 0);
+    final children = <int, List<int>>{};
+    final known = <int>{};
+    if (needsTree) {
+      for (final c in _categoryBox.getAll()) {
+        known.add(c.id);
+        final parentId = c.parent.targetId;
+        if (parentId != 0) (children[parentId] ??= []).add(c.id);
+      }
+    }
+    final descendantsOf = <int, Set<int>>{};
+    Set<int>? categoryIdsOf(Budget b) {
+      final rootId = b.category.targetId;
+      // * Relasi kosong/menggantung = tanpa kategori (perilaku sebelumnya)
+      if (rootId == 0 || !known.contains(rootId)) return null;
+      return descendantsOf[rootId] ??= _descendantIds(rootId, children);
+    }
 
+    // * Satu query transaksi per rentang periode yang berbeda
+    final expensesByRange = <BudgetPeriodRange, List<Transaction>>{};
+    final result = <String, BudgetProgress>{};
+    for (final budget in budgets) {
+      final range = BudgetPeriodRange.of(budget, now: now);
+      final expenses = expensesByRange[range] ??= _expensesIn(range);
+      final categoryIds = categoryIdsOf(budget);
+
+      var spentMinor = 0;
+      for (final t in expenses) {
+        if (categoryIds != null && !categoryIds.contains(t.category.targetId)) {
+          continue;
+        }
+        spentMinor += BudgetProgress.toMinor(t.amount, digits);
+      }
+
+      result[budget.ulid] = BudgetProgress(
+        spentMinor: spentMinor,
+        limitMinor: BudgetProgress.toMinor(budget.amountLimit, digits),
+        decimalDigits: digits,
+        period: range,
+      );
+    }
+    return result;
+  }
+
+  /// Transaksi arah expense dengan tanggal efektif di [start, end)
+  List<Transaction> _expensesIn(BudgetPeriodRange range) {
     final transactions = _storage
         .box<Transaction>()
         .query(
@@ -431,39 +498,19 @@ class BudgetRepositoryImpl implements BudgetRepository {
               ),
         )
         .findAndClose();
-
-    var spentMinor = 0;
-    for (final t in transactions) {
-      if (!t.isExpense) continue;
-      if (categoryIds != null && !categoryIds.contains(t.category.targetId)) {
-        continue;
-      }
-      spentMinor += BudgetProgress.toMinor(t.amount, digits);
-    }
-
-    return BudgetProgress(
-      spentMinor: spentMinor,
-      limitMinor: BudgetProgress.toMinor(budget.amountLimit, digits),
-      decimalDigits: digits,
-      period: range,
-    );
+    return [
+      for (final t in transactions)
+        if (t.isExpense) t,
+    ];
   }
 
-  /// Kategori akar + semua turunan (lewat parent), aman terhadap siklus
-  Set<int> _descendantIds(int rootId) {
-    final all = _categoryBox.getAll();
+  /// Kategori akar + semua turunan (lewat peta anak), aman terhadap siklus
+  Set<int> _descendantIds(int rootId, Map<int, List<int>> children) {
     final result = <int>{rootId};
-    for (final c in all) {
-      final visited = <int>{};
-      var cur = c;
-      while (visited.add(cur.id)) {
-        if (cur.id == rootId) {
-          result.add(c.id);
-          break;
-        }
-        final parent = cur.parent.target;
-        if (parent == null) break;
-        cur = parent;
+    final queue = <int>[rootId];
+    while (queue.isNotEmpty) {
+      for (final child in children[queue.removeLast()] ?? const <int>[]) {
+        if (result.add(child)) queue.add(child);
       }
     }
     return result;
