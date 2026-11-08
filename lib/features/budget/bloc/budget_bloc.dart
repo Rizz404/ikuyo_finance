@@ -41,11 +41,16 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
 
   final BudgetRepository _budgetRepository;
 
+  // * Penanda baca daftar terbaru: hasil baca yang sudah disusul baca lain
+  // * (refresh/fetch/filter/sort/search/load-more) dibuang (NEW-4)
+  int _readGeneration = 0;
+
   // * Fetch initial budgets with all filter options
   Future<void> _onBudgetFetched(
     BudgetFetched event,
     Emitter<BudgetState> emit,
   ) async {
+    final generation = ++_readGeneration;
     emit(
       state.copyWith(
         status: BudgetStatus.loading,
@@ -82,6 +87,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .run();
 
     final progress = await _progressOf(result.toNullable()?.data ?? const []);
+    if (generation != _readGeneration) return;
 
     result.fold(
       (failure) => emit(
@@ -108,7 +114,11 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetFetchedMore event,
     Emitter<BudgetState> emit,
   ) async {
-    if (state.hasReachedMax || state.isLoadingMore) return;
+    // * Halaman pertama yang masih dimuat belum punya cursor (NEW-4)
+    if (state.hasReachedMax || state.isLoadingMore || state.isLoading) {
+      return;
+    }
+    final generation = ++_readGeneration;
 
     emit(state.copyWith(status: BudgetStatus.loadingMore));
 
@@ -132,6 +142,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .run();
 
     final progress = await _progressOf(result.toNullable()?.data ?? const []);
+    if (generation != _readGeneration) return;
 
     result.fold(
       (failure) => emit(
@@ -158,6 +169,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetRefreshed event,
     Emitter<BudgetState> emit,
   ) async {
+    final generation = ++_readGeneration;
     emit(
       state.copyWith(
         status: BudgetStatus.loading,
@@ -185,6 +197,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .run();
 
     final progress = await _progressOf(result.toNullable()?.data ?? const []);
+    if (generation != _readGeneration) return;
 
     result.fold(
       (failure) => emit(
@@ -211,6 +224,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetSearched event,
     Emitter<BudgetState> emit,
   ) async {
+    final generation = ++_readGeneration;
     final query = event.query.trim();
 
     emit(
@@ -241,6 +255,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .run();
 
     final progress = await _progressOf(result.toNullable()?.data ?? const []);
+    if (generation != _readGeneration) return;
 
     result.fold(
       (failure) => emit(
@@ -267,6 +282,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetFiltered event,
     Emitter<BudgetState> emit,
   ) async {
+    final generation = ++_readGeneration;
     emit(
       state.copyWith(
         status: BudgetStatus.loading,
@@ -302,6 +318,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .run();
 
     final progress = await _progressOf(result.toNullable()?.data ?? const []);
+    if (generation != _readGeneration) return;
 
     result.fold(
       (failure) => emit(
@@ -328,6 +345,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetSorted event,
     Emitter<BudgetState> emit,
   ) async {
+    final generation = ++_readGeneration;
     emit(
       state.copyWith(
         status: BudgetStatus.loading,
@@ -357,6 +375,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .run();
 
     final progress = await _progressOf(result.toNullable()?.data ?? const []);
+    if (generation != _readGeneration) return;
 
     result.fold(
       (failure) => emit(
@@ -383,6 +402,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
     BudgetFilterCleared event,
     Emitter<BudgetState> emit,
   ) async {
+    final generation = ++_readGeneration;
     emit(
       state.copyWith(
         status: BudgetStatus.loading,
@@ -407,6 +427,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .run();
 
     final progress = await _progressOf(result.toNullable()?.data ?? const []);
+    if (generation != _readGeneration) return;
 
     result.fold(
       (failure) => emit(
