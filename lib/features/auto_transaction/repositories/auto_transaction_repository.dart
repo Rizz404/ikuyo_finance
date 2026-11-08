@@ -67,6 +67,14 @@ abstract class AutoTransactionRepository {
     required bool isActive,
   });
 
+  /// * Klaim satu tick secara atomik: majukan nextExecutedAt hanya jika nilai
+  /// * tersimpan masih [expected]. Return false bila runner lain sudah klaim.
+  TaskEither<Failure, bool> claimTick({
+    required String ulid,
+    required DateTime? expected,
+    required DateTime next,
+  });
+
   TaskEither<Failure, ActionSuccess> saveExecutionLog(AutoTransactionLog log);
   TaskEither<Failure, Success<List<AutoTransactionLog>>> getLogsByGroup({
     required String groupUlid,

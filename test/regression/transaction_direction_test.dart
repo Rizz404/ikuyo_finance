@@ -2,6 +2,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository_impl.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_frequency.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
+import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository_impl.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
+import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository_impl.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
@@ -18,6 +24,11 @@ import 'package:ikuyo_finance/features/transaction/services/transaction_type_bac
 import '../support/fake_app_file_storage.dart';
 import '../support/objectbox_test_store.dart';
 import '../support/test_logger.dart';
+
+class _FakeNotif extends Fake implements AutoTransactionNotificationService {
+  @override
+  Future<void> showExecutionResult(AutoTransactionGroup g, int s, int f, int k) async {}
+}
 
 void main() {
   setUpAll(bootstrapTestLogger);
@@ -166,6 +177,33 @@ void main() {
       final r = await assetRepo.deleteAsset(ulid: a.ulid).run();
       expect(r.isRight(), isTrue);
     });
+  });
+
+  test('AUTO-10 scheduler copies the template direction', () async {
+    final a = await asset(1000);
+    final template = await tx(a.ulid, 10, type: CategoryType.expense);
+    expect(bal(a.ulid), 990);
+    final now = DateTime.now();
+    final g = AutoTransactionGroup(
+      name: 'G',
+      frequency: AutoScheduleFrequency.daily.index,
+      scheduleHour: now.hour,
+      scheduleMinute: now.minute,
+      startDate: now.subtract(const Duration(days: 1)),
+      nextExecutedAt: now.subtract(const Duration(hours: 1)),
+    );
+    store.storage.box<AutoTransactionGroup>().put(g);
+    store.storage.box<AutoTransactionItem>().put(AutoTransactionItem()
+      ..group.target = g
+      ..transaction.target = template);
+    final scheduler = AutoTransactionScheduler(
+        repo: AutoTransactionRepositoryImpl(store.storage),
+        transactionRepo: txRepo,
+        notifService: _FakeNotif());
+    await scheduler.runPendingExecutions();
+    await pumpEventQueue(times: 50);
+    expect(store.storage.box<Transaction>().count(), 2);
+    expect(bal(a.ulid), 980);
   });
 
   test('backup round-trip preserves direction of uncategorized transactions', () async {

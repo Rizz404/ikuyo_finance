@@ -77,8 +77,13 @@ class AutoScheduleCalculator {
         candidate = _clampDate(ref.year, targetMonth, targetDay, h, m);
     }
 
-    // * Jika kandidat sudah lewat, maju satu periode
-    while (!candidate.isAfter(now)) {
+    // * Jika kandidat sudah lewat atau sebelum hari startDate, maju satu periode
+    final startDay = DateTime(
+      group.startDate.year,
+      group.startDate.month,
+      group.startDate.day,
+    );
+    while (!candidate.isAfter(now) || candidate.isBefore(startDay)) {
       candidate = calculateNext(group, candidate);
     }
 

@@ -15,7 +15,7 @@ class AutoTransactionScheduler {
   final AutoTransactionNotificationService _notifService;
   final AutoTransactionAlarmService? _alarmService;
 
-  const AutoTransactionScheduler({
+  AutoTransactionScheduler({
     required AutoTransactionRepository repo,
     required TransactionRepository transactionRepo,
     required AutoTransactionNotificationService notifService,
@@ -25,26 +25,40 @@ class AutoTransactionScheduler {
        _notifService = notifService,
        _alarmService = alarmService;
 
+  // * Single-flight: pemanggilan yang tumpang tindih memakai Future yang sama
+  Future<void>? _inFlight;
+
   // * Entry point utama — dipanggil dari Workmanager & foreground trigger
-  Future<void> runPendingExecutions() async {
+  Future<void> runPendingExecutions() {
+    return _inFlight ??= _runPendingExecutions().whenComplete(
+      () => _inFlight = null,
+    );
+  }
+
+  Future<void> _runPendingExecutions() async {
     logService('AutoTransactionScheduler: mulai scan pending groups');
 
     final result = await _repo.getPendingGroups().run();
-    result.fold(
-      (failure) => logError(
-        'Gagal mengambil pending groups: ${failure.message}',
-        null,
-        null,
-      ),
-      (success) async {
-        final groups = success.data ?? [];
-        logData('Pending groups ditemukan: ${groups.length}');
-
-        for (final group in groups) {
-          await _processGroup(group);
-        }
+    final groups = result.match(
+      (failure) {
+        logError(
+          'Gagal mengambil pending groups: ${failure.message}',
+          null,
+          null,
+        );
+        return <AutoTransactionGroup>[];
       },
+      (success) => success.data ?? <AutoTransactionGroup>[],
     );
+    logData('Pending groups ditemukan: ${groups.length}');
+
+    for (final group in groups) {
+      try {
+        await _processGroup(group);
+      } catch (e, st) {
+        logError('Gagal memproses group ${group.ulid}', e, st);
+      }
+    }
 
     logService('AutoTransactionScheduler: selesai');
   }
@@ -55,35 +69,68 @@ class AutoTransactionScheduler {
 
   // ─── Private ──────────────────────────────────────────────────────────────
 
+  // * Batas eksklusif endDate: seluruh hari endDate masih dieksekusi
+  DateTime? _endExclusive(AutoTransactionGroup group) {
+    final end = group.endDate;
+    if (end == null) return null;
+    return DateTime(end.year, end.month, end.day + 1);
+  }
+
+  bool _isPastEnd(DateTime scheduled, DateTime? endExclusive) =>
+      endExclusive != null && !scheduled.isBefore(endExclusive);
+
+  // * Klaim tick (compare-and-set nextExecutedAt) sebelum membukukan transaksi
+  Future<bool> _claim(
+    AutoTransactionGroup group,
+    DateTime? expected,
+    DateTime next,
+  ) async {
+    final result = await _repo
+        .claimTick(ulid: group.ulid, expected: expected, next: next)
+        .run();
+    return result.getOrElse((_) => false);
+  }
+
   Future<void> _processGroup(AutoTransactionGroup group) async {
     final now = DateTime.now();
     final windowStart = now.subtract(const Duration(days: 7));
+    final endExclusive = _endExclusive(group);
 
     logDomain('Processing group: ${group.ulid} (${group.name})');
 
-    // * Auto-resume jika pauseEndAt sudah lewat
-    if (group.isCurrentlyPaused()) {
+    // * Auto-resume jika pauseEndAt sudah lewat (AUTO-9)
+    if (group.isPaused) {
       final pauseEnd = group.pauseEndAt;
       if (pauseEnd != null && !pauseEnd.isAfter(now)) {
         await _repo.resumeGroup(ulid: group.ulid).run();
         group.isPaused = false;
+        group.pauseStartAt = null;
         group.pauseEndAt = null;
         logInfo('Auto-resume group: ${group.ulid}');
       } else {
         // * Masih pause — lewati semua tick, lanjut nextExecutedAt
-        await _skipAllPendingTicks(group, now);
+        await _skipAllPendingTicks(group, now, endExclusive);
         return;
       }
     }
 
-    var scheduled = group.nextExecutedAt ?? now;
+    DateTime? expected = group.nextExecutedAt;
+    var scheduled = expected ?? now;
     final List<AutoTransactionLog> logs = [];
     int totalSuccess = 0;
     int totalFailure = 0;
     int totalSkipped = 0;
 
     // * Loop semua tick yang belum dieksekusi
-    while (!scheduled.isAfter(now)) {
+    while (!scheduled.isAfter(now) && !_isPastEnd(scheduled, endExclusive)) {
+      final next = AutoScheduleCalculator.calculateNext(group, scheduled);
+      if (!await _claim(group, expected, next)) {
+        // * Runner lain sudah mengklaim tick ini
+        logInfo('Tick group ${group.ulid} sudah diklaim runner lain');
+        return;
+      }
+      expected = next;
+
       if (scheduled.isBefore(windowStart)) {
         // * Terlalu lama terlewat → skip
         final log = AutoTransactionLog(
@@ -103,13 +150,12 @@ class AutoTransactionScheduler {
         totalFailure += log.failureCount;
       }
 
-      scheduled = AutoScheduleCalculator.calculateNext(group, scheduled);
+      scheduled = next;
     }
 
-    // * Nonaktifkan grup jika sudah melewati endDate
+    // * Nonaktifkan grup jika sudah melewati endDate (inklusif seharian)
     bool stillActive = group.isActive;
-    final endDate = group.endDate;
-    if (endDate != null && !scheduled.isBefore(endDate)) {
+    if (_isPastEnd(scheduled, endExclusive)) {
       stillActive = false;
       logInfo('Group ${group.ulid} nonaktif karena melewati endDate');
     }
@@ -149,28 +195,39 @@ class AutoTransactionScheduler {
   Future<void> _skipAllPendingTicks(
     AutoTransactionGroup group,
     DateTime now,
+    DateTime? endExclusive,
   ) async {
+    final skipped = <DateTime>[];
     var scheduled = group.nextExecutedAt ?? now;
     while (!scheduled.isAfter(now)) {
+      if (!_isPastEnd(scheduled, endExclusive)) skipped.add(scheduled);
+      scheduled = AutoScheduleCalculator.calculateNext(group, scheduled);
+    }
+
+    if (!await _claim(group, group.nextExecutedAt, scheduled)) return;
+
+    for (final at in skipped) {
       final log = AutoTransactionLog(
-        scheduledAt: scheduled,
+        scheduledAt: at,
         executedAt: now,
         status: AutoTransactionLogStatus.skipped.index,
         errorMessage: 'Grup sedang di-pause',
       );
       log.group.target = group;
       await _repo.saveExecutionLog(log).run();
-      scheduled = AutoScheduleCalculator.calculateNext(group, scheduled);
     }
 
+    // * Grup yang di-pause tetap dinonaktifkan setelah endDate (AUTO-6)
+    final stillActive = group.isActive && !_isPastEnd(scheduled, endExclusive);
     await _repo
         .updateGroupAfterExecution(
           ulid: group.ulid,
           nextExecutedAt: scheduled,
           lastExecutedAt: now,
-          isActive: group.isActive,
+          isActive: stillActive,
         )
         .run();
+    if (!stillActive) await _alarmService?.cancelForGroup(group);
   }
 
   Future<AutoTransactionLog> _executeOneTick(

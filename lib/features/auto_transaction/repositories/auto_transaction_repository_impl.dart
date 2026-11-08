@@ -544,6 +544,11 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
           throw Exception('Grup tidak ditemukan');
         }
 
+        // * Aktifkan ulang: mulai dari jadwal berikutnya, jangan backfill
+        // * periode saat grup nonaktif (AUTO-5)
+        if (isActive && !group.isActive) {
+          group.nextExecutedAt = AutoScheduleCalculator.calculateFirst(group);
+        }
         group.isActive = isActive;
         group.updatedAt = DateTime.now();
         _groupBox.put(group);
@@ -620,6 +625,37 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
       },
       (error, stackTrace) {
         logError('Gagal update grup setelah eksekusi', error, stackTrace);
+        return Failure(message: error.toString());
+      },
+    );
+  }
+
+  @override
+  TaskEither<Failure, bool> claimTick({
+    required String ulid,
+    required DateTime? expected,
+    required DateTime next,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        // * Compare-and-set dalam write transaction ObjectBox (diserialisasi
+        // * antar isolate) agar satu tick hanya dibukukan sekali
+        return _storage.store.runInTransaction(TxMode.write, () {
+          final group = _groupBox
+              .query(AutoTransactionGroup_.ulid.equals(ulid))
+              .build()
+              .findFirst();
+          if (group == null || !group.isActive) return false;
+          final stored = group.nextExecutedAt?.millisecondsSinceEpoch;
+          if (stored != expected?.millisecondsSinceEpoch) return false;
+          group.nextExecutedAt = next;
+          group.updatedAt = DateTime.now();
+          _groupBox.put(group);
+          return true;
+        });
+      },
+      (error, stackTrace) {
+        logError('Gagal klaim tick grup', error, stackTrace);
         return Failure(message: error.toString());
       },
     );

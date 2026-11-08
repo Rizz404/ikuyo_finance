@@ -212,8 +212,7 @@ Future<void> setupAutoTransactionServices() async {
     );
   }
 
-  // * Jalankan pending auto transactions saat app dibuka
-  unawaited(getIt<AutoTransactionScheduler>().runPendingExecutions());
+  // * Pending auto transactions dijalankan sekali dari main.dart
 }
 
 Future<bool> _guardStartup(String label, Future<void> Function() action) async {
