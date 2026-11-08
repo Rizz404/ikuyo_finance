@@ -26,6 +26,9 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
 
+    env:
+      IKUYO_REQUIRE_RELEASE_SIGNING: 'true'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -34,11 +37,19 @@ jobs:
 
       - name: Resolve version
         id: version
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_VERSION: ${{ inputs.version }}
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            VERSION="${{ github.ref_name }}"
+          if [ "$EVENT_NAME" = "push" ]; then
+            VERSION="$REF_NAME"
           else
-            VERSION="${{ inputs.version }}"
+            VERSION="$INPUT_VERSION"
+          fi
+          if ! printf '%s' "$VERSION" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([-+][0-9A-Za-z.-]+)?$'; then
+            echo "::error::Invalid version '$VERSION' (expected vMAJOR.MINOR.PATCH)"
+            exit 1
           fi
           BUILD_NAME="${VERSION#v}"
           BUILD_NUMBER=$(grep '^version:' pubspec.yaml | sed 's/.*+//')
@@ -67,23 +78,56 @@ jobs:
           key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
           restore-keys: pub-${{ runner.os }}-
 
-      - name: Create .env
+      - name: Verify required secrets
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          echo "SUPABASE_URL=${{ secrets.SUPABASE_URL }}" > .env
-          echo "SUPABASE_ANON_KEY=${{ secrets.SUPABASE_ANON_KEY }}" >> .env
+          MISSING=""
+          for name in SUPABASE_URL SUPABASE_ANON_KEY KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_PASSWORD KEY_ALIAS; do
+            eval "value=\${$name}"
+            if [ -z "$value" ]; then MISSING="$MISSING $name"; fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required secrets:$MISSING"
+            exit 1
+          fi
+
+      - name: Create .env
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          printf 'SUPABASE_URL=%s\n' "$SUPABASE_URL" > .env
+          printf 'SUPABASE_ANON_KEY=%s\n' "$SUPABASE_ANON_KEY" >> .env
 
       - name: Setup release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/ikuyo-release.jks
-          cat > android/key.properties <<EOF
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=ikuyo-release.jks
-          EOF
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/ikuyo-release.jks
+          {
+            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'storeFile=ikuyo-release.jks\n'
+          } > android/key.properties
 
       - name: Flutter pub get
         run: flutter pub get
+
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
 
       - name: Build universal APK
         run: |
@@ -133,8 +177,9 @@ jobs:
           path: apks/
 
       - name: Generate release notes
+        env:
+          VERSION: ${{ needs.build.outputs.version }}
         run: |
-          VERSION="${{ needs.build.outputs.version }}"
           PREV_TAG=$(git tag --sort=-version:refname | grep -v "^${VERSION}$" | head -1)
 
           if [ -z "$PREV_TAG" ]; then
@@ -191,15 +236,18 @@ jobs:
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.build.outputs.version }}
+          PRE_RELEASE: ${{ inputs.pre_release }}
         run: |
-          VERSION="${{ needs.build.outputs.version }}"
-
           ARGS="--latest"
-          if [ "${{ inputs.pre_release }}" = "true" ]; then
-            ARGS="$ARGS --prerelease"
+          if [ "$PRE_RELEASE" = "true" ]; then
+            ARGS="--prerelease"
           fi
 
-          gh release delete "${VERSION}" --yes 2>/dev/null || true
+          if gh release view "${VERSION}" >/dev/null 2>&1; then
+            echo "::error::Release ${VERSION} already exists; refusing to delete or overwrite it"
+            exit 1
+          fi
 
           gh release create "${VERSION}" \
             --title "Ikuyo Finance ${VERSION}" \
