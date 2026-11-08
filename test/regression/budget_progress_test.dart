@@ -279,6 +279,109 @@ void main() {
       expect(p.spent, 3);
     });
 
+    // * F6: transactionDate is optional; the effective budget date is
+    // * transactionDate ?? createdAt, so undated expenses are never dropped
+    void undated(
+      double amount,
+      DateTime createdAt, {
+      Category? category,
+      CategoryType type = CategoryType.expense,
+    }) {
+      final t = Transaction(
+        amount: amount,
+        type: type.index,
+        createdAt: createdAt,
+        updatedAt: createdAt,
+      )..asset.target = cash;
+      if (category != null) t.category.target = category;
+      store.storage.box<Transaction>().put(t);
+      expect(
+        store.storage.box<Transaction>().get(t.id)!.transactionDate,
+        isNull,
+      );
+    }
+
+    test(
+      'F6 an undated expense counts by createdAt inside the period',
+      () async {
+        undated(40, DateTime(2026, 1, 9, 8), category: fruit);
+        undated(5, DateTime(2026, 1, 9, 8));
+
+        expect((await progressOf(budget(100, category: food))).spent, 40);
+        expect((await progressOf(budget(100))).spent, 45);
+      },
+    );
+
+    test('F6 an explicit transactionDate wins over createdAt', () async {
+      // * created inside the period but dated outside -> excluded
+      final out =
+          Transaction(
+              amount: 70,
+              type: CategoryType.expense.index,
+              transactionDate: DateTime(2025, 12, 31),
+              createdAt: DateTime(2026, 1, 10),
+            )
+            ..asset.target = cash
+            ..category.target = food;
+      // * created outside but dated inside -> included
+      final inside =
+          Transaction(
+              amount: 3,
+              type: CategoryType.expense.index,
+              transactionDate: DateTime(2026, 1, 10),
+              createdAt: DateTime(2025, 11, 1),
+            )
+            ..asset.target = cash
+            ..category.target = food;
+      store.storage.box<Transaction>().putMany([out, inside]);
+
+      expect((await progressOf(budget(100, category: food))).spent, 3);
+    });
+
+    test('F6 undated fallback keeps the half-open local period', () async {
+      undated(1, DateTime(2026, 1, 1), category: food);
+      undated(2, DateTime(2026, 1, 31, 23, 59, 59, 999), category: food);
+      undated(100, DateTime(2025, 12, 31, 23, 59, 59, 999), category: food);
+      undated(100, DateTime(2026, 2, 1), category: food);
+
+      expect((await progressOf(budget(10, category: food))).spent, 3);
+    });
+
+    test(
+      'F6 undated income is still excluded; undated descendants count',
+      () async {
+        undated(
+          500,
+          DateTime(2026, 1, 3),
+          category: salary,
+          type: CategoryType.income,
+        );
+        undated(
+          999,
+          DateTime(2026, 1, 3),
+          category: food,
+          type: CategoryType.income,
+        );
+        undated(12, DateTime(2026, 1, 3), category: groceries);
+
+        expect((await progressOf(budget(100, category: food))).spent, 12);
+        expect((await progressOf(budget(100))).spent, 12);
+      },
+    );
+
+    test('F6 undated zero and overspend semantics', () async {
+      final empty = await progressOf(budget(100, category: transport));
+      expect(empty.spent, 0);
+      expect(empty.isOverspent, isFalse);
+
+      undated(60, DateTime(2026, 1, 4), category: transport);
+      tx(60, DateTime(2026, 1, 5), category: transport);
+      final over = await progressOf(budget(100, category: transport));
+      expect(over.spent, 120);
+      expect(over.isOverspent, isTrue);
+      expect(over.remaining, -20);
+    });
+
     test('overspend is reported unclamped with a negative remaining', () async {
       tx(150, DateTime(2026, 1, 2), category: food);
 

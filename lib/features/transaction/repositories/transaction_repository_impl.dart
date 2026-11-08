@@ -55,11 +55,15 @@ class TransactionRepositoryImpl implements TransactionRepository {
             throw Exception('Aset tidak ditemukan');
           }
 
+          // * Tanpa tanggal pilihan: tanggal tercatat = saat dibuat (F6)
+          final recordedAt = DateTime.now();
           final transaction = Transaction(
             amount: params.amount,
-            transactionDate: params.transactionDate,
+            transactionDate: params.transactionDate ?? recordedAt,
             description: params.description,
             imagePath: params.imagePath,
+            createdAt: recordedAt,
+            updatedAt: recordedAt,
           );
 
           transaction.asset.target = asset;
@@ -169,11 +173,15 @@ class TransactionRepositoryImpl implements TransactionRepository {
             continue;
           }
 
+          // * Tanpa tanggal pilihan: tanggal tercatat = saat dibuat (F6)
+          final recordedAt = DateTime.now();
           final transaction = Transaction(
             amount: params.amount,
-            transactionDate: params.transactionDate,
+            transactionDate: params.transactionDate ?? recordedAt,
             description: params.description,
             imagePath: params.imagePath,
+            createdAt: recordedAt,
+            updatedAt: recordedAt,
           );
 
           transaction.asset.target = asset;

@@ -10,6 +10,7 @@ import 'package:ikuyo_finance/features/statistic/models/get_statistic_params.dar
 import 'package:ikuyo_finance/features/transaction/models/create_transaction_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/get_transactions_params.dart';
 import 'package:ikuyo_finance/features/transaction/models/update_transaction_params.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository_impl.dart';
 
 import '../../../support/fake_app_file_storage.dart';
@@ -76,6 +77,88 @@ void main() {
       expect(transaction.asset.target?.ulid, asset.ulid);
       expect(transaction.category.target, isNull);
     });
+
+    test(
+      'F6 a save without a chosen date records its own creation instant',
+      () async {
+        final asset = await createAsset();
+
+        final created =
+            (await repository
+                    .createTransaction(
+                      CreateTransactionParams(assetUlid: asset.ulid, amount: 5),
+                    )
+                    .run())
+                .getOrElse((_) => throw Exception())
+                .data!;
+
+        final stored = testStore.storage.box<Transaction>().get(created.id)!;
+        expect(stored.transactionDate, isNotNull);
+        expect(stored.transactionDate, stored.createdAt);
+      },
+    );
+
+    test('F6 a chosen date is stored unchanged', () async {
+      final asset = await createAsset();
+      final chosen = DateTime(2025, 3, 4, 5, 6);
+
+      final created =
+          (await repository
+                  .createTransaction(
+                    CreateTransactionParams(
+                      assetUlid: asset.ulid,
+                      amount: 5,
+                      transactionDate: chosen,
+                    ),
+                  )
+                  .run())
+              .getOrElse((_) => throw Exception())
+              .data!;
+
+      final stored = testStore.storage.box<Transaction>().get(created.id)!;
+      expect(stored.transactionDate, chosen);
+      expect(stored.createdAt, isNot(chosen));
+    });
+
+    test(
+      'F6 bulk saves without a date also record their creation instant',
+      () async {
+        final asset = await createAsset();
+
+        final bulk = (await repository.createManyTransactions([
+          CreateTransactionParams(assetUlid: asset.ulid, amount: 1),
+          CreateTransactionParams(assetUlid: asset.ulid, amount: 2),
+        ]).run()).getOrElse((_) => throw Exception()).data!;
+
+        for (final t in bulk.successfulTransactions) {
+          final stored = testStore.storage.box<Transaction>().get(t.id)!;
+          expect(stored.transactionDate, stored.createdAt);
+        }
+      },
+    );
+
+    test(
+      'F6 updating without a date leaves an existing undated record alone',
+      () async {
+        final asset = await createAsset();
+        final legacy = Transaction(
+          amount: 9,
+          createdAt: DateTime(2024, 6, 1),
+          updatedAt: DateTime(2024, 6, 1),
+        )..asset.target = asset;
+        testStore.storage.box<Transaction>().put(legacy);
+
+        await repository
+            .updateTransaction(
+              UpdateTransactionParams(ulid: legacy.ulid, description: 'x'),
+            )
+            .run();
+
+        final stored = testStore.storage.box<Transaction>().get(legacy.id)!;
+        expect(stored.transactionDate, isNull);
+        expect(stored.createdAt, DateTime(2024, 6, 1));
+      },
+    );
 
     test('fails when the asset does not exist', () async {
       final result = await repository

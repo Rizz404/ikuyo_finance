@@ -405,6 +405,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
   /// * spent = transaksi arah expense di [start, end) atas kategori anggaran
   ///   beserta seluruh turunannya; tanpa kategori = semua expense.
+  /// * Tanggal efektif = transactionDate ?? createdAt (F6).
   /// * Nominal sudah tersimpan dalam mata uang penanda DB (CurrencyMarker),
   ///   jadi tidak ada konversi; dijumlah dalam satuan minor mata uang itu.
   BudgetProgress _computeProgress(Budget budget, DateTime now) {
@@ -417,9 +418,17 @@ class BudgetRepositoryImpl implements BudgetRepository {
     final transactions = _storage
         .box<Transaction>()
         .query(
+          // * Tanggal efektif = transactionDate ?? createdAt (F6)
           Transaction_.transactionDate
               .greaterOrEqualDate(range.start)
-              .and(Transaction_.transactionDate.lessThanDate(range.end)),
+              .and(Transaction_.transactionDate.lessThanDate(range.end))
+              .or(
+                Transaction_.transactionDate.isNull().and(
+                  Transaction_.createdAt
+                      .greaterOrEqualDate(range.start)
+                      .and(Transaction_.createdAt.lessThanDate(range.end)),
+                ),
+              ),
         )
         .findAndClose();
 
