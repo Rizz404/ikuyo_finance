@@ -77,12 +77,19 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           errorMessage: () => failure.message,
         ),
       ),
+      // * Tanpa session (mis. menunggu konfirmasi email) belum terautentikasi
       (success) => emit(
-        state.copyWith(
-          status: AuthStatus.authenticated,
-          user: () => success.data?.user,
-          errorMessage: () => null,
-        ),
+        success.data?.session == null
+            ? state.copyWith(
+                status: AuthStatus.unauthenticated,
+                user: () => null,
+                errorMessage: () => null,
+              )
+            : state.copyWith(
+                status: AuthStatus.authenticated,
+                user: () => success.data?.user,
+                errorMessage: () => null,
+              ),
       ),
     );
   }
