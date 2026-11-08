@@ -6,7 +6,9 @@
       "amountLimitInvalid": "Batas anggaran tidak valid",
       "amountLimitPositive": "Batas anggaran harus lebih dari 0",
       "periodRequired": "Periode wajib dipilih",
-      "ulidRequired": "ULID wajib diisi"
+      "ulidRequired": "ULID wajib diisi",
+      "customDatesRequired": "Tanggal mulai dan akhir wajib untuk periode kustom",
+      "dateRangeInvalid": "Tanggal akhir harus sama atau setelah tanggal mulai"
     },
     "filter": {
       "title": "Filter Anggaran",

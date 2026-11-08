@@ -329,6 +329,10 @@ abstract class LocaleKeys {
   static const budgetValidatorPeriodRequired =
       'budget.validator.periodRequired';
   static const budgetValidatorUlidRequired = 'budget.validator.ulidRequired';
+  static const budgetValidatorCustomDatesRequired =
+      'budget.validator.customDatesRequired';
+  static const budgetValidatorDateRangeInvalid =
+      'budget.validator.dateRangeInvalid';
 
   // * Budget — Filter
   static const budgetFilterTitle = 'budget.filter.title';

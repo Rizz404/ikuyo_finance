@@ -326,6 +326,8 @@
       "amountLimitPositive": "Budget limit must be greater than 0",
       "amountLimitRequired": "Budget limit is required",
       "categoryRequired": "Category is required",
+      "customDatesRequired": "Start and end dates are required for a custom period",
+      "dateRangeInvalid": "End date must be on or after the start date",
       "periodRequired": "Period is required",
       "ulidRequired": "ULID is required"
     }

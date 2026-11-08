@@ -326,6 +326,8 @@
       "amountLimitPositive": "Batas anggaran harus lebih dari 0",
       "amountLimitRequired": "Batas anggaran wajib diisi",
       "categoryRequired": "Kategori wajib dipilih",
+      "customDatesRequired": "Tanggal mulai dan akhir wajib untuk periode kustom",
+      "dateRangeInvalid": "Tanggal akhir harus sama atau setelah tanggal mulai",
       "periodRequired": "Periode wajib dipilih",
       "ulidRequired": "ULID wajib diisi"
     }

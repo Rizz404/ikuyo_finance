@@ -6,7 +6,9 @@
       "amountLimitInvalid": "Budget limit is not valid",
       "amountLimitPositive": "Budget limit must be greater than 0",
       "periodRequired": "Period is required",
-      "ulidRequired": "ULID is required"
+      "ulidRequired": "ULID is required",
+      "customDatesRequired": "Start and end dates are required for a custom period",
+      "dateRangeInvalid": "End date must be on or after the start date"
     },
     "filter": {
       "title": "Budget Filter",

@@ -88,8 +88,10 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
           ) ??
           0;
       final period = BudgetPeriod.values[values['period'] as int];
-      final startDate = values['startDate'] as DateTime?;
-      final endDate = values['endDate'] as DateTime?;
+      // * Tanggal hanya berlaku untuk periode kustom (AAOB-8)
+      final isCustom = period == BudgetPeriod.custom;
+      final startDate = isCustom ? values['startDate'] as DateTime? : null;
+      final endDate = isCustom ? values['endDate'] as DateTime? : null;
 
       if (widget.isEdit) {
         context.read<BudgetBloc>().add(
@@ -325,6 +327,12 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                       initialValue: widget.budget?.endDate,
                       hintText: LocaleKeys.budgetUpsertEndDateHint.tr(),
                       inputType: InputType.date,
+                      validator: (end) => CreateBudgetValidator.dateRange(
+                        _selectedPeriod,
+                        _formKey.currentState?.fields['startDate']?.value
+                            as DateTime?,
+                        end,
+                      ),
                       prefixIcon: const Icon(Icons.event_outlined),
                     ),
                     const SizedBox(height: 24),

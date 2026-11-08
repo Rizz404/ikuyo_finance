@@ -20,6 +20,17 @@ class BudgetRepositoryImpl implements BudgetRepository {
   Box<Budget> get _box => _storage.box<Budget>();
   Box<Category> get _categoryBox => _storage.box<Category>();
 
+  // * Periode kustom wajib punya tanggal mulai & akhir berurutan (AAOB-8)
+  void _ensureValidRange(BudgetPeriod period, DateTime? start, DateTime? end) {
+    if (period != BudgetPeriod.custom) return;
+    if (start == null || end == null) {
+      throw Exception('Periode kustom membutuhkan tanggal mulai dan akhir');
+    }
+    if (end.isBefore(start)) {
+      throw Exception('Tanggal akhir harus sama atau setelah tanggal mulai');
+    }
+  }
+
   @override
   TaskEither<Failure, Success<Budget>> createBudget(CreateBudgetParams params) {
     return TaskEither.tryCatch(
@@ -34,6 +45,8 @@ class BudgetRepositoryImpl implements BudgetRepository {
         if (category == null) {
           throw Exception('Kategori tidak ditemukan');
         }
+
+        _ensureValidRange(params.period, params.startDate, params.endDate);
 
         final budget = Budget(
           amountLimit: params.amountLimit,
@@ -273,6 +286,19 @@ class BudgetRepositoryImpl implements BudgetRepository {
         if (params.period != null) budget.period = params.period!.index;
         if (params.startDate != null) budget.startDate = params.startDate;
         if (params.endDate != null) budget.endDate = params.endDate;
+        // * Pindah dari kustom tanpa tanggal baru: buang rentang lama (AAOB-8)
+        if (params.period != null &&
+            params.period != BudgetPeriod.custom &&
+            params.startDate == null &&
+            params.endDate == null) {
+          budget.startDate = null;
+          budget.endDate = null;
+        }
+        _ensureValidRange(
+          budget.budgetPeriod,
+          budget.startDate,
+          budget.endDate,
+        );
 
         // * Update category jika ada
         if (params.categoryUlid != null) {
