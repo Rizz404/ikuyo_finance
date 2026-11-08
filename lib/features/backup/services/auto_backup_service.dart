@@ -1,10 +1,13 @@
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository_impl.dart';
+import 'package:ikuyo_finance/features/backup/services/backup_crypto.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -96,6 +99,7 @@ class AutoBackupService {
         },
         (success) async {
           final filePath = await _saveBackupToFile(success.data!);
+          if (filePath == null) return false;
           talker.info('AutoBackup background selesai: $filePath');
           return true;
         },
@@ -137,7 +141,7 @@ class AutoBackupService {
     }
   }
 
-  static Future<String> _saveBackupToFile(BackupData backupData) async {
+  static Future<String?> _saveBackupToFile(BackupData backupData) async {
     final prefs = await SharedPreferences.getInstance();
     final baseDir = prefs.getString(_exportDirKey);
 
@@ -149,13 +153,38 @@ class AutoBackupService {
       targetDir = Directory('${appDir.path}/Auto Backup');
     }
 
+    return writeBackupFile(targetDir, backupData);
+  }
+
+  /// Tulis satu file auto backup ke [targetDir] lalu rotasi file lama.
+  /// * NEW-1: JSON di-encode sekali ke UTF-8 dan diukur dalam byte sebelum
+  ///   direktori/file disentuh; di atas [BackupCrypto.maxBackupBytes]
+  ///   (batas importer) tidak ada yang ditulis maupun dirotasi, return null.
+  @visibleForTesting
+  static Future<String?> writeBackupFile(
+    Directory targetDir,
+    BackupData backupData, {
+    DateTime? now,
+  }) async {
+    final bytes = utf8.encode(backupData.toJsonString());
+    if (bytes.length > BackupCrypto.maxBackupBytes) {
+      talker.error(
+        'AutoBackup: backup ${bytes.length} byte melebihi batas '
+        '${BackupCrypto.maxBackupBytes} byte; tidak ditulis, backup lama '
+        'dipertahankan',
+      );
+      return null;
+    }
+
     if (!await targetDir.exists()) {
       await targetDir.create(recursive: true);
     }
 
-    final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
+    final timestamp = DateFormat(
+      'yyyyMMdd_HHmmss',
+    ).format(now ?? DateTime.now());
     final file = File('${targetDir.path}/ikuyo_backup_$timestamp.json');
-    await file.writeAsString(backupData.toJsonString());
+    await file.writeAsBytes(bytes, flush: true);
     await pruneOldBackups(targetDir);
     return file.path;
   }
