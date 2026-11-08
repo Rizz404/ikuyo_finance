@@ -234,6 +234,7 @@ class _LockScreenState extends State<LockScreen> {
   ) {
     final cubit = context.read<SecurityCubit>();
     final busy = state.status == SecurityStatus.authenticating;
+    final semanticError = context.semantic.error;
     return Column(
       key: const ValueKey('recovery'),
       children: [
@@ -276,8 +277,84 @@ class _LockScreenState extends State<LockScreen> {
             ),
           ),
         ],
+        if (state.loadFailed && state.deviceCredentialAvailable)
+          TextButton.icon(
+            key: const ValueKey('security-reset-lock'),
+            onPressed: busy ? null : () => _confirmResetLock(),
+            icon: Icon(Icons.lock_reset, size: 20, color: semanticError),
+            label: AppText(
+              LocaleKeys.securityResetLock.tr(),
+              style: AppTextStyle.bodyMedium,
+              color: semanticError,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        if (state.loadFailed && !state.deviceCredentialAvailable) ...[
+          const SizedBox(height: 12),
+          AppText(
+            LocaleKeys.securityNoDeviceCredential.tr(),
+            key: const ValueKey('security-no-device-credential'),
+            style: AppTextStyle.bodySmall,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+        ],
+        if (state.loadFailed) ...[
+          const SizedBox(height: 16),
+          AppText(
+            '${LocaleKeys.securityDiagnostics.tr()}: ${state.diagnostics}',
+            key: const ValueKey('security-diagnostics'),
+            style: AppTextStyle.bodySmall,
+            color: colors.textSecondary,
+            textAlign: TextAlign.center,
+          ),
+          TextButton.icon(
+            key: const ValueKey('security-copy-diagnostics'),
+            onPressed: () => _copyDiagnostics(state.diagnostics),
+            icon: Icon(Icons.copy, size: 18, color: colors.textSecondary),
+            label: AppText(
+              LocaleKeys.securityCopyDiagnostics.tr(),
+              style: AppTextStyle.bodySmall,
+              color: colors.textSecondary,
+            ),
+          ),
+        ],
       ],
     );
+  }
+
+  Future<void> _copyDiagnostics(String diagnostics) async {
+    await Clipboard.setData(ClipboardData(text: diagnostics));
+    if (!mounted) return;
+    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
+      SnackBar(content: Text(LocaleKeys.securityDiagnosticsCopied.tr())),
+    );
+  }
+
+  /// ! Reset hanya setelah konfirmasi eksplisit + kredensial device
+  Future<void> _confirmResetLock() async {
+    final cubit = context.read<SecurityCubit>();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(LocaleKeys.securityResetLockTitle.tr()),
+        content: Text(LocaleKeys.securityResetLockMessage.tr()),
+        actions: [
+          TextButton(
+            key: const ValueKey('security-reset-lock-cancel'),
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(LocaleKeys.securityLockCancel.tr()),
+          ),
+          TextButton(
+            key: const ValueKey('security-reset-lock-confirm'),
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(LocaleKeys.securityResetLockConfirm.tr()),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await cubit.resetLockWithDeviceCredential();
   }
 
   // ─── Biometric View ─────────────────────────────────

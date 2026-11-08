@@ -830,6 +830,16 @@ abstract class LocaleKeys {
   static const securityRetry = 'security.lock.retry';
   static const securityUseDeviceCredential =
       'security.lock.useDeviceCredential';
+  static const securityNoDeviceCredential =
+      'security.lock.noDeviceCredential';
+  static const securityResetLock = 'security.lock.resetLock';
+  static const securityResetLockTitle = 'security.lock.resetLockTitle';
+  static const securityResetLockMessage = 'security.lock.resetLockMessage';
+  static const securityResetLockConfirm = 'security.lock.resetLockConfirm';
+  static const securityLockCancel = 'security.lock.cancel';
+  static const securityDiagnostics = 'security.lock.diagnostics';
+  static const securityCopyDiagnostics = 'security.lock.copyDiagnostics';
+  static const securityDiagnosticsCopied = 'security.lock.diagnosticsCopied';
 
   // * Security - Settings
   static const securitySettingsTitle = 'security.settings.title';

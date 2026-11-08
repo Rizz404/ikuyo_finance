@@ -5,6 +5,8 @@ enum SecurityStatus { unlocked, locked, authenticating, loading }
 
 enum SecurityAuthResult { idle, success, failed, error }
 
+const Object _keep = Object();
+
 class SecurityState extends Equatable {
   final SecuritySettings settings;
   final SecurityStatus status;
@@ -20,6 +22,12 @@ class SecurityState extends Equatable {
   /// Apakah device punya kredensial layar kunci (untuk recovery)
   final bool deviceCredentialAvailable;
 
+  /// Jenis error baca terakhir (non-rahasia), null jika tidak ada
+  final String? loadError;
+
+  /// Penanda lock terakhir saat error baca (null = tidak diketahui)
+  final bool? lockHint;
+
   const SecurityState({
     this.settings = const SecuritySettings(),
     this.status = SecurityStatus.unlocked,
@@ -29,7 +37,17 @@ class SecurityState extends Equatable {
     this.failedAttempts = 0,
     this.loadFailed = false,
     this.deviceCredentialAvailable = false,
+    this.loadError,
+    this.lockHint,
   });
+
+  /// Ringkasan diagnostik untuk support; tanpa hash / isi settings.
+  String get diagnostics => [
+    'error=${loadError ?? 'none'}',
+    'lockHint=${lockHint?.toString() ?? 'unknown'}',
+    'deviceCredential=$deviceCredentialAvailable',
+    'status=${status.name}',
+  ].join(' ');
 
   /// Apakah konten app harus ditutup lock screen (fail-closed)
   bool get shouldLock {
@@ -62,6 +80,8 @@ class SecurityState extends Equatable {
     int? failedAttempts,
     bool? loadFailed,
     bool? deviceCredentialAvailable,
+    Object? loadError = _keep,
+    Object? lockHint = _keep,
   }) {
     return SecurityState(
       settings: settings ?? this.settings,
@@ -73,6 +93,10 @@ class SecurityState extends Equatable {
       loadFailed: loadFailed ?? this.loadFailed,
       deviceCredentialAvailable:
           deviceCredentialAvailable ?? this.deviceCredentialAvailable,
+      loadError: identical(loadError, _keep)
+          ? this.loadError
+          : loadError as String?,
+      lockHint: identical(lockHint, _keep) ? this.lockHint : lockHint as bool?,
     );
   }
 
@@ -94,5 +118,7 @@ class SecurityState extends Equatable {
     failedAttempts,
     loadFailed,
     deviceCredentialAvailable,
+    loadError,
+    lockHint,
   ];
 }

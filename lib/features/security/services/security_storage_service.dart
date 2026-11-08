@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/security/models/security_settings.dart';
@@ -9,8 +10,16 @@ class SecurityStorageReadException implements Exception {
   final Object cause;
   const SecurityStorageReadException(this.cause);
 
+  /// Jenis error non-rahasia untuk diagnostik (tanpa isi settings).
+  String get kind {
+    final c = cause;
+    if (c is PlatformException) return 'platform:${c.code}';
+    if (c is FormatException || c is TypeError) return 'corrupt';
+    return 'unknown:${c.runtimeType}';
+  }
+
   @override
-  String toString() => 'SecurityStorageReadException: $cause';
+  String toString() => 'SecurityStorageReadException: $kind';
 }
 
 /// Service untuk menyimpan & membaca pengaturan keamanan via FlutterSecureStorage
@@ -62,6 +71,18 @@ class SecurityStorageService {
     } catch (e, s) {
       logError('Failed to clear security settings', e, s);
     }
+  }
+
+  /// ! Hapus HANYA settings app lock (bukan DB / secret lain). Dipanggil
+  /// ! setelah autentikasi kredensial device berhasil. Melempar jika gagal.
+  Future<void> resetLock() async {
+    try {
+      await _storage.delete(key: _key);
+    } catch (e, s) {
+      logError('Failed to delete security settings, overwriting', e, s);
+      await _storage.write(key: _key, value: const SecuritySettings().encode());
+    }
+    await _writeHint(false);
   }
 
   Future<void> _writeHint(bool enabled) async {

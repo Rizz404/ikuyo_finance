@@ -14,7 +14,16 @@
       "enterPassword": "Masukkan kata sandi Anda",
       "loadError": "Pengaturan keamanan tidak dapat dibaca. Coba lagi, atau verifikasi dengan kunci layar perangkat.",
       "retry": "Coba Lagi",
-      "useDeviceCredential": "Gunakan Kunci Layar Perangkat"
+      "useDeviceCredential": "Gunakan Kunci Layar Perangkat",
+      "noDeviceCredential": "Kunci layar perangkat belum diatur, jadi kunci aplikasi tidak bisa direset di sini. Data Anda aman. Atur kunci layar di pengaturan perangkat, lalu ketuk Coba Lagi.",
+      "resetLock": "Reset Kunci Aplikasi",
+      "resetLockTitle": "Reset Kunci Aplikasi?",
+      "resetLockMessage": "Setelah verifikasi dengan kunci layar perangkat, hanya pengaturan kunci aplikasi (PIN, kata sandi, biometrik) yang dihapus. Transaksi dan data lain tetap tersimpan. Anda bisa mengatur kunci lagi nanti.",
+      "resetLockConfirm": "Verifikasi & Reset",
+      "cancel": "Batal",
+      "diagnostics": "Diagnostik",
+      "copyDiagnostics": "Salin Diagnostik",
+      "diagnosticsCopied": "Diagnostik disalin"
     },
     "settings": {
       "title": "Pengaturan Keamanan",

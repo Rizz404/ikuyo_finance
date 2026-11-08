@@ -38,6 +38,8 @@ class SecurityCubit extends Cubit<SecurityState> {
         biometricAvailable: bioAvailable,
         deviceCredentialAvailable: deviceCredential,
         loadFailed: false,
+        loadError: null,
+        lockHint: null,
       );
       // ! Data lama (BKSEC-1) bisa berisi lock aktif tanpa metode apa pun.
       // ! Tanpa kredensial device tidak ada jalan buka, jadi jangan kunci
@@ -64,13 +66,20 @@ class SecurityCubit extends Cubit<SecurityState> {
       // ! Fail-closed: kunci kecuali lock diketahui nonaktif. Lock screen
       // ! menyediakan retry + kredensial device; penulisan diblokir
       // ! (loadFailed) agar settings asli tidak tertimpa.
-      final knownDisabled = _storageService.lockEnabledHint == false;
+      // ! Hint null (upgrade / restore) BUKAN bukti tidak ada lock: tetap
+      // ! terkunci; jalan keluar hanya retry atau reset ber-kredensial device.
+      final hint = _storageService.lockEnabledHint;
+      final knownDisabled = hint == false;
       emit(
         state.copyWith(
           settings: const SecuritySettings(),
           biometricAvailable: bioAvailable,
           deviceCredentialAvailable: deviceCredential,
           loadFailed: true,
+          loadError: e is SecurityStorageReadException
+              ? e.kind
+              : 'unknown:${e.runtimeType}',
+          lockHint: hint,
           status: knownDisabled
               ? SecurityStatus.unlocked
               : SecurityStatus.locked,
@@ -223,6 +232,53 @@ class SecurityCubit extends Cubit<SecurityState> {
       ),
     );
     logInfo('Device credential auth ${success ? 'success' : 'failed'}');
+  }
+
+  /// ! Reset app lock setelah settings gagal dibaca: wajib aksi eksplisit
+  /// ! user + autentikasi kredensial device. Hanya settings keamanan yang
+  /// ! dihapus; database & data lain tidak disentuh. Return true jika reset.
+  Future<bool> resetLockWithDeviceCredential() async {
+    if (!state.loadFailed || !state.deviceCredentialAvailable) return false;
+    if (state.status == SecurityStatus.authenticating) return false;
+    final previous = state.status;
+
+    emit(
+      state.copyWith(
+        status: SecurityStatus.authenticating,
+        authResult: SecurityAuthResult.idle,
+      ),
+    );
+    final verified = await _biometricService.authenticateWithDeviceCredential(
+      reason: 'Verify to reset Ikuyo Finance app lock',
+    );
+    if (isClosed) return false;
+    if (!verified) {
+      emit(state.copyWith(status: previous));
+      logInfo('App lock reset: device credential not verified');
+      return false;
+    }
+
+    try {
+      await _storageService.resetLock();
+    } catch (e, s) {
+      logError('App lock reset failed', e, s);
+      if (!isClosed) emit(state.copyWith(status: previous));
+      return false;
+    }
+    if (isClosed) return true;
+    emit(
+      state.copyWith(
+        settings: const SecuritySettings(),
+        status: SecurityStatus.unlocked,
+        authResult: SecurityAuthResult.success,
+        failedAttempts: 0,
+        loadFailed: false,
+        loadError: null,
+        lockHint: null,
+      ),
+    );
+    logInfo('App lock reset after device credential verification');
+    return true;
   }
 
   /// Autentikasi PIN
