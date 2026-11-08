@@ -141,12 +141,14 @@ class CurrencyCubit extends Cubit<CurrencyState> {
       emit(state.copyWith(isLoadingRates: true));
       final rates = await _exchangeRateService.fetchRates();
       Currency.updateRates(rates);
+      if (isClosed) return;
       emit(
         state.copyWith(isLoadingRates: false, ratesLastUpdated: DateTime.now()),
       );
       logInfo('Exchange rates refreshed successfully');
     } catch (e, s) {
       logError('Failed to refresh exchange rates', e, s);
+      if (isClosed) return;
       emit(state.copyWith(isLoadingRates: false));
     }
   }
