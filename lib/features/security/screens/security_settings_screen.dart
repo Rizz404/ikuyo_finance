@@ -303,18 +303,23 @@ class _LockTriggerTile extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
             const SizedBox(height: 8),
-            ...LockTrigger.values.map((trigger) {
-              return RadioListTile<LockTrigger>(
-                value: trigger,
-                groupValue: currentTrigger,
-                title: Text(_triggerLabel(trigger)),
-                activeColor: colors.primary,
-                onChanged: (v) {
-                  if (v != null) onChanged(v);
-                  Navigator.pop(ctx);
-                },
-              );
-            }),
+            RadioGroup<LockTrigger>(
+              groupValue: currentTrigger,
+              onChanged: (v) {
+                if (v != null) onChanged(v);
+                Navigator.pop(ctx);
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: LockTrigger.values.map((trigger) {
+                  return RadioListTile<LockTrigger>(
+                    value: trigger,
+                    title: Text(_triggerLabel(trigger)),
+                    activeColor: colors.primary,
+                  );
+                }).toList(),
+              ),
+            ),
             const SizedBox(height: 16),
           ],
         ),
@@ -383,33 +388,43 @@ class _AutoLockDurationTile extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
               const SizedBox(height: 8),
-              ...presets.map((m) {
-                return RadioListTile<int>(
-                  value: m,
-                  groupValue: currentMinutes,
-                  title: Text(_durationLabel(m)),
-                  activeColor: colors.primary,
-                  onChanged: (v) {
-                    if (v != null) onChanged(v);
-                    Navigator.pop(ctx);
-                  },
-                );
-              }),
-              // * Custom duration
-              ListTile(
-                leading: Radio<int>(
-                  value: -1,
-                  groupValue: presets.contains(currentMinutes)
-                      ? null
-                      : currentMinutes,
-                  activeColor: colors.primary,
-                  onChanged: (_) {},
-                ),
-                title: Text(LocaleKeys.securityAutoLockCustom.tr()),
-                onTap: () {
+              RadioGroup<int>(
+                groupValue: presets.contains(currentMinutes)
+                    ? currentMinutes
+                    : -1,
+                onChanged: (v) {
                   Navigator.pop(ctx);
-                  _showCustomDurationDialog(context, colors);
+                  if (v == null) return;
+                  if (v == -1) {
+                    _showCustomDurationDialog(context, colors);
+                  } else {
+                    onChanged(v);
+                  }
                 },
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ...presets.map((m) {
+                      return RadioListTile<int>(
+                        value: m,
+                        title: Text(_durationLabel(m)),
+                        activeColor: colors.primary,
+                      );
+                    }),
+                    // * Custom duration
+                    ListTile(
+                      leading: Radio<int>(
+                        value: -1,
+                        activeColor: colors.primary,
+                      ),
+                      title: Text(LocaleKeys.securityAutoLockCustom.tr()),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        _showCustomDurationDialog(context, colors);
+                      },
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: 16),
             ],
@@ -420,42 +435,71 @@ class _AutoLockDurationTile extends StatelessWidget {
   }
 
   void _showCustomDurationDialog(BuildContext context, AppColorsTheme colors) {
-    final controller = TextEditingController(
-      text: currentMinutes > 0 ? currentMinutes.toString() : '',
-    );
-
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(LocaleKeys.securityAutoLockCustomTitle.tr()),
-        content: TextField(
-          controller: controller,
-          keyboardType: TextInputType.number,
-          autofocus: true,
-          decoration: InputDecoration(
-            hintText: LocaleKeys.securityAutoLockCustomHint.tr(),
-            suffixText: LocaleKeys.securityAutoLockMinutes.tr(),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(LocaleKeys.securityCancel.tr()),
-          ),
-          TextButton(
-            onPressed: () {
-              final value = int.tryParse(controller.text.trim());
-              if (value != null && value >= 0 && value <= 1440) {
-                onChanged(value);
-              }
-              Navigator.pop(ctx);
-            },
-            child: Text(LocaleKeys.securitySave.tr()),
-          ),
-        ],
+      builder: (ctx) => _CustomDurationDialog(
+        initialMinutes: currentMinutes,
+        onChanged: onChanged,
       ),
     );
-    controller.dispose;
+  }
+}
+
+// * Dialog memiliki controller sendiri; dispose setelah route benar-benar hilang
+class _CustomDurationDialog extends StatefulWidget {
+  final int initialMinutes;
+  final ValueChanged<int> onChanged;
+
+  const _CustomDurationDialog({
+    required this.initialMinutes,
+    required this.onChanged,
+  });
+
+  @override
+  State<_CustomDurationDialog> createState() => _CustomDurationDialogState();
+}
+
+class _CustomDurationDialogState extends State<_CustomDurationDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialMinutes > 0 ? widget.initialMinutes.toString() : '',
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(LocaleKeys.securityAutoLockCustomTitle.tr()),
+      content: TextField(
+        controller: _controller,
+        keyboardType: TextInputType.number,
+        autofocus: true,
+        decoration: InputDecoration(
+          hintText: LocaleKeys.securityAutoLockCustomHint.tr(),
+          suffixText: LocaleKeys.securityAutoLockMinutes.tr(),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(LocaleKeys.securityCancel.tr()),
+        ),
+        TextButton(
+          onPressed: () {
+            final value = int.tryParse(_controller.text.trim());
+            if (value != null && value >= 0 && value <= 1440) {
+              widget.onChanged(value);
+            }
+            Navigator.pop(context);
+          },
+          child: Text(LocaleKeys.securitySave.tr()),
+        ),
+      ],
+    );
   }
 }
