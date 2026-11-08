@@ -14,8 +14,6 @@
 
     <!-- Storage - Android 13+ (Granular Media Permissions) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
 
     <!-- Camera & Gallery (image_picker) -->
     <uses-permission android:name="android.permission.CAMERA"/>
