@@ -120,11 +120,11 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
     required List<Transaction> transactions,
   }) {
     final totalIncome = transactions
-        .where((t) => t.category.target?.categoryType == CategoryType.income)
+        .where((t) => t.direction == CategoryType.income)
         .fold<double>(0, (sum, t) => sum + t.amount);
 
     final totalExpense = transactions
-        .where((t) => t.category.target?.categoryType == CategoryType.expense)
+        .where((t) => t.direction == CategoryType.expense)
         .fold<double>(0, (sum, t) => sum + t.amount);
 
     final balance = totalIncome - totalExpense;
@@ -300,7 +300,7 @@ class _MonthlyTransactionViewState extends State<MonthlyTransactionView> {
   ) {
     // * Group by category and sum amounts (only expenses)
     final expenseTransactions = transactions.where(
-      (t) => t.category.target?.categoryType == CategoryType.expense,
+      (t) => t.direction == CategoryType.expense,
     );
 
     if (expenseTransactions.isEmpty) return const SizedBox.shrink();

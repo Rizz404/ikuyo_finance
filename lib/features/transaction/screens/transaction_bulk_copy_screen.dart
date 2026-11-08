@@ -134,8 +134,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
           id: trx.ulid,
           formKey: GlobalKey<FormBuilderState>(),
           sourceTransaction: trx,
-          categoryType:
-              trx.category.target?.categoryType ?? CategoryType.expense,
+          categoryType: trx.direction,
           selectedAsset: trx.asset.target,
           selectedCategory: trx.category.target,
           assetUlid: trx.asset.target?.ulid,
@@ -218,6 +217,7 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
           CreateTransactionParams(
             assetUlid: values['assetUlid'] as String,
             categoryUlid: values['categoryUlid'] as String?,
+            type: formData.categoryType,
             amount: amount,
             transactionDate: values['transactionDate'] as DateTime?,
             description: values['description'] as String?,

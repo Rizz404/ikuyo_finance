@@ -19,6 +19,10 @@ class Transaction {
 
   double amount;
 
+  // * Arah transaksi eksplisit (index CategoryType), null = data lama
+  // * yang belum di-backfill; lihat TransactionTypeBackfill
+  int? type;
+
   @Property(type: PropertyType.date)
   DateTime? transactionDate;
 
@@ -35,6 +39,7 @@ class Transaction {
     this.id = 0,
     String? ulid,
     required this.amount,
+    this.type,
     this.transactionDate,
     this.description,
     this.imagePath,
@@ -43,4 +48,17 @@ class Transaction {
   }) : ulid = ulid ?? Ulid().toString(),
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
+
+  /// Arah transaksi efektif untuk saldo & statistik
+  /// * Prioritas: type eksplisit → tipe kategori → income (perilaku lama)
+  @Transient()
+  CategoryType get direction {
+    final stored = type;
+    if (stored != null && stored >= 0 && stored < CategoryType.values.length) {
+      return CategoryType.values[stored];
+    }
+    return category.target?.categoryType ?? CategoryType.income;
+  }
+
+  bool get isExpense => direction == CategoryType.expense;
 }

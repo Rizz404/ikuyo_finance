@@ -157,11 +157,11 @@ class _DailyTransactionViewState extends State<DailyTransactionView> {
     required List<Transaction> transactions,
   }) {
     final totalIncome = transactions
-        .where((t) => t.category.target?.categoryType == CategoryType.income)
+        .where((t) => t.direction == CategoryType.income)
         .fold<double>(0, (sum, t) => sum + t.amount);
 
     final totalExpense = transactions
-        .where((t) => t.category.target?.categoryType == CategoryType.expense)
+        .where((t) => t.direction == CategoryType.expense)
         .fold<double>(0, (sum, t) => sum + t.amount);
 
     return Column(

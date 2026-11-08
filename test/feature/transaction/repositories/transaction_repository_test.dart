@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository_impl.dart';
@@ -738,12 +740,9 @@ void main() {
       expect(summary.expenseSummaries.last.percentage, closeTo(25, 0.001));
     });
 
-    test('groups transactions without a category under the "no category" expense bucket', () async {
-      // * NOTE: this mirrors current repository behavior. It is arguably
-      // * inconsistent with createTransaction's balance adjustment, which
-      // * treats a missing category as income (see _getBalanceAdjustment).
-      // * getStatisticSummary instead buckets uncategorized transactions as
-      // * expense. Documented here rather than "fixed" per task instructions.
+    test('groups uncategorized expense transactions under the "no category" expense bucket', () async {
+      // * Arah transaksi sekarang eksplisit (A04): transaksi tanpa kategori
+      // * dengan type expense masuk bucket expense, konsisten dengan saldo.
       final asset = await createAsset();
 
       await repository
@@ -752,6 +751,7 @@ void main() {
               assetUlid: asset.ulid,
               amount: 75,
               transactionDate: DateTime(2026, 1, 5),
+              type: CategoryType.expense,
             ),
           )
           .run();
@@ -769,7 +769,11 @@ void main() {
       expect(summary.totalIncome, 0);
       expect(summary.totalExpense, 75);
       expect(summary.expenseSummaries.single.category, isNull);
-      expect(summary.expenseSummaries.single.categoryName, 'Tanpa Kategori');
+      // * A21: label dilokalisasi, jangan hardcode teks bahasa tertentu
+      expect(
+        summary.expenseSummaries.single.categoryName,
+        LocaleKeys.transactionNoCategory.tr(),
+      );
     });
 
     test('excludes transactions outside the requested date range', () async {

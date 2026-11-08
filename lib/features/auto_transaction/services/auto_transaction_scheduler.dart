@@ -229,6 +229,7 @@ class AutoTransactionScheduler {
         CreateTransactionParams(
           assetUlid: assetUlid,
           categoryUlid: template.category.target?.ulid,
+          type: template.direction,
           amount: template.amount,
           transactionDate: scheduledAt,
           description: template.description,

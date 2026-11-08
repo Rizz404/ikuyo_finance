@@ -138,12 +138,7 @@ class ExportRepositoryImpl implements ExportRepository {
         // * Hapus default sheet
         excel.delete('Sheet1');
 
-        _buildTransactionSheet(
-          excel,
-          transactions,
-          labels,
-          currencySymbol,
-        );
+        _buildTransactionSheet(excel, transactions, labels, currencySymbol);
         _buildAssetSheet(excel, assets, labels, currencySymbol);
         _buildCategorySheet(excel, categories, labels);
 
@@ -212,12 +207,10 @@ class ExportRepositoryImpl implements ExportRepository {
       final assetTypeName = asset != null
           ? _assetTypeLabel(asset.assetType, labels)
           : '-';
-      final categoryTypeName = category != null
-          ? _categoryTypeLabel(category.categoryType, labels)
-          : '-';
+      final categoryTypeName = _categoryTypeLabel(t.direction, labels);
 
-      final isIncome =
-          category?.categoryType == CategoryType.income;
+      // * Arah sama dengan perhitungan saldo aset
+      final isIncome = t.direction == CategoryType.income;
       if (isIncome) {
         totalIncome += t.amount;
       } else {
@@ -226,9 +219,7 @@ class ExportRepositoryImpl implements ExportRepository {
 
       final row = [
         (i + 1).toString(),
-        t.transactionDate != null
-            ? dateFormat.format(t.transactionDate!)
-            : '-',
+        t.transactionDate != null ? dateFormat.format(t.transactionDate!) : '-',
         asset?.name ?? '-',
         assetTypeName,
         category?.name ?? '-',
@@ -378,12 +369,7 @@ class ExportRepositoryImpl implements ExportRepository {
     }
   }
 
-  void _writeSummaryRow(
-    Sheet sheet,
-    int rowIndex,
-    String label,
-    String value,
-  ) {
+  void _writeSummaryRow(Sheet sheet, int rowIndex, String label, String value) {
     final labelCell = sheet.cell(
       CellIndex.indexByColumnRow(columnIndex: 0, rowIndex: rowIndex),
     );

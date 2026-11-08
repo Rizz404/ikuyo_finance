@@ -60,8 +60,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
     super.initState();
     if (widget.hasSourceTransaction) {
       final category = widget.transaction!.category.target;
+      _selectedType = widget.transaction!.direction;
       if (category != null) {
-        _selectedType = category.categoryType;
         _selectedCategory = category;
       }
     }
@@ -152,13 +152,23 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
           .replaceAll(currency.decimalSeparator, '.');
       final amount = double.tryParse(amountStr) ?? 0;
 
+      // * Kategori lama yang tidak cocok dengan arah terpilih tidak dikirim
+      var categoryUlid = values['categoryUlid'] as String?;
+      final originalCategory = widget.transaction?.category.target;
+      if (originalCategory != null &&
+          categoryUlid == originalCategory.ulid &&
+          originalCategory.categoryType != _selectedType) {
+        categoryUlid = null;
+      }
+
       if (widget.isEdit) {
         context.read<TransactionBloc>().add(
           TransactionUpdated(
             params: UpdateTransactionParams(
               ulid: widget.transaction!.ulid,
               assetUlid: values['assetUlid'] as String?,
-              categoryUlid: values['categoryUlid'] as String?,
+              categoryUlid: categoryUlid,
+              type: _selectedType,
               amount: amount,
               transactionDate: values['transactionDate'] as DateTime?,
               description: values['description'] as String?,
@@ -170,7 +180,8 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
           TransactionCreated(
             params: CreateTransactionParams(
               assetUlid: values['assetUlid'] as String,
-              categoryUlid: values['categoryUlid'] as String?,
+              categoryUlid: categoryUlid,
+              type: _selectedType,
               amount: amount,
               transactionDate: values['transactionDate'] as DateTime?,
               description: values['description'] as String?,

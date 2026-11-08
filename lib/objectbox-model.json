@@ -123,7 +123,7 @@
     },
     {
       "id": "4:3788095621736996196",
-      "lastPropertyId": "10:5937916998655556237",
+      "lastPropertyId": "11:889819445781411541",
       "name": "Transaction",
       "properties": [
         {
@@ -184,6 +184,11 @@
           "id": "10:5937916998655556237",
           "name": "updatedAt",
           "type": 10
+        },
+        {
+          "id": "11:889819445781411541",
+          "name": "type",
+          "type": 6
         }
       ],
       "relations": []

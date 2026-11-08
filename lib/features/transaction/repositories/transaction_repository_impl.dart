@@ -14,10 +14,14 @@ import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
-// * Helper untuk menghitung balance adjustment berdasarkan category type
-double _getBalanceAdjustment(double amount, Category? category) {
-  if (category == null) return amount; // * Default: treat as income
-  return category.categoryType == CategoryType.expense ? -amount : amount;
+// * Helper untuk menghitung balance adjustment berdasarkan arah transaksi
+double _getBalanceAdjustment(double amount, CategoryType direction) {
+  return direction == CategoryType.expense ? -amount : amount;
+}
+
+// * Tentukan arah transaksi: kategori (jika ada) menang, lalu type eksplisit
+CategoryType _resolveDirection(Category? category, CategoryType? type) {
+  return category?.categoryType ?? type ?? CategoryType.income;
 }
 
 class TransactionRepositoryImpl implements TransactionRepository {
@@ -37,54 +41,65 @@ class TransactionRepositoryImpl implements TransactionRepository {
       () async {
         logService('Buat transaksi', 'aset: ${params.assetUlid}');
 
-        // * Get asset (required)
-        final asset = _assetBox
-            .query(Asset_.ulid.equals(params.assetUlid))
-            .build()
-            .findFirst();
-
-        if (asset == null) {
-          throw Exception('Aset tidak ditemukan');
-        }
-
-        final transaction = Transaction(
-          amount: params.amount,
-          transactionDate: params.transactionDate,
-          description: params.description,
-          imagePath: params.imagePath,
-        );
-
-        transaction.asset.target = asset;
-
-        // * Set category jika ada
-        if (params.categoryUlid != null) {
-          final category = _categoryBox
-              .query(Category_.ulid.equals(params.categoryUlid!))
+        // * Transaksi & saldo ditulis atomik dalam satu transaksi ObjectBox
+        return _storage.store.runInTransaction(TxMode.write, () {
+          // * Get asset (required)
+          final asset = _assetBox
+              .query(Asset_.ulid.equals(params.assetUlid))
               .build()
               .findFirst();
 
-          if (category == null) {
-            throw Exception('Kategori tidak ditemukan');
+          if (asset == null) {
+            throw Exception('Aset tidak ditemukan');
           }
 
-          transaction.category.target = category;
-        }
+          final transaction = Transaction(
+            amount: params.amount,
+            transactionDate: params.transactionDate,
+            description: params.description,
+            imagePath: params.imagePath,
+          );
 
-        _box.put(transaction);
+          transaction.asset.target = asset;
 
-        // * Update asset balance berdasarkan category type
-        // * Income: +amount, Expense: -amount
-        final balanceAdjustment = _getBalanceAdjustment(
-          params.amount,
-          transaction.category.target,
-        );
-        asset.balance += balanceAdjustment;
-        asset.updatedAt = DateTime.now();
-        _assetBox.put(asset);
+          // * Set category jika ada
+          if (params.categoryUlid != null) {
+            final category = _categoryBox
+                .query(Category_.ulid.equals(params.categoryUlid!))
+                .build()
+                .findFirst();
 
-        logInfo('Transaksi berhasil dibuat, saldo aset diperbarui');
+            if (category == null) {
+              throw Exception('Kategori tidak ditemukan');
+            }
 
-        return Success(message: 'Transaksi berhasil dibuat', data: transaction);
+            transaction.category.target = category;
+          }
+
+          final direction = _resolveDirection(
+            transaction.category.target,
+            params.type,
+          );
+          transaction.type = direction.index;
+          _box.put(transaction);
+
+          // * Update asset balance berdasarkan arah transaksi
+          // * Income: +amount, Expense: -amount
+          final balanceAdjustment = _getBalanceAdjustment(
+            params.amount,
+            direction,
+          );
+          asset.balance += balanceAdjustment;
+          asset.updatedAt = DateTime.now();
+          _assetBox.put(asset);
+
+          logInfo('Transaksi berhasil dibuat, saldo aset diperbarui');
+
+          return Success(
+            message: 'Transaksi berhasil dibuat',
+            data: transaction,
+          );
+        });
       },
       (error, stackTrace) {
         logError('Gagal membuat transaksi', error, stackTrace);
@@ -105,107 +120,114 @@ class TransactionRepositoryImpl implements TransactionRepository {
       () async {
         logService('Buat banyak transaksi', 'jumlah: ${paramsList.length}');
 
-        final List<Transaction> successfulTransactions = [];
-        final List<BulkCreateFailure> failedTransactions = [];
-        final Map<String, Asset> modifiedAssets = {};
+        return _storage.store.runInTransaction(TxMode.write, () {
+          final List<Transaction> successfulTransactions = [];
+          final List<BulkCreateFailure> failedTransactions = [];
+          final Map<String, Asset> modifiedAssets = {};
 
-        for (int i = 0; i < paramsList.length; i++) {
-          final params = paramsList[i];
+          for (int i = 0; i < paramsList.length; i++) {
+            final params = paramsList[i];
 
-          try {
-            // * Get asset (required)
-            final asset =
-                modifiedAssets[params.assetUlid] ??
-                _assetBox
-                    .query(Asset_.ulid.equals(params.assetUlid))
-                    .build()
-                    .findFirst();
+            try {
+              // * Get asset (required)
+              final asset =
+                  modifiedAssets[params.assetUlid] ??
+                  _assetBox
+                      .query(Asset_.ulid.equals(params.assetUlid))
+                      .build()
+                      .findFirst();
 
-            if (asset == null) {
-              failedTransactions.add(
-                BulkCreateFailure(
-                  params: params,
-                  errorMessage: 'Aset tidak ditemukan',
-                  index: i,
-                ),
-              );
-              continue;
-            }
-
-            final transaction = Transaction(
-              amount: params.amount,
-              transactionDate: params.transactionDate,
-              description: params.description,
-              imagePath: params.imagePath,
-            );
-
-            transaction.asset.target = asset;
-
-            // * Set category jika ada
-            if (params.categoryUlid != null) {
-              final category = _categoryBox
-                  .query(Category_.ulid.equals(params.categoryUlid!))
-                  .build()
-                  .findFirst();
-
-              if (category == null) {
+              if (asset == null) {
                 failedTransactions.add(
                   BulkCreateFailure(
                     params: params,
-                    errorMessage: 'Kategori tidak ditemukan',
+                    errorMessage: 'Aset tidak ditemukan',
                     index: i,
                   ),
                 );
                 continue;
               }
 
-              transaction.category.target = category;
+              final transaction = Transaction(
+                amount: params.amount,
+                transactionDate: params.transactionDate,
+                description: params.description,
+                imagePath: params.imagePath,
+              );
+
+              transaction.asset.target = asset;
+
+              // * Set category jika ada
+              if (params.categoryUlid != null) {
+                final category = _categoryBox
+                    .query(Category_.ulid.equals(params.categoryUlid!))
+                    .build()
+                    .findFirst();
+
+                if (category == null) {
+                  failedTransactions.add(
+                    BulkCreateFailure(
+                      params: params,
+                      errorMessage: 'Kategori tidak ditemukan',
+                      index: i,
+                    ),
+                  );
+                  continue;
+                }
+
+                transaction.category.target = category;
+              }
+
+              final direction = _resolveDirection(
+                transaction.category.target,
+                params.type,
+              );
+              transaction.type = direction.index;
+              _box.put(transaction);
+
+              // * Update asset balance
+              final balanceAdjustment = _getBalanceAdjustment(
+                params.amount,
+                direction,
+              );
+              asset.balance += balanceAdjustment;
+              asset.updatedAt = DateTime.now();
+
+              // * Track modified asset
+              modifiedAssets[params.assetUlid] = asset;
+
+              successfulTransactions.add(transaction);
+            } catch (e) {
+              failedTransactions.add(
+                BulkCreateFailure(
+                  params: params,
+                  errorMessage: e.toString(),
+                  index: i,
+                ),
+              );
             }
-
-            _box.put(transaction);
-
-            // * Update asset balance
-            final balanceAdjustment = _getBalanceAdjustment(
-              params.amount,
-              transaction.category.target,
-            );
-            asset.balance += balanceAdjustment;
-            asset.updatedAt = DateTime.now();
-
-            // * Track modified asset
-            modifiedAssets[params.assetUlid] = asset;
-
-            successfulTransactions.add(transaction);
-          } catch (e) {
-            failedTransactions.add(
-              BulkCreateFailure(
-                params: params,
-                errorMessage: e.toString(),
-                index: i,
-              ),
-            );
           }
-        }
 
-        // * Save all modified assets at once
-        if (modifiedAssets.isNotEmpty) {
-          _assetBox.putMany(modifiedAssets.values.toList());
-        }
+          // * Save all modified assets at once
+          if (modifiedAssets.isNotEmpty) {
+            _assetBox.putMany(modifiedAssets.values.toList());
+          }
 
-        logInfo(
-          'Bulk create selesai: ${successfulTransactions.length} berhasil, ${failedTransactions.length} gagal',
-        );
+          logInfo(
+            'Bulk create selesai: ${successfulTransactions.length} berhasil, ${failedTransactions.length} gagal',
+          );
 
-        final result = BulkCreateResult(
-          successfulTransactions: successfulTransactions,
-          failedTransactions: failedTransactions,
-        );
+          final result = BulkCreateResult(
+            successfulTransactions: successfulTransactions,
+            failedTransactions: failedTransactions,
+          );
 
-        final message = failedTransactions.isEmpty
-            ? '${successfulTransactions.length} transaksi berhasil dibuat'
-            : '${successfulTransactions.length} berhasil, ${failedTransactions.length} gagal';
+          final message = failedTransactions.isEmpty
+              ? '${successfulTransactions.length} transaksi berhasil dibuat'
+              : '${successfulTransactions.length} berhasil, ${failedTransactions.length} gagal';
 
-        return Success(message: message, data: result);
+          return Success(message: message, data: result);
+        });
       },
       (error, stackTrace) {
         logError('Gagal membuat banyak transaksi', error, stackTrace);
@@ -401,103 +423,117 @@ class TransactionRepositoryImpl implements TransactionRepository {
       () async {
         logService('Perbarui transaksi', params.ulid);
 
-        final transaction = _box
-            .query(Transaction_.ulid.equals(params.ulid))
-            .build()
-            .findFirst();
-
-        if (transaction == null) {
-          throw Exception('Transaksi tidak ditemukan');
-        }
-
-        final oldAmount = transaction.amount;
-        final oldAsset = transaction.asset.target;
-        final oldCategory = transaction.category.target;
-
-        // * Update fields jika ada
-        if (params.amount != null) transaction.amount = params.amount!;
-        if (params.transactionDate != null) {
-          transaction.transactionDate = params.transactionDate;
-        }
-        if (params.description != null) {
-          transaction.description = params.description;
-        }
-        if (params.imagePath != null) transaction.imagePath = params.imagePath;
-
-        // * Update asset jika ada
-        Asset? newAsset;
-        if (params.assetUlid != null) {
-          newAsset = _assetBox
-              .query(Asset_.ulid.equals(params.assetUlid!))
+        return _storage.store.runInTransaction(TxMode.write, () {
+          final transaction = _box
+              .query(Transaction_.ulid.equals(params.ulid))
               .build()
               .findFirst();
 
-          if (newAsset == null) {
-            throw Exception('Aset tidak ditemukan');
+          if (transaction == null) {
+            throw Exception('Transaksi tidak ditemukan');
           }
 
-          transaction.asset.target = newAsset;
-        }
+          final oldAmount = transaction.amount;
+          final oldAsset = transaction.asset.target;
+          final oldCategory = transaction.category.target;
+          final oldDirection = transaction.direction;
 
-        // * Update category jika ada
-        if (params.categoryUlid != null) {
-          final category = _categoryBox
-              .query(Category_.ulid.equals(params.categoryUlid!))
-              .build()
-              .findFirst();
-
-          if (category == null) {
-            throw Exception('Kategori tidak ditemukan');
+          // * Update fields jika ada
+          if (params.amount != null) transaction.amount = params.amount!;
+          if (params.transactionDate != null) {
+            transaction.transactionDate = params.transactionDate;
+          }
+          if (params.description != null) {
+            transaction.description = params.description;
+          }
+          if (params.imagePath != null) {
+            transaction.imagePath = params.imagePath;
           }
 
-          transaction.category.target = category;
-        }
+          // * Update asset jika ada
+          Asset? newAsset;
+          if (params.assetUlid != null) {
+            newAsset = _assetBox
+                .query(Asset_.ulid.equals(params.assetUlid!))
+                .build()
+                .findFirst();
 
-        // * Handle balance updates
-        final amountChanged =
-            params.amount != null && params.amount != oldAmount;
-        final assetChanged =
-            newAsset != null && newAsset.ulid != oldAsset?.ulid;
-        final categoryChanged =
-            params.categoryUlid != null &&
-            transaction.category.target?.ulid != oldCategory?.ulid;
+            if (newAsset == null) {
+              throw Exception('Aset tidak ditemukan');
+            }
 
-        // * Calculate old and new balance adjustments
-        final oldBalanceAdjustment = _getBalanceAdjustment(
-          oldAmount,
-          oldCategory,
-        );
-        final newBalanceAdjustment = _getBalanceAdjustment(
-          transaction.amount,
-          transaction.category.target,
-        );
+            transaction.asset.target = newAsset;
+          }
 
-        if (assetChanged && oldAsset != null) {
-          // * Revert old asset balance (undo old adjustment)
-          oldAsset.balance -= oldBalanceAdjustment;
-          oldAsset.updatedAt = DateTime.now();
-          _assetBox.put(oldAsset);
+          // * Update category jika ada
+          if (params.categoryUlid != null) {
+            final category = _categoryBox
+                .query(Category_.ulid.equals(params.categoryUlid!))
+                .build()
+                .findFirst();
 
-          // * Apply to new asset
-          newAsset.balance += newBalanceAdjustment;
-          newAsset.updatedAt = DateTime.now();
-          _assetBox.put(newAsset);
-        } else if ((amountChanged || categoryChanged) && oldAsset != null) {
-          // * Same asset, different amount or category: adjust by difference
-          final difference = newBalanceAdjustment - oldBalanceAdjustment;
-          oldAsset.balance += difference;
-          oldAsset.updatedAt = DateTime.now();
-          _assetBox.put(oldAsset);
-        }
+            if (category == null) {
+              throw Exception('Kategori tidak ditemukan');
+            }
 
-        transaction.updatedAt = DateTime.now();
-        _box.put(transaction);
+            transaction.category.target = category;
+          } else if (params.type != null &&
+              oldCategory != null &&
+              oldCategory.categoryType != params.type) {
+            // * Arah diganti tanpa kategori baru: kategori lama tidak cocok lagi
+            transaction.category.target = null;
+          }
 
-        logInfo('Transaksi berhasil diperbarui, saldo aset diperbarui');
-        return Success(
-          message: 'Transaksi berhasil diperbarui',
-          data: transaction,
-        );
+          final newDirection =
+              params.categoryUlid != null || params.type != null
+              ? _resolveDirection(transaction.category.target, params.type)
+              : oldDirection;
+          transaction.type = newDirection.index;
+
+          // * Handle balance updates
+          final amountChanged =
+              params.amount != null && params.amount != oldAmount;
+          final assetChanged =
+              newAsset != null && newAsset.ulid != oldAsset?.ulid;
+          final directionChanged = newDirection != oldDirection;
+
+          // * Calculate old and new balance adjustments
+          final oldBalanceAdjustment = _getBalanceAdjustment(
+            oldAmount,
+            oldDirection,
+          );
+          final newBalanceAdjustment = _getBalanceAdjustment(
+            transaction.amount,
+            newDirection,
+          );
+
+          if (assetChanged && oldAsset != null) {
+            // * Revert old asset balance (undo old adjustment)
+            oldAsset.balance -= oldBalanceAdjustment;
+            oldAsset.updatedAt = DateTime.now();
+            _assetBox.put(oldAsset);
+
+            // * Apply to new asset
+            newAsset.balance += newBalanceAdjustment;
+            newAsset.updatedAt = DateTime.now();
+            _assetBox.put(newAsset);
+          } else if ((amountChanged || directionChanged) && oldAsset != null) {
+            // * Same asset, different amount or category: adjust by difference
+            final difference = newBalanceAdjustment - oldBalanceAdjustment;
+            oldAsset.balance += difference;
+            oldAsset.updatedAt = DateTime.now();
+            _assetBox.put(oldAsset);
+          }
+
+          transaction.updatedAt = DateTime.now();
+          _box.put(transaction);
+
+          logInfo('Transaksi berhasil diperbarui, saldo aset diperbarui');
+          return Success(
+            message: 'Transaksi berhasil diperbarui',
+            data: transaction,
+          );
+        });
       },
       (error, stackTrace) {
         logError('Gagal memperbarui transaksi', error, stackTrace);
@@ -516,31 +552,33 @@ class TransactionRepositoryImpl implements TransactionRepository {
       () async {
         logService('Hapus transaksi', ulid);
 
-        final transaction = _box
-            .query(Transaction_.ulid.equals(ulid))
-            .build()
-            .findFirst();
+        return _storage.store.runInTransaction(TxMode.write, () {
+          final transaction = _box
+              .query(Transaction_.ulid.equals(ulid))
+              .build()
+              .findFirst();
 
-        if (transaction == null) {
-          throw Exception('Transaksi tidak ditemukan');
-        }
+          if (transaction == null) {
+            throw Exception('Transaksi tidak ditemukan');
+          }
 
-        // * Revert asset balance (undo the original adjustment)
-        final asset = transaction.asset.target;
-        if (asset != null) {
-          final balanceAdjustment = _getBalanceAdjustment(
-            transaction.amount,
-            transaction.category.target,
-          );
-          asset.balance -= balanceAdjustment;
-          asset.updatedAt = DateTime.now();
-          _assetBox.put(asset);
-        }
+          // * Revert asset balance (undo the original adjustment)
+          final asset = transaction.asset.target;
+          if (asset != null) {
+            final balanceAdjustment = _getBalanceAdjustment(
+              transaction.amount,
+              transaction.direction,
+            );
+            asset.balance -= balanceAdjustment;
+            asset.updatedAt = DateTime.now();
+            _assetBox.put(asset);
+          }
 
-        _box.remove(transaction.id);
-        logInfo('Transaksi berhasil dihapus, saldo aset dikembalikan');
+          _box.remove(transaction.id);
+          logInfo('Transaksi berhasil dihapus, saldo aset dikembalikan');
 
-        return const ActionSuccess(message: 'Transaksi berhasil dihapus');
+          return const ActionSuccess(message: 'Transaksi berhasil dihapus');
+        });
       },
       (error, stackTrace) {
         logError('Gagal menghapus transaksi', error, stackTrace);
@@ -583,18 +621,14 @@ class TransactionRepositoryImpl implements TransactionRepository {
         for (final transaction in transactions) {
           final category = transaction.category.target;
           final categoryUlid = category?.ulid;
-          final categoryType = category?.categoryType;
 
-          if (categoryType == CategoryType.income) {
+          // * Kelompokkan sesuai arah yang sama dengan perhitungan saldo
+          if (transaction.direction == CategoryType.income) {
             incomeByCategory.putIfAbsent(categoryUlid, () => []);
             incomeByCategory[categoryUlid]!.add(transaction);
-          } else if (categoryType == CategoryType.expense) {
+          } else {
             expenseByCategory.putIfAbsent(categoryUlid, () => []);
             expenseByCategory[categoryUlid]!.add(transaction);
-          } else {
-            // * Transaksi tanpa kategori - treat as expense
-            expenseByCategory.putIfAbsent(null, () => []);
-            expenseByCategory[null]!.add(transaction);
           }
         }
 

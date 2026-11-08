@@ -2,11 +2,13 @@ import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
+import 'package:ikuyo_finance/features/category/models/category.dart';
 
 class UpdateTransactionParams extends Equatable {
   final String ulid;
   final String? assetUlid;
   final String? categoryUlid;
+  final CategoryType? type;
   final double? amount;
   final DateTime? transactionDate;
   final String? description;
@@ -16,6 +18,7 @@ class UpdateTransactionParams extends Equatable {
     required this.ulid,
     this.assetUlid,
     this.categoryUlid,
+    this.type,
     this.amount,
     this.transactionDate,
     this.description,
@@ -26,6 +29,7 @@ class UpdateTransactionParams extends Equatable {
     String? ulid,
     ValueGetter<String?>? assetUlid,
     ValueGetter<String?>? categoryUlid,
+    ValueGetter<CategoryType?>? type,
     ValueGetter<double?>? amount,
     ValueGetter<DateTime?>? transactionDate,
     ValueGetter<String?>? description,
@@ -35,6 +39,7 @@ class UpdateTransactionParams extends Equatable {
       ulid: ulid ?? this.ulid,
       assetUlid: assetUlid != null ? assetUlid() : this.assetUlid,
       categoryUlid: categoryUlid != null ? categoryUlid() : this.categoryUlid,
+      type: type != null ? type() : this.type,
       amount: amount != null ? amount() : this.amount,
       transactionDate: transactionDate != null
           ? transactionDate()
@@ -49,6 +54,7 @@ class UpdateTransactionParams extends Equatable {
       'ulid': ulid,
       'assetUlid': assetUlid,
       'categoryUlid': categoryUlid,
+      'type': type?.index,
       'amount': amount,
       'transactionDate': transactionDate?.toIso8601String(),
       'description': description,
@@ -61,6 +67,9 @@ class UpdateTransactionParams extends Equatable {
       ulid: map['ulid'] ?? '',
       assetUlid: map['assetUlid'],
       categoryUlid: map['categoryUlid'],
+      type: map['type'] != null
+          ? CategoryType.values[map['type'] as int]
+          : null,
       amount: map['amount']?.toDouble(),
       transactionDate: map['transactionDate'] != null
           ? DateTime.parse(map['transactionDate'])
@@ -77,7 +86,7 @@ class UpdateTransactionParams extends Equatable {
 
   @override
   String toString() {
-    return 'UpdateTransactionParams(ulid: $ulid, assetUlid: $assetUlid, categoryUlid: $categoryUlid, amount: $amount, transactionDate: $transactionDate, description: $description, imagePath: $imagePath)';
+    return 'UpdateTransactionParams(ulid: $ulid, assetUlid: $assetUlid, categoryUlid: $categoryUlid, type: $type, amount: $amount, transactionDate: $transactionDate, description: $description, imagePath: $imagePath)';
   }
 
   @override
@@ -85,6 +94,7 @@ class UpdateTransactionParams extends Equatable {
     ulid,
     assetUlid,
     categoryUlid,
+    type,
     amount,
     transactionDate,
     description,

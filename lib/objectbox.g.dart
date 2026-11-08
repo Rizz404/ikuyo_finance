@@ -164,7 +164,7 @@ final _entities = <obx_int.ModelEntity>[
   obx_int.ModelEntity(
     id: const obx_int.IdUid(4, 3788095621736996196),
     name: 'Transaction',
-    lastPropertyId: const obx_int.IdUid(10, 5937916998655556237),
+    lastPropertyId: const obx_int.IdUid(11, 889819445781411541),
     flags: 0,
     properties: <obx_int.ModelProperty>[
       obx_int.ModelProperty(
@@ -232,6 +232,12 @@ final _entities = <obx_int.ModelEntity>[
         id: const obx_int.IdUid(10, 5937916998655556237),
         name: 'updatedAt',
         type: 10,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(11, 889819445781411541),
+        name: 'type',
+        type: 6,
         flags: 0,
       ),
     ],
@@ -850,7 +856,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         final imagePathOffset = object.imagePath == null
             ? null
             : fbb.writeString(object.imagePath!);
-        fbb.startTable(11);
+        fbb.startTable(12);
         fbb.addInt64(0, object.id);
         fbb.addOffset(1, ulidOffset);
         fbb.addInt64(2, object.asset.targetId);
@@ -861,6 +867,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
         fbb.addOffset(7, imagePathOffset);
         fbb.addInt64(8, object.createdAt.millisecondsSinceEpoch);
         fbb.addInt64(9, object.updatedAt.millisecondsSinceEpoch);
+        fbb.addInt64(10, object.type);
         fbb.finish(fbb.endTable());
         return object.id;
       },
@@ -887,6 +894,11 @@ obx_int.ModelDefinition getObjectBoxModel() {
           12,
           0,
         );
+        final typeParam = const fb.Int64Reader().vTableGetNullable(
+          buffer,
+          rootOffset,
+          24,
+        );
         final transactionDateParam = transactionDateValue == null
             ? null
             : DateTime.fromMillisecondsSinceEpoch(transactionDateValue);
@@ -906,6 +918,7 @@ obx_int.ModelDefinition getObjectBoxModel() {
           id: idParam,
           ulid: ulidParam,
           amount: amountParam,
+          type: typeParam,
           transactionDate: transactionDateParam,
           description: descriptionParam,
           imagePath: imagePathParam,
@@ -1551,6 +1564,11 @@ class Transaction_ {
   /// See [Transaction.updatedAt].
   static final updatedAt = obx.QueryDateProperty<Transaction>(
     _entities[2].properties[9],
+  );
+
+  /// See [Transaction.type].
+  static final type = obx.QueryIntegerProperty<Transaction>(
+    _entities[2].properties[10],
   );
 }
 

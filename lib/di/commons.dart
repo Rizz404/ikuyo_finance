@@ -16,6 +16,7 @@ import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/core/theme/cubit/theme_cubit.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/di/service_locator.dart';
+import 'package:ikuyo_finance/features/transaction/services/transaction_type_backfill.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_alarm_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
@@ -70,6 +71,13 @@ Future<void> _setupStorage() async {
     final objectBoxStorage = ObjectBoxStorage();
     await objectBoxStorage.init();
 
+    // * Migrasi non-destruktif: isi arah transaksi untuk data lama
+    try {
+      TransactionTypeBackfill(objectBoxStorage).run();
+    } catch (e, s) {
+      talker.handle(e, s, 'Backfill arah transaksi gagal');
+    }
+
     return objectBoxStorage;
   });
 }
@@ -90,7 +98,9 @@ Future<void> seedDatabaseIfNeeded() async {
 
 Future<void> _setupSupabase() async {
   if (!SupabaseConfig.isConfigured) {
-    talker.logWarning('Supabase tidak dikonfigurasi — app berjalan tanpa cloud');
+    talker.logWarning(
+      'Supabase tidak dikonfigurasi — app berjalan tanpa cloud',
+    );
     return;
   }
 
@@ -117,7 +127,9 @@ Future<void> _setupSupabase() async {
 }
 
 void _setupSupabaseStatus() {
-  final client = getIt.isRegistered<SupabaseClient>() ? getIt<SupabaseClient>() : null;
+  final client = getIt.isRegistered<SupabaseClient>()
+      ? getIt<SupabaseClient>()
+      : null;
   getIt.registerSingleton<SupabaseStatusService>(SupabaseStatusService(client));
 }
 

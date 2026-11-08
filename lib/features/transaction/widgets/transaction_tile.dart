@@ -24,7 +24,7 @@ class TransactionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final category = transaction.category.target;
     final asset = transaction.asset.target;
-    final isExpense = category?.categoryType == CategoryType.expense;
+    final isExpense = transaction.isExpense;
 
     return GestureDetector(
       onTap: () => context.pushToEditTransaction(transaction),
