@@ -7,7 +7,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
-import 'package:ikuyo_finance/core/currency/models/currency.dart';
+import 'package:ikuyo_finance/core/currency/utils/currency_input.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/router/app_routes.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
@@ -77,10 +77,8 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
       // * Parse balance: remove formatting (. or , as thousand separator)
       // * Values are already in current currency (migrated on currency change)
       final currencyCubit = context.read<CurrencyCubit>();
-      final balance = _parseFormattedNumber(
-        balanceStr ?? '0',
-        currencyCubit.state.currency.code,
-      );
+      final balance =
+          CurrencyInput.parse(balanceStr, currencyCubit.state.currency) ?? 0;
 
       // * Get icon path from file picker
       String? iconPath;
@@ -113,26 +111,6 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
           ),
         );
       }
-    }
-  }
-
-  /// Parse formatted number string to double
-  /// * IDR format: 12.000 (. is thousand separator)
-  /// * USD format: 12,000.00 (, is thousand separator, . is decimal)
-  double _parseFormattedNumber(String value, CurrencyCode code) {
-    if (value.isEmpty) return 0;
-
-    // * IDR uses . for thousands, , for decimals (if any)
-    // * USD uses , for thousands, . for decimals
-    final isIdFormat = code == CurrencyCode.idr || code == CurrencyCode.myr;
-
-    if (isIdFormat) {
-      // Remove . (thousand separator), replace , with . for decimal
-      return double.tryParse(value.replaceAll('.', '').replaceAll(',', '.')) ??
-          0;
-    } else {
-      // Remove , (thousand separator), keep . for decimal
-      return double.tryParse(value.replaceAll(',', '')) ?? 0;
     }
   }
 
@@ -297,9 +275,15 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                         initialValue: initialBalance,
                         placeHolder: '0',
                         type: AppTextFieldType.currency,
-                        validator: widget.isEdit
-                            ? UpdateAssetValidator.balance
-                            : CreateAssetValidator.balance,
+                        validator: (value) => widget.isEdit
+                            ? UpdateAssetValidator.balance(
+                                value,
+                                currencyCubit.state.currency,
+                              )
+                            : CreateAssetValidator.balance(
+                                value,
+                                currencyCubit.state.currency,
+                              ),
                         prefixIcon: const Icon(Icons.attach_money_outlined),
                       );
                     },

@@ -210,8 +210,12 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
       if (formData.formKey.currentState?.saveAndValidate() ?? false) {
         final values = formData.formKey.currentState!.value;
         final amountRaw = values['amount'];
-        final amountStr = amountRaw?.toString() ?? '0';
-        final amount = double.tryParse(amountStr.replaceAll('.', '')) ?? 0;
+        final amount =
+            CurrencyInput.parse(
+              amountRaw?.toString(),
+              context.read<CurrencyCubit>().state.currency,
+            ) ??
+            0;
 
         paramsList.add(
           CreateTransactionParams(
@@ -481,7 +485,11 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
           final amountRaw = values['amount'];
           if (amountRaw != null && amountRaw.toString().isNotEmpty) {
             formData.amount =
-                double.tryParse(amountRaw.toString().replaceAll('.', '')) ?? 0;
+                CurrencyInput.parse(
+                  amountRaw.toString(),
+                  context.read<CurrencyCubit>().state.currency,
+                ) ??
+                0;
           }
         },
         child: Column(
@@ -562,7 +570,10 @@ class _TransactionBulkCopyScreenState extends State<TransactionBulkCopyScreen> {
               label: LocaleKeys.transactionBulkCopyAmountLabel.tr(),
               type: AppTextFieldType.currency,
               initialValue: formData.amount?.toStringAsFixed(decimalDigits),
-              validator: BulkCopyTransactionValidator.amount,
+              validator: (value) => BulkCopyTransactionValidator.amount(
+                value,
+                context.read<CurrencyCubit>().state.currency,
+              ),
             ),
             const SizedBox(height: 16),
             Row(

@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
 import 'package:ikuyo_finance/core/currency/models/currency.dart';
+import 'package:ikuyo_finance/core/currency/utils/currency_input.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 
 enum AppTextFieldType {
@@ -96,8 +97,13 @@ class _AppTextFieldState extends State<AppTextField> {
         case AppTextFieldType.phone:
           return TextInputType.phone;
         case AppTextFieldType.number:
-        case AppTextFieldType.currency:
           return TextInputType.number;
+        case AppTextFieldType.currency:
+          // * Mata uang berdesimal butuh tombol desimal (iOS number pad)
+          final currency = context.read<CurrencyCubit>().state.currency;
+          return TextInputType.numberWithOptions(
+            decimal: currency.decimalDigits > 0,
+          );
         case AppTextFieldType.url:
           return TextInputType.url;
         case AppTextFieldType.multiline:
@@ -252,10 +258,16 @@ class _CurrencyFormatter extends TextInputFormatter {
   const _CurrencyFormatter(this.currency);
 
   /// Static method to format initial value
+  /// * Caller mengirim angka kanonik (mis. `toStringAsFixed`, desimal '.'),
+  /// * jadi bagian desimal wajib dipertahankan (A08: 12.50 -> 1,250).
   static String formatValue(String value, Currency currency) {
     if (value.isEmpty) return value;
 
-    // * Remove all non-digit & non-decimal-separator characters
+    final canonical = double.tryParse(value.trim());
+    if (canonical != null && canonical.isFinite) {
+      return CurrencyInput.formatAmount(canonical, currency);
+    }
+
     final cleanDigits = value.replaceAll(RegExp(r'[^\d]'), '');
     if (cleanDigits.isEmpty) return '';
 

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/currency/utils/currency_input.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/core/utils/toast_helper.dart';
@@ -80,7 +82,11 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
       final categoryUlid = values['categoryUlid'] as String?;
       final amountLimitStr = values['amountLimit'] as String?;
       final amountLimit =
-          double.tryParse(amountLimitStr?.replaceAll(',', '.') ?? '0') ?? 0;
+          CurrencyInput.parse(
+            amountLimitStr,
+            context.read<CurrencyCubit>().state.currency,
+          ) ??
+          0;
       final period = BudgetPeriod.values[values['period'] as int];
       final startDate = values['startDate'] as DateTime?;
       final endDate = values['endDate'] as DateTime?;
@@ -222,13 +228,23 @@ class _BudgetUpsertScreenState extends State<BudgetUpsertScreen> {
                   AppTextField(
                     name: 'amountLimit',
                     label: LocaleKeys.budgetUpsertAmountLimitLabel.tr(),
-                    initialValue: widget.budget?.amountLimit.toStringAsFixed(0),
+                    // * Format mengikuti mata uang aktif agar desimal tidak
+                    // * dibulatkan saat edit (A16)
+                    initialValue: widget.budget?.amountLimit.toStringAsFixed(
+                      context.read<CurrencyCubit>().state.currency.decimalDigits,
+                    ),
                     placeHolder: LocaleKeys.budgetUpsertAmountLimitPlaceholder
                         .tr(),
-                    type: AppTextFieldType.number,
-                    validator: widget.isEdit
-                        ? UpdateBudgetValidator.amountLimit
-                        : CreateBudgetValidator.amountLimit,
+                    type: AppTextFieldType.currency,
+                    validator: (value) {
+                      final currency = context
+                          .read<CurrencyCubit>()
+                          .state
+                          .currency;
+                      return widget.isEdit
+                          ? UpdateBudgetValidator.amountLimit(value, currency)
+                          : CreateBudgetValidator.amountLimit(value, currency);
+                    },
                     prefixIcon: const Icon(Icons.attach_money_outlined),
                   ),
                   const SizedBox(height: 24),

@@ -1,14 +1,19 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
+import 'package:ikuyo_finance/core/currency/utils/currency_input.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 
 class CreateTransactionValidator {
   const CreateTransactionValidator._();
 
-  static String? amount(String? value) {
+  static String? amount(String? value, [Currency? currency]) {
     if (value == null || value.isEmpty) {
       return LocaleKeys.transactionValidatorAmountRequired.tr();
     }
-    final amount = double.tryParse(value.replaceAll('.', ''));
+    final amount = CurrencyInput.parse(
+      value,
+      currency ?? CurrencyInput.defaultCurrency,
+    );
     if (amount == null || amount <= 0) {
       return LocaleKeys.transactionValidatorAmountPositive.tr();
     }

@@ -1,4 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
+import 'package:ikuyo_finance/core/currency/utils/currency_input.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 
 class UpdateAssetValidator {
@@ -29,11 +31,14 @@ class UpdateAssetValidator {
     return null;
   }
 
-  static String? balance(String? value) {
+  static String? balance(String? value, [Currency? currency]) {
     if (value == null || value.isEmpty) {
       return null; // * Optional for update
     }
-    final parsed = double.tryParse(value.replaceAll(',', '.'));
+    final parsed = CurrencyInput.parse(
+      value,
+      currency ?? CurrencyInput.defaultCurrency,
+    );
     if (parsed == null) {
       return LocaleKeys.assetValidatorBalanceInvalid.tr();
     }

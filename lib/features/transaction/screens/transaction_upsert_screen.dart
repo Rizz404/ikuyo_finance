@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ikuyo_finance/core/currency/cubit/currency_cubit.dart';
+import 'package:ikuyo_finance/core/currency/utils/currency_input.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
@@ -147,10 +148,7 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
       final values = _formKey.currentState!.value;
       final currency = context.read<CurrencyCubit>().state.currency;
       final amountRaw = values['amount'] as String?;
-      final amountStr = (amountRaw ?? '')
-          .replaceAll(currency.thousandSeparator, '')
-          .replaceAll(currency.decimalSeparator, '.');
-      final amount = double.tryParse(amountStr) ?? 0;
+      final amount = CurrencyInput.parse(amountRaw, currency) ?? 0;
 
       // * Kategori lama yang tidak cocok dengan arah terpilih tidak dikirim
       var categoryUlid = values['categoryUlid'] as String?;
@@ -336,9 +334,12 @@ class _TransactionUpsertScreenState extends State<TransactionUpsertScreen> {
               label: LocaleKeys.transactionUpsertAmountLabel.tr(),
               type: AppTextFieldType.currency,
               initialValue: _buildInitialAmountValue(),
-              validator: (value) => widget.isEdit
-                  ? UpdateTransactionValidator.amount(value)
-                  : CreateTransactionValidator.amount(value),
+              validator: (value) {
+                final currency = context.read<CurrencyCubit>().state.currency;
+                return widget.isEdit
+                    ? UpdateTransactionValidator.amount(value, currency)
+                    : CreateTransactionValidator.amount(value, currency);
+              },
             ),
             const SizedBox(height: 16),
 
