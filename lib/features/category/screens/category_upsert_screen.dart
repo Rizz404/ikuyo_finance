@@ -161,7 +161,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
       decoration: BoxDecoration(
         color: context.colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: context.colorScheme.outline.withOpacity(0.3)),
+        border: Border.all(color: context.colorScheme.outline.withValues(alpha: 0.3)),
       ),
       child: Row(
         children: [
@@ -386,7 +386,7 @@ class _CategoryUpsertScreenState extends State<CategoryUpsertScreen> {
                         color: context.colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: context.colorScheme.outline.withOpacity(0.3),
+                          color: context.colorScheme.outline.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(

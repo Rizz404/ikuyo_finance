@@ -167,6 +167,8 @@ class _AutoTransactionItemListScreenState
 
     return ReorderableListView.builder(
       itemCount: state.currentItems.length,
+      // * onReorderItem only exists after Flutter 3.41; CI pins 3.38.8.
+      // ignore: deprecated_member_use
       onReorder: (oldIndex, newIndex) =>
           _onReorder(state.currentItems, oldIndex, newIndex),
       itemBuilder: (context, index) {

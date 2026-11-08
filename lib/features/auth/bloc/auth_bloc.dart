@@ -163,6 +163,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         }
         break;
       case supabase.AuthChangeEvent.signedOut:
+      // ignore: deprecated_member_use
       case supabase.AuthChangeEvent.userDeleted:
         emit(
           state.copyWith(

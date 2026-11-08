@@ -305,7 +305,7 @@ class _AssetUpsertScreenState extends State<AssetUpsertScreen> {
                         color: context.colorScheme.surfaceContainerHighest,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                          color: context.colorScheme.outline.withOpacity(0.3),
+                          color: context.colorScheme.outline.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(
