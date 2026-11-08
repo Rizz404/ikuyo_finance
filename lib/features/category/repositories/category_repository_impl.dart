@@ -295,11 +295,10 @@ class CategoryRepositoryImpl implements CategoryRepository {
           }
 
           // * Validate: category being edited must not have children
-          final allCategories = _box.query().findAndClose();
-          final categoryHasChildren = allCategories.any(
-            (cat) => cat.parent.target?.ulid == category.ulid,
-          );
-          if (categoryHasChildren) {
+          final childCount = _box
+              .query(Category_.parent.equals(category.id))
+              .countAndClose();
+          if (childCount > 0) {
             throw Exception(
               'Kategori yang memiliki sub-kategori tidak bisa menjadi sub-kategori',
             );
@@ -349,11 +348,11 @@ class CategoryRepositoryImpl implements CategoryRepository {
         }
 
         // * Check jika ada child categories
-        final hasChildren = _box.query().findAndClose().any(
-          (cat) => cat.parent.target?.ulid == ulid,
-        );
+        final childCount = _box
+            .query(Category_.parent.equals(category.id))
+            .countAndClose();
 
-        if (hasChildren) {
+        if (childCount > 0) {
           throw Exception(
             'Tidak dapat menghapus kategori yang memiliki sub-kategori',
           );
@@ -444,10 +443,11 @@ class CategoryRepositoryImpl implements CategoryRepository {
       () async {
         logService('Cek kategori memiliki anak', ulid);
 
-        final allCategories = _box.query().findAndClose();
-        final hasChildren = allCategories.any(
-          (cat) => cat.parent.target?.ulid == ulid,
-        );
+        // * Cek keberadaan anak via relasi parent (tanpa memuat semua, NEW-5)
+        final hasChildren =
+            (_box.query()..link(Category_.parent, Category_.ulid.equals(ulid)))
+                .countAndClose() >
+            0;
 
         logInfo('Kategori memiliki anak: $hasChildren');
         return Success(message: 'Pengecekan selesai', data: hasChildren);
