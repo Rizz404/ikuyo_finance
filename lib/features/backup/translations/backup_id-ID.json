@@ -2,7 +2,7 @@
   "backup": {
     "screen": {
       "title": "Cadangan Data",
-      "infoDescription": "Backup data disimpan dalam format JSON yang bisa diimpor kembali kapan saja.",
+      "infoDescription": "Backup dienkripsi dengan passphrase Anda dan bisa diimpor kembali kapan saja.",
       "currentData": "Data Saat Ini",
       "categories": "Kategori",
       "assets": "Aset",
@@ -11,10 +11,10 @@
       "total": "Total",
       "totalItems": "{count} item",
       "exportTitle": "Export Data",
-      "exportDescription": "Simpan semua data ke file JSON yang bisa disimpan di penyimpanan perangkat.",
+      "exportDescription": "Simpan semua data ke file backup terenkripsi di perangkat.",
       "exportButton": "Export Sekarang",
       "importTitle": "Import Data",
-      "importDescription": "Pulihkan data dari file backup JSON. Data yang ada saat ini akan diganti.",
+      "importDescription": "Pulihkan data dari file backup (.ikuyo atau .json lama). Data yang ada saat ini akan diganti.",
       "importButton": "Pilih File Backup",
       "importConfirmTitle": "Konfirmasi Import",
       "importDataLabel": "Data yang akan diimport:",
@@ -38,6 +38,30 @@
       "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
       "autoDisabled": "Backup otomatis dinonaktifkan",
       "autoScheduleFailed": "Gagal memperbarui jadwal auto backup. Silakan coba lagi."
+    },
+    "encryption": {
+      "exportTitle": "Enkripsi backup",
+      "exportDescription": "Pilih passphrase untuk mengenkripsi backup ini. Passphrase dibutuhkan saat mengimpor file.",
+      "passphraseLabel": "Passphrase",
+      "passphraseConfirmLabel": "Ulangi passphrase",
+      "passphraseTooShort": "Passphrase minimal {min} karakter",
+      "passphraseMismatch": "Passphrase tidak sama",
+      "unrecoverableWarning": "Jika passphrase ini lupa, backup tidak bisa dipulihkan. Passphrase tidak disimpan di mana pun.",
+      "encryptAndExport": "Enkripsi & Export",
+      "exportUnencrypted": "Export tanpa enkripsi",
+      "unencryptedTitle": "Export tanpa enkripsi?",
+      "unencryptedWarning": "File akan berisi seluruh data keuangan Anda dalam bentuk terbaca. Siapa pun yang mendapat file ini bisa membacanya.",
+      "unencryptedConfirm": "Export tanpa enkripsi",
+      "cancel": "Batal",
+      "importTitle": "Backup terenkripsi",
+      "importDescription": "Masukkan passphrase yang dipakai saat backup ini diekspor.",
+      "decrypt": "Dekripsi",
+      "wrongPassphrase": "Passphrase salah atau file telah diubah. Tidak ada data yang diimpor.",
+      "truncated": "File backup tidak lengkap atau rusak. Tidak ada data yang diimpor.",
+      "unsupported": "Backup ini memakai versi format yang tidak didukung. Tidak ada data yang diimpor.",
+      "notABackup": "File ini bukan backup Ikuyo. Tidak ada data yang diimpor.",
+      "legacyWarning": "Ini backup lama tanpa enkripsi. Masih bisa diimpor, tetapi export baru dienkripsi.",
+      "pickerHint": "Pilih file backup (.ikuyo atau .json)"
     }
   }
 }

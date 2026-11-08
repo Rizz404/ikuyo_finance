@@ -1,0 +1,401 @@
+// Regression: A14 on the real BackupScreen. Export asks for a passphrase
+// (min 8, confirmed, with an unrecoverable warning) and writes an encrypted
+// .ikuyo file; plaintext needs an explicit opt-out after a warning. Import of
+// an encrypted file asks for the passphrase; a wrong one fails closed and the
+// live DB is untouched; legacy .json still imports with a warning.
+// Real ObjectBox, real BackupRepositoryImpl/BackupBloc, real router/screen;
+// only the OS file picker is faked.
+import 'dart:io';
+
+import 'package:easy_localization/easy_localization.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
+import 'package:ikuyo_finance/core/storage/storage_keys.dart';
+import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
+import 'package:ikuyo_finance/features/backup/services/backup_crypto.dart';
+import 'package:ikuyo_finance/features/category/models/category.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../support/test_app.dart';
+
+class _FakeFilePicker extends FilePicker {
+  String? nextPath;
+  List<String>? lastExtensions;
+
+  @override
+  Future<FilePickerResult?> pickFiles({
+    String? dialogTitle,
+    String? initialDirectory,
+    FileType type = FileType.any,
+    List<String>? allowedExtensions,
+    Function(FilePickerStatus)? onFileLoading,
+    bool allowCompression = false,
+    int compressionQuality = 0,
+    bool allowMultiple = false,
+    bool withData = false,
+    bool withReadStream = false,
+    bool lockParentWindow = false,
+    bool readSequential = false,
+  }) async {
+    lastExtensions = allowedExtensions;
+    final path = nextPath!;
+    final f = File(path);
+    return FilePickerResult([
+      PlatformFile(
+        name: path.split('/').last,
+        path: path,
+        size: f.lengthSync(),
+      ),
+    ]);
+  }
+}
+
+const _pass = 'correct horse battery';
+
+void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
+  late TestApp app;
+  late Directory dir;
+  late _FakeFilePicker picker;
+
+  setUp(() async {
+    dir = Directory.systemTemp.createTempSync('ikuyo_backup_enc_');
+    SharedPreferences.setMockInitialValues({
+      StorageKeys.currency: 'idr',
+      'cached_exchange_rates': '{"usd":1.0,"idr":16800.0,"eur":0.85}',
+      'exchange_rates_timestamp': DateTime.now().millisecondsSinceEpoch,
+      'export_directory': dir.path,
+    });
+    rootBundle.clear();
+    picker = _FakeFilePicker();
+    FilePicker.platform = picker;
+    app = await TestApp.boot();
+  });
+  tearDown(() {
+    app.close();
+    if (dir.existsSync()) dir.deleteSync(recursive: true);
+  });
+
+  Future<void> open(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1080, 4000);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(app.build());
+    await tester.pumpAndSettle();
+    app.router.push('/backup');
+    await tester.pumpAndSettle();
+  }
+
+  bool shown(String text) => find.text(text).evaluate().isNotEmpty;
+  bool shownKey(String key) => find.byKey(Key(key)).evaluate().isNotEmpty;
+
+  // * KDF/IO berjalan di isolate & disk nyata: beri waktu nyata
+  Future<void> settleReal(WidgetTester tester, bool Function() done) async {
+    for (var i = 0; i < 200 && !done(); i++) {
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 50)),
+      );
+      await tester.pump();
+    }
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+
+  List<File> backups() =>
+      dir.listSync().whereType<File>().toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
+
+  void seedCategory(String name) => app.storage.box<Category>().put(
+    Category(name: name, type: CategoryType.expense.index),
+  );
+
+  // * settle=false: aksi memicu kerja async nyata (spinner tak pernah settle)
+  Future<void> tapText(
+    WidgetTester tester,
+    String text, {
+    bool settle = true,
+  }) async {
+    await tester.ensureVisible(find.text(text).last);
+    await tester.tap(find.text(text).last);
+    if (settle) {
+      await tester.pumpAndSettle();
+    } else {
+      await tester.pump();
+    }
+  }
+
+  Future<void> tapKey(WidgetTester tester, String key) async {
+    await tester.tap(find.byKey(Key(key)));
+    await tester.pump();
+  }
+
+  testWidgets('export asks for a confirmed passphrase and writes an '
+      'encrypted .ikuyo file', (tester) async {
+    seedCategory('SecretFood');
+    await open(tester);
+
+    await tapText(tester, LocaleKeys.backupScreenExportButton.tr());
+    expect(
+      find.text(LocaleKeys.backupEncryptionUnrecoverableWarning.tr()),
+      findsOneWidget,
+    );
+
+    // too short
+    await tester.enterText(
+      find.byKey(const Key('backup_passphrase_field')),
+      '1234567',
+    );
+    await tester.enterText(
+      find.byKey(const Key('backup_passphrase_confirm_field')),
+      '1234567',
+    );
+    await tester.tap(find.byKey(const Key('backup_export_encrypted')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(
+        LocaleKeys.backupEncryptionPassphraseTooShort.tr(
+          namedArgs: {'min': '8'},
+        ),
+      ),
+      findsOneWidget,
+    );
+
+    // mismatch
+    await tester.enterText(
+      find.byKey(const Key('backup_passphrase_field')),
+      _pass,
+    );
+    await tester.enterText(
+      find.byKey(const Key('backup_passphrase_confirm_field')),
+      '$_pass x',
+    );
+    await tester.tap(find.byKey(const Key('backup_export_encrypted')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(LocaleKeys.backupEncryptionPassphraseMismatch.tr()),
+      findsOneWidget,
+    );
+    expect(backups(), isEmpty);
+
+    await tester.enterText(
+      find.byKey(const Key('backup_passphrase_confirm_field')),
+      _pass,
+    );
+    await tapKey(tester, 'backup_export_encrypted');
+    await settleReal(tester, () => shown(LocaleKeys.backupScreenSuccess.tr()));
+
+    final files = backups();
+    expect(files, hasLength(1));
+    expect(files.single.path, endsWith('.${BackupCrypto.fileExtension}'));
+    final bytes = files.single.readAsBytesSync();
+    expect(BackupCrypto.detect(bytes), BackupFileFormat.encrypted);
+    expect(String.fromCharCodes(bytes).contains('SecretFood'), isFalse);
+    final decoded = await tester.runAsync(
+      () => BackupCrypto.decodeBackup(bytes, passphrase: _pass),
+    );
+    expect(decoded!.data.categories.map((c) => c.name), ['SecretFood']);
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets('unencrypted export requires an explicit opt-out after a '
+      'warning', (tester) async {
+    seedCategory('PlainFood');
+    await open(tester);
+
+    await tapText(tester, LocaleKeys.backupScreenExportButton.tr());
+    await tester.tap(find.byKey(const Key('backup_export_unencrypted')));
+    await tester.pumpAndSettle();
+    expect(
+      find.text(LocaleKeys.backupEncryptionUnencryptedWarning.tr()),
+      findsOneWidget,
+    );
+    // backing out of the warning writes nothing
+    await tapText(tester, LocaleKeys.backupEncryptionCancel.tr());
+    expect(find.byKey(const Key('backup_passphrase_field')), findsOneWidget);
+    await tester.tap(find.byKey(const Key('backup_export_unencrypted')));
+    await tester.pumpAndSettle();
+    await tapKey(tester, 'backup_unencrypted_confirm');
+    await settleReal(tester, () => shown(LocaleKeys.backupScreenSuccess.tr()));
+
+    final file = backups().single;
+    expect(file.path, endsWith('.json'));
+    expect(
+      BackupData.fromJsonString(file.readAsStringSync()).categories.single.name,
+      'PlainFood',
+    );
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  Future<void> tapImport(WidgetTester tester) async {
+    await tapText(
+      tester,
+      LocaleKeys.backupScreenImportButton.tr(),
+      settle: false,
+    );
+    await settleReal(
+      tester,
+      () =>
+          shownKey('backup_import_passphrase_field') ||
+          shown(LocaleKeys.backupScreenImportConfirmTitle.tr()),
+    );
+    await tester.pumpAndSettle();
+  }
+
+  Future<void> pickAndImport(WidgetTester tester, String path) async {
+    picker.nextPath = path;
+    await tapText(tester, LocaleKeys.backupEncryptionPickerHint.tr());
+    await tapImport(tester);
+  }
+
+  testWidgets('import of an encrypted backup: wrong passphrase fails closed '
+      'and leaves the DB untouched; the right one restores', (tester) async {
+    seedCategory('Live');
+    final snapshot = BackupData(
+      version: BackupData.currentVersion,
+      createdAt: DateTime(2026, 2, 1),
+      appName: 'Ikuyo Finance',
+      categories: [
+        CategoryBackup(
+          ulid: 'c-restored',
+          name: 'Restored',
+          type: 1,
+          createdAt: DateTime(2026, 2, 1),
+          updatedAt: DateTime(2026, 2, 1),
+        ),
+      ],
+      assets: const [],
+      transactions: const [],
+      budgets: const [],
+    );
+    // * Isolate.run nyata tidak selesai di zona fake-async: pakai runAsync
+    final env = await tester.runAsync(
+      () => BackupCrypto.encodeBackup(snapshot, passphrase: _pass),
+    );
+    final path = '${dir.path}/restore.ikuyo';
+    File(path).writeAsBytesSync(env!);
+
+    await open(tester);
+    await pickAndImport(tester, path);
+    expect(picker.lastExtensions, containsAll(['ikuyo', 'json']));
+    expect(
+      find.byKey(const Key('backup_import_passphrase_field')),
+      findsOneWidget,
+    );
+    await tester.enterText(
+      find.byKey(const Key('backup_import_passphrase_field')),
+      'not the passphrase',
+    );
+    await tapKey(tester, 'backup_import_decrypt');
+    await settleReal(
+      tester,
+      () => find
+          .text(LocaleKeys.backupEncryptionWrongPassphrase.tr())
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(
+      find.text(LocaleKeys.backupEncryptionWrongPassphrase.tr()),
+      findsOneWidget,
+    );
+    expect(
+      find.text(LocaleKeys.backupScreenImportConfirmTitle.tr()),
+      findsNothing,
+    );
+    expect(app.storage.box<Category>().getAll().map((c) => c.name), ['Live']);
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+
+    await tapImport(tester);
+    await tester.enterText(
+      find.byKey(const Key('backup_import_passphrase_field')),
+      _pass,
+    );
+    await tapKey(tester, 'backup_import_decrypt');
+    await settleReal(
+      tester,
+      () => find
+          .text(LocaleKeys.backupScreenImportConfirmTitle.tr())
+          .evaluate()
+          .isNotEmpty,
+    );
+    expect(find.byKey(const Key('backup_legacy_warning')), findsNothing);
+    await tapText(
+      tester,
+      LocaleKeys.backupScreenImportConfirmButton.tr(),
+      settle: false,
+    );
+    await settleReal(
+      tester,
+      () =>
+          app.storage.box<Category>().getAll().any((c) => c.name == 'Restored'),
+    );
+    expect(app.storage.box<Category>().getAll().map((c) => c.name), [
+      'Restored',
+    ]);
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
+  testWidgets(
+    'legacy plaintext .json still imports, with a warning',
+    (tester) async {
+      seedCategory('Live');
+      final legacy = BackupData(
+        version: '1.0.0',
+        createdAt: DateTime(2026, 2, 1),
+        appName: 'Ikuyo Finance',
+        categories: [
+          CategoryBackup(
+            ulid: 'c-old',
+            name: 'OldBackup',
+            type: 1,
+            createdAt: DateTime(2026, 2, 1),
+            updatedAt: DateTime(2026, 2, 1),
+          ),
+        ],
+        assets: const [],
+        transactions: const [],
+        budgets: const [],
+      );
+      final path = '${dir.path}/old.json';
+      File(path).writeAsStringSync(legacy.toJsonString());
+
+      await open(tester);
+      await pickAndImport(tester, path);
+      await settleReal(
+        tester,
+        () => find
+            .text(LocaleKeys.backupScreenImportConfirmTitle.tr())
+            .evaluate()
+            .isNotEmpty,
+      );
+      expect(
+        find.byKey(const Key('backup_import_passphrase_field')),
+        findsNothing,
+      );
+      expect(find.byKey(const Key('backup_legacy_warning')), findsOneWidget);
+      await tapText(
+        tester,
+        LocaleKeys.backupScreenImportConfirmButton.tr(),
+        settle: false,
+      );
+      await settleReal(
+        tester,
+        () => app.storage.box<Category>().getAll().any(
+          (c) => c.name == 'OldBackup',
+        ),
+      );
+      expect(app.storage.box<Category>().getAll().map((c) => c.name), [
+        'OldBackup',
+      ]);
+      await tester.pump(const Duration(seconds: 6));
+      await tester.pumpAndSettle();
+    },
+    timeout: const Timeout(Duration(seconds: 60)),
+  );
+}

@@ -2,7 +2,7 @@
   "backup": {
     "screen": {
       "title": "Data Backup",
-      "infoDescription": "Backup data is saved in JSON format that can be imported back anytime.",
+      "infoDescription": "Backups are encrypted with your passphrase and can be imported back anytime.",
       "currentData": "Current Data",
       "categories": "Categories",
       "assets": "Assets",
@@ -11,10 +11,10 @@
       "total": "Total",
       "totalItems": "{count} items",
       "exportTitle": "Export Data",
-      "exportDescription": "Save all data to a JSON file that can be stored on your device.",
+      "exportDescription": "Save all data to an encrypted backup file on your device.",
       "exportButton": "Export Now",
       "importTitle": "Import Data",
-      "importDescription": "Restore data from a JSON backup file. Existing data will be replaced.",
+      "importDescription": "Restore data from a backup file (.ikuyo or older .json). Existing data will be replaced.",
       "importButton": "Choose Backup File",
       "importConfirmTitle": "Confirm Import",
       "importDataLabel": "Data to import:",
@@ -38,6 +38,30 @@
       "autoEnabled": "Auto backup is active — next run at {time}",
       "autoDisabled": "Auto backup is disabled",
       "autoScheduleFailed": "Failed to update the auto backup schedule. Please try again."
+    },
+    "encryption": {
+      "exportTitle": "Encrypt backup",
+      "exportDescription": "Choose a passphrase to encrypt this backup. You will need it to import the file.",
+      "passphraseLabel": "Passphrase",
+      "passphraseConfirmLabel": "Confirm passphrase",
+      "passphraseTooShort": "Passphrase must be at least {min} characters",
+      "passphraseMismatch": "Passphrases do not match",
+      "unrecoverableWarning": "If you forget this passphrase the backup cannot be recovered. It is not stored anywhere.",
+      "encryptAndExport": "Encrypt & Export",
+      "exportUnencrypted": "Export without encryption",
+      "unencryptedTitle": "Export without encryption?",
+      "unencryptedWarning": "The file will contain all your financial data in readable form. Anyone who gets the file can read it.",
+      "unencryptedConfirm": "Export unencrypted",
+      "cancel": "Cancel",
+      "importTitle": "Encrypted backup",
+      "importDescription": "Enter the passphrase used when this backup was exported.",
+      "decrypt": "Decrypt",
+      "wrongPassphrase": "Wrong passphrase or the file was modified. Nothing was imported.",
+      "truncated": "The backup file is incomplete or damaged. Nothing was imported.",
+      "unsupported": "This backup was made with an unsupported format version. Nothing was imported.",
+      "notABackup": "This file is not an Ikuyo backup. Nothing was imported.",
+      "legacyWarning": "This is an old unencrypted backup. It can still be imported, but new exports are encrypted.",
+      "pickerHint": "Choose backup file (.ikuyo or .json)"
     }
   }
 }

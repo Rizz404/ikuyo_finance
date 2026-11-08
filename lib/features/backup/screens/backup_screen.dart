@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:easy_localization/easy_localization.dart';
 import 'package:file_picker/file_picker.dart';
@@ -12,6 +13,8 @@ import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
+import 'package:ikuyo_finance/features/backup/services/backup_crypto.dart';
+import 'package:ikuyo_finance/features/backup/widgets/backup_passphrase_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
 import 'package:ikuyo_finance/shared/widgets/app_file_picker.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
@@ -30,6 +33,10 @@ class BackupScreen extends StatefulWidget {
 class _BackupScreenState extends State<BackupScreen> {
   List<PlatformFile> _importFiles = [];
   String _exportDirectory = '';
+  bool _isProcessing = false;
+
+  // * Pilihan ekspor aktif; hanya di memori layar, dibuang setelah dipakai
+  BackupExportChoice? _pendingExport;
 
   static const _exportDirPrefKey = 'export_directory';
 
@@ -108,26 +115,54 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _handleExport() async {
-    // * Request export dari bloc
+    // * Passphrase diminta dulu; enkripsi default, plaintext hanya opt-out (A14)
+    final choice = await showBackupExportDialog(context);
+    if (choice == null || !mounted) return;
+    _pendingExport = choice;
     context.read<BackupBloc>().add(BackupExportRequested());
   }
 
   Future<void> _handleImport() async {
-    if (_importFiles.isEmpty) return;
+    if (_importFiles.isEmpty || _isProcessing) return;
     try {
-      final file = File(_importFiles.first.path!);
-      final jsonString = await file.readAsString();
+      final bytes = await File(_importFiles.first.path!).readAsBytes();
 
-      // * Parse backup data
-      final backupData = BackupData.fromJsonString(jsonString);
+      // * Dekripsi + validasi penuh sebelum DB disentuh (A14)
+      String? passphrase;
+      final format = BackupCrypto.detect(bytes);
+      if (format == BackupFileFormat.encrypted) {
+        if (!mounted) return;
+        passphrase = await showBackupImportPassphraseDialog(context);
+        if (passphrase == null || !mounted) return;
+      }
+      setState(() => _isProcessing = true);
+      final DecodedBackup decoded;
+      try {
+        decoded = await BackupCrypto.decodeBackup(
+          bytes,
+          passphrase: passphrase,
+        );
+      } finally {
+        passphrase = null;
+        if (mounted) setState(() => _isProcessing = false);
+      }
 
-      // * Show confirmation dialog
       if (!mounted) return;
-      final confirmed = await _showImportConfirmDialog(backupData);
+      final confirmed = await _showImportConfirmDialog(
+        decoded.data,
+        legacyPlaintext: !decoded.wasEncrypted,
+      );
 
       if (confirmed == true && mounted) {
-        context.read<BackupBloc>().add(BackupImportRequested(backupData));
+        context.read<BackupBloc>().add(BackupImportRequested(decoded.data));
       }
+    } on BackupCryptoException catch (e) {
+      if (!mounted) return;
+      ToastHelper.instance.showError(
+        context: context,
+        title: LocaleKeys.backupScreenError.tr(),
+        description: backupCryptoErrorMessage(e.error),
+      );
     } catch (e) {
       if (!mounted) return;
       ToastHelper.instance.showError(
@@ -140,7 +175,10 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
-  Future<bool?> _showImportConfirmDialog(BackupData backupData) {
+  Future<bool?> _showImportConfirmDialog(
+    BackupData backupData, {
+    bool legacyPlaintext = false,
+  }) {
     return showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
@@ -157,6 +195,15 @@ class _BackupScreenState extends State<BackupScreen> {
               LocaleKeys.backupScreenImportDataLabel.tr(),
               style: AppTextStyle.bodyMedium,
             ),
+            if (legacyPlaintext) ...[
+              const SizedBox(height: 8),
+              AppText(
+                LocaleKeys.backupEncryptionLegacyWarning.tr(),
+                key: const Key('backup_legacy_warning'),
+                style: AppTextStyle.bodySmall,
+                color: context.semantic.warning,
+              ),
+            ],
             const SizedBox(height: 12),
             _buildSummaryItem(
               LocaleKeys.backupScreenCategories.tr(),
@@ -223,9 +270,32 @@ class _BackupScreenState extends State<BackupScreen> {
   }
 
   Future<void> _saveExportedFile(BackupData backupData) async {
+    final choice = _pendingExport;
+    _pendingExport = null;
+    if (choice == null) return;
+    setState(() => _isProcessing = true);
+    final Uint8List bytes;
+    try {
+      bytes = await BackupCrypto.encodeBackup(
+        backupData,
+        passphrase: choice.passphrase,
+      );
+    } on BackupCryptoException catch (e) {
+      if (mounted) {
+        setState(() => _isProcessing = false);
+        ToastHelper.instance.showError(
+          context: context,
+          title: LocaleKeys.backupScreenError.tr(),
+          description: backupCryptoErrorMessage(e.error),
+        );
+      }
+      return;
+    }
+    if (mounted) setState(() => _isProcessing = false);
+    final extension = choice.encrypted ? BackupCrypto.fileExtension : 'json';
     try {
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-      final fileName = 'ikuyo_backup_$timestamp.json';
+      final fileName = 'ikuyo_backup_$timestamp.$extension';
 
       // * Ensure the target directory exists
       final dir = Directory(_exportDirectory);
@@ -234,7 +304,7 @@ class _BackupScreenState extends State<BackupScreen> {
       }
 
       final filePath = '$_exportDirectory/$fileName';
-      await File(filePath).writeAsString(backupData.toJsonString());
+      await File(filePath).writeAsBytes(bytes, flush: true);
 
       if (!mounted) return;
       ToastHelper.instance.showSuccess(
@@ -249,9 +319,9 @@ class _BackupScreenState extends State<BackupScreen> {
       try {
         final fallbackDir = await getApplicationDocumentsDirectory();
         final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
-        final fileName = 'ikuyo_backup_$timestamp.json';
+        final fileName = 'ikuyo_backup_$timestamp.$extension';
         final filePath = '${fallbackDir.path}/$fileName';
-        await File(filePath).writeAsString(backupData.toJsonString());
+        await File(filePath).writeAsBytes(bytes, flush: true);
 
         if (!mounted) return;
         // * Reset saved directory to fallback so next export works
@@ -530,10 +600,12 @@ class _BackupScreenState extends State<BackupScreen> {
           const SizedBox(height: 16),
           AppFilePicker(
             name: 'import_backup',
+            // * .ikuyo tidak dikenal MimeTypeMap Android → picker jatuh ke */*;
+            //   format diverifikasi dari isi file, bukan ekstensi
             fileType: FileType.custom,
-            allowedExtensions: const ['json'],
+            allowedExtensions: const [BackupCrypto.fileExtension, 'json'],
             maxFiles: 1,
-            hintText: 'Choose backup file (.json)',
+            hintText: LocaleKeys.backupEncryptionPickerHint.tr(),
             onChanged: (files) => setState(() => _importFiles = files ?? []),
           ),
           const SizedBox(height: 12),
@@ -542,9 +614,11 @@ class _BackupScreenState extends State<BackupScreen> {
               return AppButton(
                 text: LocaleKeys.backupScreenImportButton.tr(),
                 color: AppButtonColor.secondary,
-                isLoading: state.status == BackupStatus.loading,
+                isLoading:
+                    state.status == BackupStatus.loading || _isProcessing,
                 onPressed:
                     (state.status == BackupStatus.loading ||
+                        _isProcessing ||
                         _importFiles.isEmpty)
                     ? null
                     : _handleImport,
@@ -649,9 +723,11 @@ class _BackupScreenState extends State<BackupScreen> {
               return AppButton(
                 text: LocaleKeys.backupScreenExportButton.tr(),
                 color: AppButtonColor.primary,
-                isLoading: state.status == BackupStatus.loading,
+                isLoading:
+                    state.status == BackupStatus.loading || _isProcessing,
                 onPressed:
                     (state.status == BackupStatus.loading ||
+                        _isProcessing ||
                         _exportDirectory.isEmpty)
                     ? null
                     : _handleExport,

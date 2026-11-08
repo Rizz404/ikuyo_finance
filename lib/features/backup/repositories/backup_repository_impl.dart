@@ -48,7 +48,7 @@ class BackupRepositoryImpl implements BackupRepository {
         final autoLogs = _autoLogBox.getAll();
 
         final backupData = BackupData(
-          version: '1.0.0',
+          version: BackupData.currentVersion,
           createdAt: DateTime.now(),
           appName: 'Ikuyo Finance',
           categories: categories.map(CategoryBackup.fromEntity).toList(),

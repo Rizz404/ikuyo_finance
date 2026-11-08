@@ -10,6 +10,10 @@ import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 
 /// Model untuk menyimpan semua data backup
 class BackupData {
+  // * 2.0.0: payload dapat dibungkus envelope terenkripsi (A14); isi JSON
+  // *   tetap kompatibel, backup 1.0.0 masih bisa diimpor
+  static const currentVersion = '2.0.0';
+
   final String version;
   final DateTime createdAt;
   final String appName;

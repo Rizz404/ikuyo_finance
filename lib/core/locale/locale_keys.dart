@@ -314,6 +314,42 @@ abstract class LocaleKeys {
   static const backupScreenAutoDisabled = 'backup.screen.autoDisabled';
   static const backupScreenAutoScheduleFailed =
       'backup.screen.autoScheduleFailed';
+  static const backupEncryptionExportTitle = 'backup.encryption.exportTitle';
+  static const backupEncryptionExportDescription =
+      'backup.encryption.exportDescription';
+  static const backupEncryptionPassphraseLabel =
+      'backup.encryption.passphraseLabel';
+  static const backupEncryptionPassphraseConfirmLabel =
+      'backup.encryption.passphraseConfirmLabel';
+  static const backupEncryptionPassphraseTooShort =
+      'backup.encryption.passphraseTooShort';
+  static const backupEncryptionPassphraseMismatch =
+      'backup.encryption.passphraseMismatch';
+  static const backupEncryptionUnrecoverableWarning =
+      'backup.encryption.unrecoverableWarning';
+  static const backupEncryptionEncryptAndExport =
+      'backup.encryption.encryptAndExport';
+  static const backupEncryptionExportUnencrypted =
+      'backup.encryption.exportUnencrypted';
+  static const backupEncryptionUnencryptedTitle =
+      'backup.encryption.unencryptedTitle';
+  static const backupEncryptionUnencryptedWarning =
+      'backup.encryption.unencryptedWarning';
+  static const backupEncryptionUnencryptedConfirm =
+      'backup.encryption.unencryptedConfirm';
+  static const backupEncryptionCancel = 'backup.encryption.cancel';
+  static const backupEncryptionImportTitle = 'backup.encryption.importTitle';
+  static const backupEncryptionImportDescription =
+      'backup.encryption.importDescription';
+  static const backupEncryptionDecrypt = 'backup.encryption.decrypt';
+  static const backupEncryptionWrongPassphrase =
+      'backup.encryption.wrongPassphrase';
+  static const backupEncryptionTruncated = 'backup.encryption.truncated';
+  static const backupEncryptionUnsupported = 'backup.encryption.unsupported';
+  static const backupEncryptionNotABackup = 'backup.encryption.notABackup';
+  static const backupEncryptionLegacyWarning =
+      'backup.encryption.legacyWarning';
+  static const backupEncryptionPickerHint = 'backup.encryption.pickerHint';
 
   // ──────────────────────────────────────────────
   // * Budget — Validator
