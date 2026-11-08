@@ -1,4 +1,3 @@
-import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
@@ -14,6 +13,7 @@ import 'package:ikuyo_finance/features/transaction/models/update_transaction_par
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository_impl.dart';
 
 import '../../../support/fake_app_file_storage.dart';
+import '../../../support/locale_test_helper.dart';
 import '../../../support/objectbox_test_store.dart';
 import '../../../support/test_logger.dart';
 
@@ -769,11 +769,16 @@ void main() {
       expect(summary.totalIncome, 0);
       expect(summary.totalExpense, 75);
       expect(summary.expenseSummaries.single.category, isNull);
-      // * A21: label dilokalisasi, jangan hardcode teks bahasa tertentu
-      expect(
-        summary.expenseSummaries.single.categoryName,
-        LocaleKeys.transactionNoCategory.tr(),
-      );
+      // * A21/R09: label berasal dari bundle terjemahan aktif, bukan teks
+      // * hardcode. Dibandingkan dengan literal tiap locale (bukan .tr())
+      // * agar tidak tautologis.
+      final bucket = summary.expenseSummaries.single;
+      expect(LocaleKeys.transactionNoCategory, 'transaction.common.noCategory');
+      loadAssetTranslations('en-US');
+      expect(bucket.categoryName, 'No Category');
+      loadAssetTranslations('id-ID');
+      expect(bucket.categoryName, 'Tanpa Kategori');
+      loadAssetTranslations('en-US');
     });
 
     test('excludes transactions outside the requested date range', () async {
