@@ -47,6 +47,12 @@ abstract class TransactionRepository {
     List<CreateTransactionParams> paramsList,
   );
 
+  /// * Versi sinkron [createManyTransactions]; bila dipanggil di dalam write
+  /// * transaction ObjectBox yang sedang berjalan, ikut commit/rollback-nya
+  BulkCreateResult createManyTransactionsSync(
+    List<CreateTransactionParams> paramsList,
+  );
+
   TaskEither<Failure, SuccessCursor<Transaction>> getTransactions(
     GetTransactionsParams params,
   );

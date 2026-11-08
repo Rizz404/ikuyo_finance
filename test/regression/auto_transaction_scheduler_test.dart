@@ -1,15 +1,13 @@
 // Regression: A05, AUTO-1, AUTO-2, AUTO-3, AUTO-5, AUTO-6, AUTO-7, AUTO-9,
-// CORE-3 (auto transaction scheduler). Real ObjectBox + real repositories;
+// CORE-3, R02 (auto transaction scheduler). Real ObjectBox + real repositories;
 // only the notification plugin (OS boundary) is faked.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:ikuyo_finance/core/wrapper/failure.dart';
-import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_calculator.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_frequency.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_log.dart';
 import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transaction_repository_impl.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
@@ -32,18 +30,19 @@ class _FakeNotif extends Fake implements AutoTransactionNotificationService {
   ) async {}
 }
 
-/// Real repository; records the persisted nextExecutedAt at the moment the
-/// scheduler books transactions (to prove the tick was claimed first).
+/// Real repository; runs [onCreate] at the moment the scheduler books
+/// transactions (both the async and the in-transaction entry points funnel
+/// through [createManyTransactionsSync]).
 class _SpyTxRepo extends TransactionRepositoryImpl {
   _SpyTxRepo(super.storage, this.onCreate);
   final void Function() onCreate;
 
   @override
-  TaskEither<Failure, Success<BulkCreateResult>> createManyTransactions(
+  BulkCreateResult createManyTransactionsSync(
     List<CreateTransactionParams> params,
   ) {
     onCreate();
-    return super.createManyTransactions(params);
+    return super.createManyTransactionsSync(params);
   }
 }
 
@@ -154,6 +153,82 @@ void main() {
     await scheduler(txRepo: spy).runPendingExecutions();
     expect(persistedAtCreate, isNotNull);
     expect(persistedAtCreate!.isAfter(DateTime.now()), isTrue);
+  });
+
+  test('R02 a booking crash after the claim rolls the claim back; the retry '
+      'books the tick exactly once with one log', () async {
+    final g = seedGroup(next: today());
+    final before = reload(g).nextExecutedAt;
+    var crash = true;
+    final flaky = _SpyTxRepo(store.storage, () {
+      if (crash) {
+        crash = false;
+        throw StateError('simulated crash while booking');
+      }
+    });
+    await scheduler(txRepo: flaky).runPendingExecutions();
+    expect(generated(), 0);
+    expect(
+      reload(g).nextExecutedAt!.millisecondsSinceEpoch,
+      before!.millisecondsSinceEpoch,
+    );
+    expect(store.storage.box<AutoTransactionLog>().count(), 0);
+
+    await scheduler(txRepo: flaky).runPendingExecutions();
+    expect(generated(), 1);
+    expect(store.storage.box<Asset>().get(asset.id)!.balance, 990);
+    expect(store.storage.box<AutoTransactionLog>().count(), 1);
+    expect(reload(g).nextExecutedAt!.isAfter(DateTime.now()), isTrue);
+  });
+
+  test('R02 a user disable during a run is not overwritten by the '
+      'post-execution update', () async {
+    final g = seedGroup(next: today());
+    final spy = _SpyTxRepo(store.storage, () {
+      final box = store.storage.box<AutoTransactionGroup>();
+      box.put(box.get(g.id)!..isActive = false);
+    });
+    await scheduler(txRepo: spy).runPendingExecutions();
+    expect(reload(g).isActive, isFalse);
+  });
+
+  test('R02 a user pause during a run is preserved', () async {
+    final g = seedGroup(next: today());
+    final spy = _SpyTxRepo(store.storage, () {
+      final box = store.storage.box<AutoTransactionGroup>();
+      box.put(
+        box.get(g.id)!
+          ..isPaused = true
+          ..pauseStartAt = DateTime.now(),
+      );
+    });
+    await scheduler(txRepo: spy).runPendingExecutions();
+    final stored = reload(g);
+    expect(stored.isPaused, isTrue);
+    expect(stored.isActive, isTrue);
+  });
+
+  test('R02 a post-execution update loses the CAS when the schedule moved',
+      () async {
+    final repo = AutoTransactionRepositoryImpl(store.storage);
+    final g = seedGroup(next: today());
+    final moved = today().add(const Duration(days: 9));
+    store.storage.box<AutoTransactionGroup>().put(
+      reload(g)..nextExecutedAt = moved,
+    );
+    await repo
+        .updateGroupAfterExecution(
+          ulid: g.ulid,
+          expectedNext: today().add(const Duration(days: 1)),
+          nextExecutedAt: today().add(const Duration(days: 1)),
+          lastExecutedAt: DateTime.now(),
+          isActive: true,
+        )
+        .run();
+    expect(
+      reload(g).nextExecutedAt!.millisecondsSinceEpoch,
+      moved.millisecondsSinceEpoch,
+    );
   });
 
   test('AUTO-6 endDate is enforced per tick and its day is inclusive', () async {

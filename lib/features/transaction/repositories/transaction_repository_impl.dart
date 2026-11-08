@@ -122,120 +122,127 @@ class TransactionRepositoryImpl implements TransactionRepository {
       () async {
         logService('Buat banyak transaksi', 'jumlah: ${paramsList.length}');
 
-        return _storage.store.runInTransaction(TxMode.write, () {
-          final List<Transaction> successfulTransactions = [];
-          final List<BulkCreateFailure> failedTransactions = [];
-          final Map<String, Asset> modifiedAssets = {};
+        final result = createManyTransactionsSync(paramsList);
+        final failedTransactions = result.failedTransactions;
+        final message = failedTransactions.isEmpty
+            ? '${result.successfulTransactions.length} transaksi berhasil dibuat'
+            : '${result.successfulTransactions.length} berhasil, ${failedTransactions.length} gagal';
 
-          for (int i = 0; i < paramsList.length; i++) {
-            final params = paramsList[i];
-
-            try {
-              // * Get asset (required)
-              final asset =
-                  modifiedAssets[params.assetUlid] ??
-                  _assetBox
-                      .query(Asset_.ulid.equals(params.assetUlid))
-                      .build()
-                      .findFirst();
-
-              if (asset == null) {
-                failedTransactions.add(
-                  BulkCreateFailure(
-                    params: params,
-                    errorMessage: 'Aset tidak ditemukan',
-                    index: i,
-                  ),
-                );
-                continue;
-              }
-
-              final transaction = Transaction(
-                amount: params.amount,
-                transactionDate: params.transactionDate,
-                description: params.description,
-                imagePath: params.imagePath,
-              );
-
-              transaction.asset.target = asset;
-
-              // * Set category jika ada
-              if (params.categoryUlid != null) {
-                final category = _categoryBox
-                    .query(Category_.ulid.equals(params.categoryUlid!))
-                    .build()
-                    .findFirst();
-
-                if (category == null) {
-                  failedTransactions.add(
-                    BulkCreateFailure(
-                      params: params,
-                      errorMessage: 'Kategori tidak ditemukan',
-                      index: i,
-                    ),
-                  );
-                  continue;
-                }
-
-                transaction.category.target = category;
-              }
-
-              final direction = _resolveDirection(
-                transaction.category.target,
-                params.type,
-              );
-              transaction.type = direction.index;
-              _box.put(transaction);
-
-              // * Update asset balance
-              final balanceAdjustment = _getBalanceAdjustment(
-                params.amount,
-                direction,
-              );
-              asset.balance += balanceAdjustment;
-              asset.updatedAt = DateTime.now();
-
-              // * Track modified asset
-              modifiedAssets[params.assetUlid] = asset;
-
-              successfulTransactions.add(transaction);
-            } catch (e) {
-              failedTransactions.add(
-                BulkCreateFailure(
-                  params: params,
-                  errorMessage: e.toString(),
-                  index: i,
-                ),
-              );
-            }
-          }
-
-          // * Save all modified assets at once
-          if (modifiedAssets.isNotEmpty) {
-            _assetBox.putMany(modifiedAssets.values.toList());
-          }
-
-          logInfo(
-            'Bulk create selesai: ${successfulTransactions.length} berhasil, ${failedTransactions.length} gagal',
-          );
-
-          final result = BulkCreateResult(
-            successfulTransactions: successfulTransactions,
-            failedTransactions: failedTransactions,
-          );
-
-          final message = failedTransactions.isEmpty
-              ? '${successfulTransactions.length} transaksi berhasil dibuat'
-              : '${successfulTransactions.length} berhasil, ${failedTransactions.length} gagal';
-
-          return Success(message: message, data: result);
-        });
+        return Success(message: message, data: result);
       },
       (error, stackTrace) {
         logError('Gagal membuat banyak transaksi', error, stackTrace);
         return Failure(message: 'Gagal membuat transaksi. Silakan coba lagi.');
       },
     );
+  }
+
+  @override
+  BulkCreateResult createManyTransactionsSync(
+    List<CreateTransactionParams> paramsList,
+  ) {
+    return _storage.store.runInTransaction(TxMode.write, () {
+      final List<Transaction> successfulTransactions = [];
+      final List<BulkCreateFailure> failedTransactions = [];
+      final Map<String, Asset> modifiedAssets = {};
+
+      for (int i = 0; i < paramsList.length; i++) {
+        final params = paramsList[i];
+
+        try {
+          // * Get asset (required)
+          final asset =
+              modifiedAssets[params.assetUlid] ??
+              _assetBox
+                  .query(Asset_.ulid.equals(params.assetUlid))
+                  .build()
+                  .findFirst();
+
+          if (asset == null) {
+            failedTransactions.add(
+              BulkCreateFailure(
+                params: params,
+                errorMessage: 'Aset tidak ditemukan',
+                index: i,
+              ),
+            );
+            continue;
+          }
+
+          final transaction = Transaction(
+            amount: params.amount,
+            transactionDate: params.transactionDate,
+            description: params.description,
+            imagePath: params.imagePath,
+          );
+
+          transaction.asset.target = asset;
+
+          // * Set category jika ada
+          if (params.categoryUlid != null) {
+            final category = _categoryBox
+                .query(Category_.ulid.equals(params.categoryUlid!))
+                .build()
+                .findFirst();
+
+            if (category == null) {
+              failedTransactions.add(
+                BulkCreateFailure(
+                  params: params,
+                  errorMessage: 'Kategori tidak ditemukan',
+                  index: i,
+                ),
+              );
+              continue;
+            }
+
+            transaction.category.target = category;
+          }
+
+          final direction = _resolveDirection(
+            transaction.category.target,
+            params.type,
+          );
+          transaction.type = direction.index;
+          _box.put(transaction);
+
+          // * Update asset balance
+          final balanceAdjustment = _getBalanceAdjustment(
+            params.amount,
+            direction,
+          );
+          asset.balance += balanceAdjustment;
+          asset.updatedAt = DateTime.now();
+
+          // * Track modified asset
+          modifiedAssets[params.assetUlid] = asset;
+
+          successfulTransactions.add(transaction);
+        } catch (e) {
+          failedTransactions.add(
+            BulkCreateFailure(
+              params: params,
+              errorMessage: e.toString(),
+              index: i,
+            ),
+          );
+        }
+      }
+
+      // * Save all modified assets at once
+      if (modifiedAssets.isNotEmpty) {
+        _assetBox.putMany(modifiedAssets.values.toList());
+      }
+
+      logInfo(
+        'Bulk create selesai: ${successfulTransactions.length} berhasil, ${failedTransactions.length} gagal',
+      );
+
+      return BulkCreateResult(
+        successfulTransactions: successfulTransactions,
+        failedTransactions: failedTransactions,
+      );
+    });
   }
 
   @override

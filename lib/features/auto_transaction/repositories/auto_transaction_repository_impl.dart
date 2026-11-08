@@ -610,28 +610,44 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
   @override
   TaskEither<Failure, ActionSuccess> updateGroupAfterExecution({
     required String ulid,
+    DateTime? expectedNext,
     required DateTime nextExecutedAt,
     required DateTime lastExecutedAt,
     required bool isActive,
   }) {
     return TaskEither.tryCatch(
       () async {
-        final group = _groupBox
-            .query(AutoTransactionGroup_.ulid.equals(ulid))
-            .build()
-            .findFirst();
+        return _storage.store.runInTransaction(TxMode.write, () {
+          final group = _groupBox
+              .query(AutoTransactionGroup_.ulid.equals(ulid))
+              .build()
+              .findFirst();
 
-        if (group == null) {
-          throw Exception('Grup tidak ditemukan');
-        }
+          if (group == null) {
+            throw Exception('Grup tidak ditemukan');
+          }
 
-        group.nextExecutedAt = nextExecutedAt;
-        group.lastExecutedAt = lastExecutedAt;
-        group.isActive = isActive;
-        group.updatedAt = DateTime.now();
-        _groupBox.put(group);
+          if (expectedNext != null &&
+              group.nextExecutedAt?.millisecondsSinceEpoch !=
+                  expectedNext.millisecondsSinceEpoch) {
+            return const ActionSuccess(
+              message: 'Jadwal grup sudah berubah, update dilewati',
+            );
+          }
 
-        return const ActionSuccess(message: 'Grup diperbarui setelah eksekusi');
+          group.nextExecutedAt = nextExecutedAt;
+          group.lastExecutedAt = lastExecutedAt;
+          // * Scheduler hanya boleh menonaktifkan, bukan mengaktifkan ulang
+          group.isActive = expectedNext == null
+              ? isActive
+              : group.isActive && isActive;
+          group.updatedAt = DateTime.now();
+          _groupBox.put(group);
+
+          return const ActionSuccess(
+            message: 'Grup diperbarui setelah eksekusi',
+          );
+        });
       },
       (error, stackTrace) {
         logError('Gagal update grup setelah eksekusi', error, stackTrace);
@@ -666,6 +682,44 @@ class AutoTransactionRepositoryImpl implements AutoTransactionRepository {
       },
       (error, stackTrace) {
         logError('Gagal klaim tick grup', error, stackTrace);
+        return Failure(message: error.toString());
+      },
+    );
+  }
+
+  @override
+  TaskEither<Failure, List<AutoTransactionLog>?> commitTick({
+    required String ulid,
+    required DateTime? expected,
+    required DateTime next,
+    bool allowPaused = false,
+    required List<AutoTransactionLog> Function(AutoTransactionGroup group) book,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        return _storage.store.runInTransaction(TxMode.write, () {
+          final group = _groupBox
+              .query(AutoTransactionGroup_.ulid.equals(ulid))
+              .build()
+              .findFirst();
+          if (group == null || !group.isActive) return null;
+          if (group.isPaused && !allowPaused) return null;
+          final stored = group.nextExecutedAt?.millisecondsSinceEpoch;
+          if (stored != expected?.millisecondsSinceEpoch) return null;
+          group.nextExecutedAt = next;
+          group.updatedAt = DateTime.now();
+          _groupBox.put(group);
+
+          final logs = book(group);
+          for (final log in logs) {
+            log.group.target = group;
+          }
+          _logBox.putMany(logs);
+          return logs;
+        });
+      },
+      (error, stackTrace) {
+        logError('Gagal commit tick grup', error, stackTrace);
         return Failure(message: error.toString());
       },
     );

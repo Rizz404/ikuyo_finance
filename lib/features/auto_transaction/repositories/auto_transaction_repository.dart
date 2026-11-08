@@ -59,9 +59,14 @@ abstract class AutoTransactionRepository {
   /// * Query semua grup yang aktif dan nextExecutedAt ≤ now
   TaskEither<Failure, Success<List<AutoTransactionGroup>>> getPendingGroups();
 
-  /// * Update grup setelah eksekusi (nextExecutedAt, lastExecutedAt, isActive)
+  /// * Update grup setelah eksekusi (nextExecutedAt, lastExecutedAt, isActive).
+  /// * Bila [expectedNext] diisi, update bersifat compare-and-set: diabaikan
+  /// * jika nextExecutedAt tersimpan sudah berubah. isActive hanya bisa
+  /// * diturunkan (tidak mengaktifkan ulang grup yang dinonaktifkan pengguna)
+  /// * dan status pause tidak pernah disentuh.
   TaskEither<Failure, ActionSuccess> updateGroupAfterExecution({
     required String ulid,
+    DateTime? expectedNext,
     required DateTime nextExecutedAt,
     required DateTime lastExecutedAt,
     required bool isActive,
@@ -73,6 +78,19 @@ abstract class AutoTransactionRepository {
     required String ulid,
     required DateTime? expected,
     required DateTime next,
+  });
+
+  /// * Klaim tick + pembukuan + log dalam SATU write transaction ObjectBox.
+  /// * [book] dijalankan sinkron di dalam transaksi; exception apa pun
+  /// * me-rollback klaim, transaksi, saldo, dan log sehingga retry aman.
+  /// * Return null bila klaim kalah (runner lain/pengguna sudah mengubah
+  /// * jadwal, grup nonaktif, atau di-pause saat [allowPaused] false).
+  TaskEither<Failure, List<AutoTransactionLog>?> commitTick({
+    required String ulid,
+    required DateTime? expected,
+    required DateTime next,
+    bool allowPaused = false,
+    required List<AutoTransactionLog> Function(AutoTransactionGroup group) book,
   });
 
   TaskEither<Failure, ActionSuccess> saveExecutionLog(AutoTransactionLog log);
