@@ -18,11 +18,29 @@ class ObjectBoxStorage {
 
   /// Initialize ObjectBox Store
   /// Harus dipanggil sebelum menggunakan ObjectBox
-  Future<void> init() async {
-    final docsDir = await getApplicationDocumentsDirectory();
-    final storePath = path.join(docsDir.path, 'ikuyo_finance_db');
+  Future<void> init({String? directory}) async {
+    final storePath =
+        directory ??
+        path.join(
+          (await getApplicationDocumentsDirectory()).path,
+          'ikuyo_finance_db',
+        );
 
-    _store = await openStore(directory: storePath);
+    // * Isolate lain (mis. WorkManager) bisa sudah membuka store di path
+    // * yang sama dalam proses ini — attach agar tidak gagal "already open"
+    if (Store.isOpen(storePath)) {
+      _store = Store.attach(getObjectBoxModel(), storePath);
+      return;
+    }
+    try {
+      _store = await openStore(directory: storePath);
+    } on ObjectBoxException catch (_) {
+      if (!Store.isOpen(storePath)) rethrow;
+      _store = Store.attach(getObjectBoxModel(), storePath);
+    } on StateError catch (_) {
+      if (!Store.isOpen(storePath)) rethrow;
+      _store = Store.attach(getObjectBoxModel(), storePath);
+    }
   }
 
   /// Close store ketika tidak digunakan
