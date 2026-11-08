@@ -91,36 +91,7 @@ class MyApp extends StatelessWidget {
         ),
         BlocProvider(create: (_) => getIt<ExportBloc>()),
       ],
-      // * Use BlocListener for loose coupling between blocs (best practice)
-      child: MultiBlocListener(
-        listeners: [
-          BlocListener<TransactionBloc, TransactionState>(
-            listenWhen: (previous, current) =>
-                previous.writeStatus != current.writeStatus &&
-                current.writeStatus == TransactionWriteStatus.success,
-            listener: (context, state) {
-              // * Refresh asset, budget, and statistic when transaction write succeeds
-              context.read<AssetBloc>().add(const AssetRefreshed());
-              context.read<BudgetBloc>().add(const BudgetRefreshed());
-              context.read<StatisticBloc>().add(const StatisticRefreshed());
-            },
-          ),
-          BlocListener<BackupBloc, BackupState>(
-            listenWhen: (previous, current) =>
-                previous.status != current.status &&
-                current.status == BackupStatus.success &&
-                current.isImport,
-            listener: (context, state) {
-              // * Refetch all data blocs after successful backup import
-              context.read<CategoryBloc>().add(const CategoryFetched());
-              context.read<AssetBloc>().add(const AssetFetched());
-              context.read<BudgetBloc>().add(const BudgetFetched());
-              context.read<TransactionBloc>().add(const TransactionFetched());
-              context.read<StatisticBloc>().add(const StatisticRefreshed());
-              context.read<AutoTransactionBloc>().add(const AutoGroupFetched());
-            },
-          ),
-        ],
+      child: AppDataSyncListener(
         child: BlocBuilder<ThemeCubit, ThemeState>(
           builder: (context, themeState) {
             return MaterialApp.router(
@@ -134,7 +105,7 @@ class MyApp extends StatelessWidget {
               supportedLocales: context.supportedLocales,
               locale: context.locale,
               builder: (context, child) {
-                return _AppSecurityWrapper(child: child!);
+                return AppSecurityWrapper(child: child!);
               },
             );
           },
@@ -144,16 +115,76 @@ class MyApp extends StatelessWidget {
   }
 }
 
-/// Widget yang menangani app lifecycle & menampilkan lock screen overlay
-class _AppSecurityWrapper extends StatefulWidget {
+/// Sinkron antar bloc saat data berubah (dipakai MyApp dan harness uji)
+/// * Use BlocListener for loose coupling between blocs (best practice)
+class AppDataSyncListener extends StatelessWidget {
   final Widget child;
-  const _AppSecurityWrapper({required this.child});
+
+  const AppDataSyncListener({super.key, required this.child});
 
   @override
-  State<_AppSecurityWrapper> createState() => _AppSecurityWrapperState();
+  Widget build(BuildContext context) {
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<TransactionBloc, TransactionState>(
+          listenWhen: (previous, current) =>
+              previous.writeStatus != current.writeStatus &&
+              current.writeStatus == TransactionWriteStatus.success,
+          listener: (context, state) {
+            // * Refresh asset, budget, and statistic when transaction write succeeds
+            context.read<AssetBloc>().add(const AssetRefreshed());
+            context.read<BudgetBloc>().add(const BudgetRefreshed());
+            context.read<StatisticBloc>().add(const StatisticRefreshed());
+          },
+        ),
+        BlocListener<CategoryBloc, CategoryState>(
+          listenWhen: (previous, current) =>
+              previous.writeStatus != current.writeStatus &&
+              current.writeStatus == CategoryWriteStatus.success,
+          listener: (context, state) {
+            // * Pohon kategori berubah: realisasi anggaran ikut berubah (F7/F9)
+            context.read<BudgetBloc>().add(const BudgetRefreshed());
+          },
+        ),
+        BlocListener<BackupBloc, BackupState>(
+          listenWhen: (previous, current) =>
+              previous.status != current.status &&
+              current.status == BackupStatus.success &&
+              current.isImport,
+          listener: (context, state) {
+            // * Refetch all data blocs after successful backup import
+            context.read<CategoryBloc>().add(const CategoryFetched());
+            context.read<AssetBloc>().add(const AssetFetched());
+            context.read<BudgetBloc>().add(const BudgetFetched());
+            context.read<TransactionBloc>().add(const TransactionFetched());
+            context.read<StatisticBloc>().add(const StatisticRefreshed());
+            context.read<AutoTransactionBloc>().add(const AutoGroupFetched());
+          },
+        ),
+      ],
+      child: child,
+    );
+  }
 }
 
-class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
+/// Widget yang menangani app lifecycle & menampilkan lock screen overlay
+class AppSecurityWrapper extends StatefulWidget {
+  final Widget child;
+
+  /// * Scan pending auto transaction saat resume; default scheduler DI
+  final Future<void> Function()? runPendingExecutions;
+
+  const AppSecurityWrapper({
+    super.key,
+    required this.child,
+    this.runPendingExecutions,
+  });
+
+  @override
+  State<AppSecurityWrapper> createState() => _AppSecurityWrapperState();
+}
+
+class _AppSecurityWrapperState extends State<AppSecurityWrapper>
     with WidgetsBindingObserver {
   @override
   void initState() {
@@ -183,11 +214,15 @@ class _AppSecurityWrapperState extends State<_AppSecurityWrapper>
       case AppLifecycleState.resumed:
         cubit.onAppResumed();
         // * Run scheduler when app comes to foreground, then refresh stale blocs
+        final run =
+            widget.runPendingExecutions ??
+            getIt<AutoTransactionScheduler>().runPendingExecutions;
         unawaited(
-          getIt<AutoTransactionScheduler>().runPendingExecutions().then((_) {
+          run().then((_) {
             if (!mounted) return;
             context.read<TransactionBloc>().add(const TransactionFetched());
             context.read<AssetBloc>().add(const AssetRefreshed());
+            context.read<BudgetBloc>().add(const BudgetRefreshed());
             context.read<StatisticBloc>().add(const StatisticRefreshed());
           }),
         );

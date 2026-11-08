@@ -41,6 +41,8 @@ import 'package:ikuyo_finance/features/security/services/security_storage_servic
 import 'package:ikuyo_finance/features/statistic/bloc/statistic_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/bloc/transaction_bloc.dart';
 import 'package:ikuyo_finance/features/transaction/repositories/transaction_repository_impl.dart';
+import 'package:ikuyo_finance/main.dart'
+    show AppDataSyncListener, AppSecurityWrapper;
 
 import 'fake_app_file_storage.dart';
 import 'objectbox_test_store.dart';
@@ -172,7 +174,9 @@ class TestApp {
 
   void close() => _testStore.close();
 
-  Widget build() {
+  /// [resumeRun] mounts the real [AppSecurityWrapper] (as in `MyApp`) with
+  /// that scheduler run injected, so lifecycle resume paths are testable.
+  Widget build({Future<void> Function()? resumeRun}) {
     final authRepository = MockAuthRepository();
     when(() => authRepository.authStateChanges)
         .thenAnswer((_) => const Stream.empty());
@@ -249,19 +253,28 @@ class TestApp {
                       ),
                     ),
                   ],
-                  child: BlocBuilder<ThemeCubit, ThemeState>(
-                    builder: (context, themeState) {
-                      return MaterialApp.router(
-                        title: 'Ikuyo Finance',
-                        theme: themeState.lightTheme,
-                        darkTheme: themeState.darkTheme,
-                        themeMode: themeState.themeMode,
-                        routerConfig: router,
-                        localizationsDelegates: context.localizationDelegates,
-                        supportedLocales: context.supportedLocales,
-                        locale: context.locale,
-                      );
-                    },
+                  // * Same cross-bloc listeners as MyApp
+                  child: AppDataSyncListener(
+                    child: BlocBuilder<ThemeCubit, ThemeState>(
+                      builder: (context, themeState) {
+                        return MaterialApp.router(
+                          title: 'Ikuyo Finance',
+                          theme: themeState.lightTheme,
+                          darkTheme: themeState.darkTheme,
+                          themeMode: themeState.themeMode,
+                          routerConfig: router,
+                          localizationsDelegates: context.localizationDelegates,
+                          supportedLocales: context.supportedLocales,
+                          locale: context.locale,
+                          builder: resumeRun == null
+                              ? null
+                              : (context, child) => AppSecurityWrapper(
+                                  runPendingExecutions: resumeRun,
+                                  child: child!,
+                                ),
+                        );
+                      },
+                    ),
                   ),
                 );
               },
