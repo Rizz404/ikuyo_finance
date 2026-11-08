@@ -312,6 +312,8 @@ abstract class LocaleKeys {
   static const backupScreenAutoFrequency = 'backup.screen.autoFrequency';
   static const backupScreenAutoEnabled = 'backup.screen.autoEnabled';
   static const backupScreenAutoDisabled = 'backup.screen.autoDisabled';
+  static const backupScreenAutoScheduleFailed =
+      'backup.screen.autoScheduleFailed';
 
   // ──────────────────────────────────────────────
   // * Budget — Validator

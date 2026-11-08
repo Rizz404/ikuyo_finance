@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
@@ -111,9 +113,7 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
     Emitter<BackupState> emit,
   ) async {
     final updated = state.schedule.copyWith(isEnabled: event.isEnabled);
-    await _autoBackupService.saveSettings(updated);
-    await _autoBackupService.schedule(updated);
-    emit(state.copyWith(schedule: updated));
+    await _applySchedule(updated, emit, reschedule: true);
     logInfo('BackupBloc: schedule toggled — enabled=${event.isEnabled}');
   }
 
@@ -125,9 +125,7 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
       hour: event.hour,
       minute: event.minute,
     );
-    await _autoBackupService.saveSettings(updated);
-    if (updated.isEnabled) await _autoBackupService.schedule(updated);
-    emit(state.copyWith(schedule: updated));
+    await _applySchedule(updated, emit, reschedule: updated.isEnabled);
     logInfo('BackupBloc: schedule time changed — ${updated.formattedTime}');
   }
 
@@ -136,9 +134,34 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
     Emitter<BackupState> emit,
   ) async {
     final updated = state.schedule.copyWith(frequency: event.frequency);
-    await _autoBackupService.saveSettings(updated);
-    if (updated.isEnabled) await _autoBackupService.schedule(updated);
-    emit(state.copyWith(schedule: updated));
+    await _applySchedule(updated, emit, reschedule: updated.isEnabled);
     logInfo('BackupBloc: schedule frequency changed — ${event.frequency.name}');
+  }
+
+  /// Jadwalkan dulu, baru simpan & emit — agar settings tersimpan, state bloc,
+  /// dan task WorkManager selalu konsisten (A06b).
+  Future<void> _applySchedule(
+    BackupScheduleSettings updated,
+    Emitter<BackupState> emit, {
+    required bool reschedule,
+  }) async {
+    try {
+      if (reschedule) await _autoBackupService.schedule(updated);
+      await _autoBackupService.saveSettings(updated);
+      emit(state.copyWith(schedule: updated));
+    } catch (e, s) {
+      logError('BackupBloc: gagal menerapkan jadwal auto backup', e, s);
+      // * Pastikan listener melihat transisi status ke failure
+      if (state.status == BackupStatus.failure) {
+        emit(state.copyWith(status: BackupStatus.initial));
+      }
+      emit(
+        state.copyWith(
+          status: BackupStatus.failure,
+          schedule: _autoBackupService.loadSettings(),
+          message: LocaleKeys.backupScreenAutoScheduleFailed.tr(),
+        ),
+      );
+    }
   }
 }

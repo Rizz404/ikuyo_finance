@@ -209,6 +209,7 @@
       "autoDisabled": "Auto backup is disabled",
       "autoEnabled": "Auto backup is active — next run at {time}",
       "autoFrequency": "Frequency",
+      "autoScheduleFailed": "Failed to update the auto backup schedule. Please try again.",
       "autoTime": "Backup Time",
       "autoTitle": "Auto Backup",
       "backupSavedTo": "Backup saved to: {path}",

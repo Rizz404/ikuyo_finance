@@ -29,11 +29,13 @@ class BackupState {
   }) {
     return BackupState(
       status: status ?? this.status,
-      exportedData: exportedData ?? this.exportedData,
+      // * exportedData & isImport bersifat one-shot: tidak dibawa ke state
+      // * berikutnya agar listener tidak memproses ulang hasil lama (BKSEC-5)
+      exportedData: exportedData,
       summary: summary ?? this.summary,
       message: message ?? this.message,
       schedule: schedule ?? this.schedule,
-      isImport: isImport ?? this.isImport,
+      isImport: isImport ?? false,
     );
   }
 

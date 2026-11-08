@@ -5,7 +5,6 @@ import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository_impl.dart';
-import 'package:ikuyo_finance/features/backup/services/auto_backup_alarm_service.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,11 +13,16 @@ import 'package:workmanager/workmanager.dart';
 const autoBackupTaskName = 'autoBackupTask';
 const autoBackupTaskUniqueName = 'ikuyo_auto_backup';
 
+/// Auto backup hanya memakai WorkManager (periodik, tidak eksak; bisa
+/// tertunda oleh Doze). Jalur exact alarm dihapus karena tidak pernah
+/// menjalankan backup dan membuat startup crash (A06/A07/BKSEC-2/BKSEC-3).
 class AutoBackupService {
   final SharedPreferences _prefs;
-  final AutoBackupAlarmService _alarmService;
 
-  const AutoBackupService(this._prefs, this._alarmService);
+  const AutoBackupService(this._prefs);
+
+  /// Jumlah file auto backup terbaru yang disimpan; sisanya dihapus.
+  static const maxAutoBackupFiles = 10;
 
   // ─── Settings ─────────────────────────────────────────────────────────────
 
@@ -41,7 +45,10 @@ class AutoBackupService {
 
   // ─── Scheduling ───────────────────────────────────────────────────────────
 
-  Future<void> schedule(BackupScheduleSettings settings) async {
+  Future<void> schedule(
+    BackupScheduleSettings settings, {
+    bool keepExisting = false,
+  }) async {
     if (!settings.isEnabled) {
       await cancel();
       return;
@@ -53,22 +60,19 @@ class AutoBackupService {
       'initialDelay=${settings.initialDelay.inMinutes}m',
     );
 
-    // Exact alarm — primary trigger, fires precisely at scheduled time
-    await _alarmService.scheduleFromSettings(settings);
-
-    // Workmanager — safety net catch-up (e.g. after device reboot)
     await Workmanager().registerPeriodicTask(
       autoBackupTaskUniqueName,
       autoBackupTaskName,
       frequency: settings.frequencyDuration,
       initialDelay: settings.initialDelay,
-      existingWorkPolicy: ExistingPeriodicWorkPolicy.replace,
+      existingWorkPolicy: keepExisting
+          ? ExistingPeriodicWorkPolicy.keep
+          : ExistingPeriodicWorkPolicy.replace,
       constraints: Constraints(requiresStorageNotLow: true),
     );
   }
 
   Future<void> cancel() async {
-    await _alarmService.cancel();
     await Workmanager().cancelByUniqueName(autoBackupTaskUniqueName);
     logService('AutoBackupService: jadwal dibatalkan');
   }
@@ -77,14 +81,13 @@ class AutoBackupService {
 
   /// Runs inside the Workmanager isolate — no DI available.
   static Future<bool> runBackup() async {
+    ObjectBoxStorage? storage;
     try {
-      final storage = ObjectBoxStorage();
+      storage = ObjectBoxStorage();
       await storage.init();
 
       final repo = BackupRepositoryImpl(storage);
       final result = await repo.exportData().run();
-
-      storage.close();
 
       return await result.fold(
         (failure) async {
@@ -100,6 +103,37 @@ class AutoBackupService {
     } catch (e, s) {
       talker.error('AutoBackup background exception', e, s);
       return false;
+    } finally {
+      try {
+        storage?.close();
+      } catch (_) {}
+    }
+  }
+
+  /// Hapus file auto backup lama, sisakan [keep] file terbaru.
+  static Future<void> pruneOldBackups(
+    Directory dir, {
+    int keep = maxAutoBackupFiles,
+  }) async {
+    if (!await dir.exists()) return;
+    final files = await dir
+        .list()
+        .where(
+          (e) =>
+              e is File &&
+              RegExp(r'ikuyo_backup_\d{8}_\d{6}\.json$').hasMatch(e.path),
+        )
+        .cast<File>()
+        .toList();
+    if (files.length <= keep) return;
+    // * Nama file memuat timestamp yyyyMMdd_HHmmss, urut leksikal = urut waktu
+    files.sort((a, b) => b.path.compareTo(a.path));
+    for (final f in files.skip(keep)) {
+      try {
+        await f.delete();
+      } catch (e) {
+        talker.warning('AutoBackup: gagal hapus backup lama ${f.path}: $e');
+      }
     }
   }
 
@@ -122,6 +156,7 @@ class AutoBackupService {
     final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
     final file = File('${targetDir.path}/ikuyo_backup_$timestamp.json');
     await file.writeAsString(backupData.toJsonString());
+    await pruneOldBackups(targetDir);
     return file.path;
   }
 

@@ -209,6 +209,7 @@
       "autoDisabled": "Backup otomatis dinonaktifkan",
       "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
       "autoFrequency": "Frekuensi",
+      "autoScheduleFailed": "Gagal memperbarui jadwal auto backup. Silakan coba lagi.",
       "autoTime": "Waktu Backup",
       "autoTitle": "Backup Otomatis",
       "backupSavedTo": "Backup disimpan ke: {path}",

@@ -101,6 +101,7 @@ class _BackupScreenState extends State<BackupScreen> {
       return;
     }
 
+    if (!mounted) return;
     setState(() => _exportDirectory = result);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_exportDirPrefKey, result);
@@ -258,6 +259,7 @@ class _BackupScreenState extends State<BackupScreen> {
         final prefs = await SharedPreferences.getInstance();
         await prefs.setString(_exportDirPrefKey, fallbackDir.path);
 
+        if (!mounted) return;
         ToastHelper.instance.showSuccess(
           context: context,
           title: LocaleKeys.backupScreenSuccess.tr(),
@@ -301,12 +303,14 @@ class _BackupScreenState extends State<BackupScreen> {
     final colors = context.colors;
 
     return BlocListener<BackupBloc, BackupState>(
+      // * Hanya bereaksi pada transisi status, bukan setiap emit (BKSEC-5)
+      listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == BackupStatus.success) {
           if (state.exportedData != null) {
             // * Export success - save file
             _saveExportedFile(state.exportedData!);
-          } else {
+          } else if (state.isImport) {
             // * Import success - reset selected file
             setState(() => _importFiles = []);
             ToastHelper.instance.showSuccess(
@@ -651,82 +655,6 @@ class _BackupScreenState extends State<BackupScreen> {
                         _exportDirectory.isEmpty)
                     ? null
                     : _handleExport,
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionCard({
-    required IconData icon,
-    required String title,
-    required String description,
-    required String buttonText,
-    required AppButtonColor buttonColor,
-    required VoidCallback onPressed,
-    bool isWarning = false,
-  }) {
-    final colors = context.colors;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: colors.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: colors.border.withValues(alpha: 0.5)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: isWarning
-                      ? context.semantic.warning.withValues(alpha: 0.1)
-                      : colors.primaryContainer.withValues(alpha: 0.5),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(
-                  icon,
-                  color: isWarning ? context.semantic.warning : colors.primary,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    AppText(
-                      title,
-                      style: AppTextStyle.titleSmall,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          AppText(
-            description,
-            style: AppTextStyle.bodySmall,
-            color: colors.textSecondary,
-          ),
-          const SizedBox(height: 16),
-          BlocBuilder<BackupBloc, BackupState>(
-            builder: (context, state) {
-              return AppButton(
-                text: buttonText,
-                color: buttonColor,
-                isLoading: state.status == BackupStatus.loading,
-                onPressed: state.status == BackupStatus.loading
-                    ? null
-                    : onPressed,
               );
             },
           ),

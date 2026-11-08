@@ -21,7 +21,6 @@ import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transa
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_alarm_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_notification_service.dart';
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_scheduler.dart';
-import 'package:ikuyo_finance/features/backup/services/auto_backup_alarm_service.dart';
 import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
 import 'package:ikuyo_finance/features/security/cubit/security_cubit.dart';
 import 'package:ikuyo_finance/features/security/services/biometric_service.dart';
@@ -170,14 +169,8 @@ Future<void> setupAutoTransactionServices() async {
   getIt.registerLazySingleton<AutoTransactionAlarmService>(
     () => AutoTransactionAlarmService(),
   );
-  getIt.registerLazySingleton<AutoBackupAlarmService>(
-    () => AutoBackupAlarmService(),
-  );
   getIt.registerLazySingleton<AutoBackupService>(
-    () => AutoBackupService(
-      getIt<SharedPreferences>(),
-      getIt<AutoBackupAlarmService>(),
-    ),
+    () => AutoBackupService(getIt<SharedPreferences>()),
   );
   getIt.registerLazySingleton<AutoTransactionNotificationService>(
     () => AutoTransactionNotificationService(),
@@ -191,19 +184,44 @@ Future<void> setupAutoTransactionServices() async {
     ),
   );
 
-  await getIt<AutoTransactionNotificationService>().initialize();
-  await getIt<AutoTransactionNotificationService>().requestPermission();
+  // * Layanan platform tidak boleh menggagalkan startup (CORE-1)
+  await _guardStartup(
+    'Inisialisasi notifikasi',
+    () => getIt<AutoTransactionNotificationService>().initialize(),
+  );
+  await _guardStartup(
+    'Izin notifikasi',
+    () => getIt<AutoTransactionNotificationService>().requestPermission(),
+  );
 
-  await getIt<AutoBackupAlarmService>().initialize();
-  await getIt<AutoBackupAlarmService>().requestExactAlarmPermission();
+  final workmanagerReady = await _guardStartup(
+    'Inisialisasi Workmanager',
+    () => Workmanager().initialize(workmanagerCallbackDispatcher),
+  );
 
-  await Workmanager().initialize(workmanagerCallbackDispatcher);
-
+  // * Pastikan task auto backup terdaftar (mis. setelah update / reinstall)
+  // * tanpa mereset jadwal yang sudah berjalan
   final backupSettings = getIt<AutoBackupService>().loadSettings();
-  if (backupSettings.isEnabled) {
-    await getIt<AutoBackupAlarmService>().scheduleFromSettings(backupSettings);
+  if (workmanagerReady && backupSettings.isEnabled) {
+    await _guardStartup(
+      'Registrasi auto backup',
+      () => getIt<AutoBackupService>().schedule(
+        backupSettings,
+        keepExisting: true,
+      ),
+    );
   }
 
   // * Jalankan pending auto transactions saat app dibuka
   unawaited(getIt<AutoTransactionScheduler>().runPendingExecutions());
+}
+
+Future<bool> _guardStartup(String label, Future<void> Function() action) async {
+  try {
+    await action();
+    return true;
+  } catch (e, s) {
+    talker.handle(e, s, '$label gagal');
+    return false;
+  }
 }

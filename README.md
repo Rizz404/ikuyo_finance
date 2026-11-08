@@ -272,6 +272,8 @@ On successful import → triggers refetch on `CategoryBloc`, `AssetBloc`, `Budge
 **BLoC**: `BackupBloc`.
 **Repository**: `BackupRepository` → methods: `exportData()`, `importData()`, `getDataSummary()`.
 
+**Auto backup** runs only through WorkManager (`AutoBackupService`, task `autoBackupTask`). It is periodic and inexact: Android may defer it (Doze, battery, the 15-minute minimum interval), so the chosen time is the earliest start, not a guaranteed exact time. No exact-alarm permission is requested. Each run writes an unencrypted JSON file to `<export directory>/Auto Backup` (or the app documents directory). Only the 10 newest auto-backup files are kept.
+
 ---
 
 ### Other / Settings

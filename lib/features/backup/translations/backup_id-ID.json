@@ -36,7 +36,8 @@
       "autoTime": "Waktu Backup",
       "autoFrequency": "Frekuensi",
       "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
-      "autoDisabled": "Backup otomatis dinonaktifkan"
+      "autoDisabled": "Backup otomatis dinonaktifkan",
+      "autoScheduleFailed": "Gagal memperbarui jadwal auto backup. Silakan coba lagi."
     }
   }
 }
