@@ -41,6 +41,7 @@ void main() {
     int scheduleMinute = 0,
     int intervalDays = 1,
     DateTime? startDate,
+    DateTime? createdAt,
   }) async {
     final result = await repository
         .createGroup(
@@ -54,7 +55,14 @@ void main() {
           ),
         )
         .run();
-    return result.getOrElse((_) => throw Exception()).data!;
+    final group = result.getOrElse((_) => throw Exception()).data!;
+    if (createdAt != null) {
+      // * pin the persisted timestamp: back-to-back DateTime.now() can share
+      // * one millisecond (ObjectBox date precision) on coarse clocks
+      group.createdAt = createdAt;
+      testStore.storage.box<AutoTransactionGroup>().put(group);
+    }
+    return group;
   }
 
   group('createGroup', () {
@@ -255,9 +263,16 @@ void main() {
 
   group('getGroups', () {
     test('returns all groups sorted by createdAt descending', () async {
-      await createGroupFixture(name: 'First');
-      await createGroupFixture(name: 'Second');
-      await createGroupFixture(name: 'Third');
+      final base = DateTime(2026, 1, 1, 8);
+      await createGroupFixture(name: 'First', createdAt: base);
+      await createGroupFixture(
+        name: 'Second',
+        createdAt: base.add(const Duration(seconds: 1)),
+      );
+      await createGroupFixture(
+        name: 'Third',
+        createdAt: base.add(const Duration(seconds: 2)),
+      );
 
       final result = await repository.getGroups().run();
 
