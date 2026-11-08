@@ -164,6 +164,9 @@ class _ExportScreenState extends State<ExportScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ExportBloc, ExportState>(
+      // * App-wide bloc: only react to a fresh status transition, not to
+      // * asset/category reloads that carry an old success/failure
+      listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == ExportStatus.success && state.savedPath != null) {
           ToastHelper.instance.showSuccess(
@@ -540,7 +543,8 @@ class _DatePickerField extends StatelessWidget {
       firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
-    onPicked(picked);
+    // * Cancel (null) keeps the previous date; clearing uses the clear icon
+    if (picked != null) onPicked(picked);
   }
 
   @override
