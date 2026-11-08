@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository_impl.dart';
@@ -210,6 +211,8 @@ void main() {
     final a = await asset(1000);
     await tx(a.ulid, 100, type: CategoryType.expense);
     final backup = BackupRepositoryImpl(store.storage);
+    // * F3: export membawa penanda mata uang DB; tanpa penanda impor ditolak
+    CurrencyMigrationService(store.storage).markStoredCurrency(CurrencyCode.idr);
     final data = (await backup.exportData().run()).getOrElse((_) => throw Exception()).data!;
     final restored = await backup.importData(data).run();
     expect(restored.isRight(), isTrue);

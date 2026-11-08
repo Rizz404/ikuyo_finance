@@ -37,7 +37,11 @@
       "autoFrequency": "Frequency",
       "autoEnabled": "Auto backup is active — next run at {time}",
       "autoDisabled": "Auto backup is disabled",
-      "autoScheduleFailed": "Failed to update the auto backup schedule. Please try again."
+      "autoScheduleFailed": "Failed to update the auto backup schedule. Please try again.",
+      "currencyMissing": "This backup does not say which currency its amounts are in. Nothing was imported. Choose the backup currency and try again.",
+      "currencyUnsupported": "This backup uses a currency format this app does not support ({code}). Nothing was imported.",
+      "currencyLegacyWarning": "This older backup does not record its currency. Choose the currency the amounts were saved in; amounts are not converted.",
+      "currencyPickLabel": "Backup currency"
     },
     "encryption": {
       "exportTitle": "Encrypt backup",

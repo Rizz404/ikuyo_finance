@@ -37,7 +37,11 @@
       "autoFrequency": "Frekuensi",
       "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
       "autoDisabled": "Backup otomatis dinonaktifkan",
-      "autoScheduleFailed": "Gagal memperbarui jadwal auto backup. Silakan coba lagi."
+      "autoScheduleFailed": "Gagal memperbarui jadwal auto backup. Silakan coba lagi.",
+      "currencyMissing": "Backup ini tidak mencatat mata uang nominalnya. Tidak ada data yang diimpor. Pilih mata uang backup lalu coba lagi.",
+      "currencyUnsupported": "Backup ini memakai format mata uang yang tidak didukung aplikasi ({code}). Tidak ada data yang diimpor.",
+      "currencyLegacyWarning": "Backup lama ini tidak mencatat mata uangnya. Pilih mata uang saat nominal disimpan; nominal tidak dikonversi.",
+      "currencyPickLabel": "Mata uang backup"
     },
     "encryption": {
       "exportTitle": "Enkripsi backup",

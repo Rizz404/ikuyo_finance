@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
+
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
@@ -25,7 +27,12 @@ class BackupData {
   final List<AutoItemBackup> autoItems;
   final List<AutoLogBackup> autoLogs;
 
+  /// Mata uang dasar tempat semua nominal disimpan (penanda DB), atau null
+  /// untuk backup lama tanpa metadata mata uang
+  final BackupCurrency? currency;
+
   const BackupData({
+    this.currency,
     required this.version,
     required this.createdAt,
     required this.appName,
@@ -42,6 +49,7 @@ class BackupData {
     'version': version,
     'createdAt': createdAt.toIso8601String(),
     'appName': appName,
+    if (currency != null) 'currency': currency!.toJson(),
     'categories': categories.map((c) => c.toJson()).toList(),
     'assets': assets.map((a) => a.toJson()).toList(),
     'transactions': transactions.map((t) => t.toJson()).toList(),
@@ -55,6 +63,9 @@ class BackupData {
     version: json['version'] as String,
     createdAt: DateTime.parse(json['createdAt'] as String),
     appName: json['appName'] as String,
+    currency: json['currency'] == null
+        ? null
+        : BackupCurrency.fromJson(json['currency'] as Map<String, dynamic>),
     categories: (json['categories'] as List)
         .map((c) => CategoryBackup.fromJson(c as Map<String, dynamic>))
         .toList(),
@@ -83,6 +94,21 @@ class BackupData {
   factory BackupData.fromJsonString(String jsonString) =>
       BackupData.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
 
+  /// Salinan dengan mata uang yang dinyatakan eksplisit oleh pengguna
+  BackupData withCurrency(BackupCurrency currency) => BackupData(
+    version: version,
+    createdAt: createdAt,
+    appName: appName,
+    currency: currency,
+    categories: categories,
+    assets: assets,
+    transactions: transactions,
+    budgets: budgets,
+    autoGroups: autoGroups,
+    autoItems: autoItems,
+    autoLogs: autoLogs,
+  );
+
   int get totalItems =>
       categories.length +
       assets.length +
@@ -91,6 +117,44 @@ class BackupData {
       autoGroups.length +
       autoItems.length +
       autoLogs.length;
+}
+
+/// Metadata mata uang dasar backup: kode (CurrencyCode.name) dan jumlah
+/// digit minor-unit yang dipakai saat nominal disimpan
+class BackupCurrency {
+  final String code;
+  final int decimalDigits;
+
+  const BackupCurrency({required this.code, required this.decimalDigits});
+
+  factory BackupCurrency.of(CurrencyCode code) => BackupCurrency(
+    code: code.name,
+    decimalDigits: Currency.currencies[code]!.decimalDigits,
+  );
+
+  /// Kode yang dikenal aplikasi, atau null bila tidak didukung
+  CurrencyCode? get currencyCode {
+    for (final c in CurrencyCode.values) {
+      if (c.name == code) return c;
+    }
+    return null;
+  }
+
+  /// Didukung bila kode dikenal dan interpretasi minor-unit sama
+  bool get isSupported {
+    final c = currencyCode;
+    return c != null && Currency.currencies[c]!.decimalDigits == decimalDigits;
+  }
+
+  Map<String, dynamic> toJson() => {
+    'code': code,
+    'decimalDigits': decimalDigits,
+  };
+
+  factory BackupCurrency.fromJson(Map<String, dynamic> json) => BackupCurrency(
+    code: json['code'] as String,
+    decimalDigits: json['decimalDigits'] as int,
+  );
 }
 
 /// Backup model untuk Category

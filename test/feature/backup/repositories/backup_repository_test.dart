@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
@@ -11,6 +12,9 @@ import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 
 import '../../../support/objectbox_test_store.dart';
 import '../../../support/test_logger.dart';
+
+// * F3: backup wajib membawa mata uang dasar; fixture menyatakannya eksplisit
+final _idr = BackupCurrency.of(CurrencyCode.idr);
 
 void main() {
   setUpAll(bootstrapTestLogger);
@@ -158,6 +162,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: [
           CategoryBackup(
             ulid: 'cat-1',
@@ -186,6 +191,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: [
           CategoryBackup(
             ulid: 'root',
@@ -222,6 +228,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: [
           CategoryBackup(
             ulid: 'cat-1',
@@ -286,6 +293,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: const [],
         assets: const [],
         transactions: [
@@ -312,6 +320,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: const [],
         assets: const [],
         transactions: const [],
@@ -339,6 +348,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: const [],
         assets: const [],
         transactions: const [],
@@ -395,6 +405,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: const [],
         assets: const [],
         transactions: const [],
@@ -426,6 +437,7 @@ void main() {
         version: '1.0.0',
         createdAt: now,
         appName: 'Ikuyo Finance',
+        currency: _idr,
         categories: [
           CategoryBackup(
             ulid: 'dup',
@@ -461,6 +473,7 @@ void main() {
               version: '1.0.0',
               createdAt: DateTime.now(),
               appName: 'Ikuyo Finance',
+              currency: _idr,
               categories: const [],
               assets: const [],
               transactions: const [],
@@ -550,8 +563,12 @@ void main() {
       )..group.target = group;
       testStore.storage.box<AutoTransactionLog>().put(log);
 
+      // * F3: nominal store sumber tercatat dalam IDR (penanda DB)
+      CurrencyMigrationService(testStore.storage).markStoredCurrency(CurrencyCode.idr);
+
       final exportResult = await repository.exportData().run();
       final backupData = exportResult.getOrElse((_) => throw Exception()).data!;
+      expect(backupData.currency!.code, 'idr');
 
       final targetStore = await ObjectBoxTestStore.open();
       try {

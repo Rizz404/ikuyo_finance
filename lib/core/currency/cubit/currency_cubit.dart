@@ -115,6 +115,21 @@ class CurrencyCubit extends Cubit<CurrencyState> {
     }
   }
 
+  /// Muat ulang mata uang dari penanda DB (mis. setelah impor backup
+  /// commit), lalu selaraskan prefs sebagai cermin
+  Future<void> reloadFromStore() async {
+    try {
+      final code = _migrationService.readMarker();
+      if (code == null) return;
+      await _syncPreference(code);
+      if (isClosed || code == state.currentCurrency) return;
+      emit(state.copyWith(currentCurrency: code));
+      logInfo('Currency reloaded from store: ${code.name}');
+    } catch (e, s) {
+      logError('Failed to reload currency from store', e, s);
+    }
+  }
+
   /// Get record counts that will be affected by migration
   Future<Map<String, int>> getRecordCounts() {
     return _migrationService.getRecordCounts();

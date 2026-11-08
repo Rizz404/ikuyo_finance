@@ -2,6 +2,7 @@
 import 'dart:collection';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
 import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository_impl.dart';
@@ -100,6 +101,8 @@ void main() {
       version: '1.0.0',
       createdAt: now,
       appName: 'Ikuyo Finance',
+      // * F3: mata uang dinyatakan agar test menguji validasi lain
+      currency: BackupCurrency.of(CurrencyCode.idr),
       categories: categories ??
           [CategoryBackup(ulid: 'c1', name: 'New', type: 1, createdAt: now, updatedAt: now)],
       assets: assets ??

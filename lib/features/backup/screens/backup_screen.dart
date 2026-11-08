@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/extensions/backup_frequency_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
@@ -130,6 +131,9 @@ class _BackupScreenState extends State<BackupScreen> {
     final choice = await showBackupExportDialog(context);
     if (choice == null || !mounted) return;
     _pendingExport = choice;
+    // * CurrencyCubit lazy: membacanya memastikan penanda mata uang DB sudah
+    // *   ditetapkan (R03) sebelum ekspor, agar backup membawa mata uangnya
+    context.read<CurrencyCubit>();
     context.read<BackupBloc>().add(BackupExportRequested());
   }
 
@@ -161,13 +165,25 @@ class _BackupScreenState extends State<BackupScreen> {
       }
 
       if (!mounted) return;
-      final confirmed = await _showImportConfirmDialog(
+      // * Metadata mata uang yang tidak didukung ditolak sebelum konfirmasi
+      final currency = decoded.data.currency;
+      if (currency != null && !currency.isSupported) {
+        ToastHelper.instance.showError(
+          context: context,
+          title: LocaleKeys.backupScreenError.tr(),
+          description: LocaleKeys.backupScreenCurrencyUnsupported.tr(
+            namedArgs: {'code': currency.code},
+          ),
+        );
+        return;
+      }
+      final toImport = await _showImportConfirmDialog(
         decoded.data,
         legacyPlaintext: !decoded.wasEncrypted,
       );
 
-      if (confirmed == true && mounted) {
-        context.read<BackupBloc>().add(BackupImportRequested(decoded.data));
+      if (toImport != null && mounted) {
+        context.read<BackupBloc>().add(BackupImportRequested(toImport));
       }
     } on BackupCryptoException catch (e) {
       if (!mounted) return;
@@ -188,96 +204,134 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
-  Future<bool?> _showImportConfirmDialog(
+  /// Mengembalikan data yang akan diimpor, atau null bila dibatalkan.
+  /// * Backup tanpa metadata mata uang: pengguna wajib memilih mata uang
+  ///   backup secara eksplisit; tidak ditebak dari mata uang DB saat ini
+  Future<BackupData?> _showImportConfirmDialog(
     BackupData backupData, {
     bool legacyPlaintext = false,
   }) {
-    return showDialog<bool>(
+    final needsCurrency = backupData.currency == null;
+    CurrencyCode? declared;
+    return showDialog<BackupData>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: AppText(
-          LocaleKeys.backupScreenImportConfirmTitle.tr(),
-          style: AppTextStyle.titleLarge,
-          fontWeight: FontWeight.bold,
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            AppText(
-              LocaleKeys.backupScreenImportDataLabel.tr(),
-              style: AppTextStyle.bodyMedium,
-            ),
-            if (legacyPlaintext) ...[
-              const SizedBox(height: 8),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: AppText(
+            LocaleKeys.backupScreenImportConfirmTitle.tr(),
+            style: AppTextStyle.titleLarge,
+            fontWeight: FontWeight.bold,
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
               AppText(
-                LocaleKeys.backupEncryptionLegacyWarning.tr(),
-                key: const Key('backup_legacy_warning'),
-                style: AppTextStyle.bodySmall,
-                color: context.semantic.warning,
+                LocaleKeys.backupScreenImportDataLabel.tr(),
+                style: AppTextStyle.bodyMedium,
               ),
-            ],
-            const SizedBox(height: 12),
-            _buildSummaryItem(
-              LocaleKeys.backupScreenCategories.tr(),
-              backupData.categories.length,
-              context,
-            ),
-            _buildSummaryItem(
-              LocaleKeys.backupScreenAssets.tr(),
-              backupData.assets.length,
-              context,
-            ),
-            _buildSummaryItem(
-              LocaleKeys.backupScreenTransactions.tr(),
-              backupData.transactions.length,
-              context,
-            ),
-            _buildSummaryItem(
-              LocaleKeys.backupScreenBudgets.tr(),
-              backupData.budgets.length,
-              context,
-            ),
-            const SizedBox(height: 16),
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: context.semantic.warning.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: context.semantic.warning),
+              if (legacyPlaintext) ...[
+                const SizedBox(height: 8),
+                AppText(
+                  LocaleKeys.backupEncryptionLegacyWarning.tr(),
+                  key: const Key('backup_legacy_warning'),
+                  style: AppTextStyle.bodySmall,
+                  color: context.semantic.warning,
+                ),
+              ],
+              if (needsCurrency) ...[
+                const SizedBox(height: 8),
+                AppText(
+                  LocaleKeys.backupScreenCurrencyLegacyWarning.tr(),
+                  style: AppTextStyle.bodySmall,
+                  color: context.semantic.warning,
+                ),
+                DropdownButton<CurrencyCode>(
+                  key: const Key('backup_currency_picker'),
+                  isExpanded: true,
+                  value: declared,
+                  hint: Text(LocaleKeys.backupScreenCurrencyPickLabel.tr()),
+                  items: [
+                    for (final code in CurrencyCode.values)
+                      DropdownMenuItem(
+                        value: code,
+                        child: Text(Currency.getByCode(code).name),
+                      ),
+                  ],
+                  onChanged: (code) => setDialogState(() => declared = code),
+                ),
+              ],
+              const SizedBox(height: 12),
+              _buildSummaryItem(
+                LocaleKeys.backupScreenCategories.tr(),
+                backupData.categories.length,
+                context,
               ),
-              child: Row(
-                children: [
-                  Icon(
-                    Icons.warning_amber_rounded,
-                    color: context.semantic.warning,
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: AppText(
-                      LocaleKeys.backupScreenImportWarning.tr(),
-                      style: AppTextStyle.bodySmall,
+              _buildSummaryItem(
+                LocaleKeys.backupScreenAssets.tr(),
+                backupData.assets.length,
+                context,
+              ),
+              _buildSummaryItem(
+                LocaleKeys.backupScreenTransactions.tr(),
+                backupData.transactions.length,
+                context,
+              ),
+              _buildSummaryItem(
+                LocaleKeys.backupScreenBudgets.tr(),
+                backupData.budgets.length,
+                context,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: context.semantic.warning.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: context.semantic.warning),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.warning_amber_rounded,
                       color: context.semantic.warning,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: AppText(
+                        LocaleKeys.backupScreenImportWarning.tr(),
+                        style: AppTextStyle.bodySmall,
+                        color: context.semantic.warning,
+                      ),
+                    ),
+                  ],
+                ),
               ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(LocaleKeys.backupScreenImportCancel.tr()),
+            ),
+            FilledButton(
+              onPressed: needsCurrency && declared == null
+                  ? null
+                  : () => Navigator.pop(
+                      context,
+                      needsCurrency
+                          ? backupData.withCurrency(
+                              BackupCurrency.of(declared!),
+                            )
+                          : backupData,
+                    ),
+              style: FilledButton.styleFrom(
+                backgroundColor: context.semantic.error,
+              ),
+              child: Text(LocaleKeys.backupScreenImportConfirmButton.tr()),
             ),
           ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(LocaleKeys.backupScreenImportCancel.tr()),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: context.semantic.error,
-            ),
-            child: Text(LocaleKeys.backupScreenImportConfirmButton.tr()),
-          ),
-        ],
       ),
     );
   }
@@ -396,6 +450,8 @@ class _BackupScreenState extends State<BackupScreen> {
           } else if (state.isImport) {
             // * Import success - reset selected file
             setState(() => _importFiles = []);
+            // * Penanda mata uang sudah commit bersama data; selaraskan cubit
+            context.read<CurrencyCubit>().reloadFromStore();
             ToastHelper.instance.showSuccess(
               context: context,
               title: LocaleKeys.backupScreenSuccess.tr(),

@@ -1,4 +1,7 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:ikuyo_finance/core/currency/service/currency_migration_service.dart';
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
@@ -30,6 +33,8 @@ class BackupRepositoryImpl implements BackupRepository {
   Box<AutoTransactionItem> get _autoItemBox =>
       _storage.box<AutoTransactionItem>();
   Box<AutoTransactionLog> get _autoLogBox => _storage.box<AutoTransactionLog>();
+  CurrencyMigrationService get _currencyService =>
+      CurrencyMigrationService(_storage);
 
   @override
   TaskEither<Failure, Success<BackupData>> exportData() {
@@ -46,11 +51,15 @@ class BackupRepositoryImpl implements BackupRepository {
         final autoGroups = _autoGroupBox.getAll();
         final autoItems = _autoItemBox.getAll();
         final autoLogs = _autoLogBox.getAll();
+        // * Penanda mata uang DB (bukan preferensi tampilan); tanpa penanda
+        // *   tidak ditebak, backup ditandai tanpa mata uang
+        final marker = _currencyService.readMarker();
 
         final backupData = BackupData(
           version: BackupData.currentVersion,
           createdAt: DateTime.now(),
           appName: 'Ikuyo Finance',
+          currency: marker == null ? null : BackupCurrency.of(marker),
           categories: categories.map(CategoryBackup.fromEntity).toList(),
           assets: assets.map(AssetBackup.fromEntity).toList(),
           transactions: transactions
@@ -96,10 +105,13 @@ class BackupRepositoryImpl implements BackupRepository {
 
         // * Semua penghapusan dan penulisan dalam satu transaksi tulis:
         // * jika ada error, ObjectBox me-rollback sehingga data lama utuh
-        _storage.store.runInTransaction(
-          TxMode.write,
-          () => _replaceAllData(backupData),
-        );
+        // * Penanda mata uang ditulis di transaksi yang sama dengan data
+        // *   (markStoredCurrency memakai ulang transaksi tulis yang aktif)
+        final currency = backupData.currency!.currencyCode!;
+        _storage.store.runInTransaction(TxMode.write, () {
+          _replaceAllData(backupData);
+          _currencyService.markStoredCurrency(currency);
+        });
 
         logInfo('Impor selesai: ${backupData.totalItems} item');
 
@@ -107,6 +119,9 @@ class BackupRepositoryImpl implements BackupRepository {
       },
       (error, stackTrace) {
         logError('Gagal mengimpor data', error, stackTrace);
+        if (error is BackupCurrencyException) {
+          return Failure(message: error.message);
+        }
         return Failure(message: 'Gagal mengimpor data: ${error.toString()}');
       },
     );
@@ -114,6 +129,22 @@ class BackupRepositoryImpl implements BackupRepository {
 
   /// Validasi struktur backup: ulid unik per entitas dan nilai enum valid
   void _validateBackup(BackupData data) {
+    // * Mata uang divalidasi sebelum penghapusan; backup tanpa metadata tidak
+    // *   ditafsirkan ulang dalam mata uang DB tujuan (F3)
+    final currency = data.currency;
+    if (currency == null) {
+      throw BackupCurrencyException(
+        LocaleKeys.backupScreenCurrencyMissing.tr(),
+      );
+    }
+    if (!currency.isSupported) {
+      throw BackupCurrencyException(
+        LocaleKeys.backupScreenCurrencyUnsupported.tr(
+          namedArgs: {'code': currency.code},
+        ),
+      );
+    }
+
     void checkUnique(String entity, Iterable<String> ulids) {
       final seen = <String>{};
       for (final ulid in ulids) {
@@ -425,4 +456,14 @@ class BackupRepositoryImpl implements BackupRepository {
       },
     );
   }
+}
+
+/// Metadata mata uang backup tidak ada/tidak didukung; pesan sudah lokal
+class BackupCurrencyException implements Exception {
+  final String message;
+
+  const BackupCurrencyException(this.message);
+
+  @override
+  String toString() => message;
 }

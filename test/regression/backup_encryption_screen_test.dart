@@ -13,6 +13,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:ikuyo_finance/core/currency/currency.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/storage/storage_keys.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
@@ -203,6 +205,38 @@ void main() {
     await tester.pumpAndSettle();
   }, timeout: const Timeout(Duration(seconds: 60)));
 
+  // * F3 (device QA): instalasi baru belum punya penanda sampai CurrencyCubit
+  // *   dibuat (lazy); ekspor harus tetap membawa mata uang dasar
+  testWidgets('export on a fresh store without a marker yet records the '
+      'resolved base currency', (tester) async {
+    seedCategory('FreshFood');
+    expect(CurrencyMigrationService(app.storage).readMarker(), isNull);
+    await open(tester);
+    await tapText(tester, LocaleKeys.backupScreenExportButton.tr());
+    await tester.enterText(
+      find.byKey(const Key('backup_passphrase_field')),
+      _pass,
+    );
+    await tester.enterText(
+      find.byKey(const Key('backup_passphrase_confirm_field')),
+      _pass,
+    );
+    await tapKey(tester, 'backup_export_encrypted');
+    await settleReal(tester, () => shown(LocaleKeys.backupScreenSuccess.tr()));
+    final bytes = backups().single.readAsBytesSync();
+    final decoded = await tester.runAsync(
+      () => BackupCrypto.decodeBackup(bytes, passphrase: _pass),
+    );
+    expect(decoded!.data.currency?.code, 'idr');
+    expect(decoded.data.currency?.decimalDigits, 0);
+    expect(
+      CurrencyMigrationService(app.storage).readMarker(),
+      CurrencyCode.idr,
+    );
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+  }, timeout: const Timeout(Duration(seconds: 60)));
+
   testWidgets('unencrypted export requires an explicit opt-out after a '
       'warning', (tester) async {
     seedCategory('PlainFood');
@@ -261,6 +295,7 @@ void main() {
       version: BackupData.currentVersion,
       createdAt: DateTime(2026, 2, 1),
       appName: 'Ikuyo Finance',
+      currency: BackupCurrency.of(CurrencyCode.idr),
       categories: [
         CategoryBackup(
           ulid: 'c-restored',
@@ -326,6 +361,8 @@ void main() {
           .isNotEmpty,
     );
     expect(find.byKey(const Key('backup_legacy_warning')), findsNothing);
+    // * backup format baru membawa mata uangnya; tidak ada pilihan manual
+    expect(find.byKey(const Key('backup_currency_picker')), findsNothing);
     await tapText(
       tester,
       LocaleKeys.backupScreenImportConfirmButton.tr(),
@@ -381,6 +418,22 @@ void main() {
         findsNothing,
       );
       expect(find.byKey(const Key('backup_legacy_warning')), findsOneWidget);
+      // * F3: backup lama tanpa mata uang; tidak ditebak dari DB tujuan
+      expect(
+        find.text(LocaleKeys.backupScreenCurrencyLegacyWarning.tr()),
+        findsOneWidget,
+      );
+      expect(find.byKey(const Key('backup_currency_picker')), findsOneWidget);
+      final confirm = find.widgetWithText(
+        FilledButton,
+        LocaleKeys.backupScreenImportConfirmButton.tr(),
+      );
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNull);
+      await tester.tap(find.byKey(const Key('backup_currency_picker')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('USD').last);
+      await tester.pumpAndSettle();
+      expect(tester.widget<FilledButton>(confirm).onPressed, isNotNull);
       await tapText(
         tester,
         LocaleKeys.backupScreenImportConfirmButton.tr(),
@@ -395,11 +448,62 @@ void main() {
       expect(app.storage.box<Category>().getAll().map((c) => c.name), [
         'OldBackup',
       ]);
+      // * Penanda ditulis bersama data; cubit diselaraskan setelah commit
+      expect(
+        CurrencyMigrationService(app.storage).readMarker(),
+        CurrencyCode.usd,
+      );
+      await tester.pump();
+      expect(
+        tester
+            .element(find.byType(MaterialApp))
+            .read<CurrencyCubit>()
+            .state
+            .currentCurrency,
+        CurrencyCode.usd,
+      );
       await tester.pump(const Duration(seconds: 6));
       await tester.pumpAndSettle();
     },
     timeout: const Timeout(Duration(seconds: 60)),
   );
+
+  testWidgets('a backup with unsupported currency metadata is refused '
+      'before the confirm step and the DB is untouched', (tester) async {
+    seedCategory('Live');
+    final bad = BackupData(
+      version: BackupData.currentVersion,
+      createdAt: DateTime(2026, 2, 1),
+      appName: 'Ikuyo Finance',
+      currency: const BackupCurrency(code: 'idr', decimalDigits: 2),
+      categories: const [],
+      assets: const [],
+      transactions: const [],
+      budgets: const [],
+    );
+    final path = '${dir.path}/bad.json';
+    File(path).writeAsStringSync(bad.toJsonString());
+    await open(tester);
+    picker.nextPath = path;
+    await tapText(tester, LocaleKeys.backupEncryptionPickerHint.tr());
+    await tapText(
+      tester,
+      LocaleKeys.backupScreenImportButton.tr(),
+      settle: false,
+    );
+    final message = LocaleKeys.backupScreenCurrencyUnsupported.tr(
+      namedArgs: {'code': 'idr'},
+    );
+    await settleReal(tester, () => shown(message));
+    expect(find.text(message), findsOneWidget);
+    expect(
+      find.text(LocaleKeys.backupScreenImportConfirmTitle.tr()),
+      findsNothing,
+    );
+    expect(app.storage.box<Category>().getAll().map((c) => c.name), ['Live']);
+    await tester.pump(const Duration(seconds: 6));
+    await tester.pumpAndSettle();
+  }, timeout: const Timeout(Duration(seconds: 60)));
 
   // * F2: batas 32 MiB ditegakkan sebelum file dibaca
   testWidgets('an import file over 32 MiB is refused before it is read, '
@@ -489,6 +593,18 @@ void main() {
         expect(enc[key], isA<String>(), reason: '$locale $key');
         expect(enc[key] as String, contains('{max}'), reason: '$locale $key');
       }
+      final screen =
+          (json['backup'] as Map<String, dynamic>)['screen']
+              as Map<String, dynamic>;
+      for (final key in [
+        'currencyMissing',
+        'currencyUnsupported',
+        'currencyLegacyWarning',
+        'currencyPickLabel',
+      ]) {
+        expect(screen[key], isA<String>(), reason: '$locale $key');
+      }
+      expect(screen['currencyUnsupported'] as String, contains('{code}'));
     }
     expect(
       LocaleKeys.backupEncryptionExportTooLarge,

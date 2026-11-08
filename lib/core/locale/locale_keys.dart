@@ -312,6 +312,13 @@ abstract class LocaleKeys {
   static const backupScreenAutoFrequency = 'backup.screen.autoFrequency';
   static const backupScreenAutoEnabled = 'backup.screen.autoEnabled';
   static const backupScreenAutoDisabled = 'backup.screen.autoDisabled';
+  static const backupScreenCurrencyMissing = 'backup.screen.currencyMissing';
+  static const backupScreenCurrencyUnsupported =
+      'backup.screen.currencyUnsupported';
+  static const backupScreenCurrencyLegacyWarning =
+      'backup.screen.currencyLegacyWarning';
+  static const backupScreenCurrencyPickLabel =
+      'backup.screen.currencyPickLabel';
   static const backupScreenAutoScheduleFailed =
       'backup.screen.autoScheduleFailed';
   static const backupEncryptionExportTitle = 'backup.encryption.exportTitle';
