@@ -221,7 +221,7 @@ void main() {
         settings: SecuritySettings(
           isEnabled: true,
           pinEnabled: true,
-          pinHash: SecurityHasher.hash('123456'),
+          pinHash: SecurityHasher.hashSecret('123456'),
         ),
         status: SecurityStatus.locked,
         failedAttempts: 1,
@@ -282,7 +282,7 @@ void main() {
         settings: SecuritySettings(
           isEnabled: true,
           passwordEnabled: true,
-          passwordHash: SecurityHasher.hash('secret123'),
+          passwordHash: SecurityHasher.hashSecret('secret123'),
         ),
         status: SecurityStatus.locked,
         failedAttempts: 3,
@@ -454,7 +454,8 @@ void main() {
           (s) =>
               s.settings.pinEnabled &&
               s.settings.pinLength == 6 &&
-              s.settings.pinHash == SecurityHasher.hash('123456'),
+              SecurityHasher.verify('123456', s.settings.pinHash!) &&
+              !SecurityHasher.needsRehash(s.settings.pinHash!),
         ),
       ],
     );
@@ -524,7 +525,8 @@ void main() {
         predicate<SecurityState>(
           (s) =>
               s.settings.passwordEnabled &&
-              s.settings.passwordHash == SecurityHasher.hash('secret123'),
+              SecurityHasher.verify('secret123', s.settings.passwordHash!) &&
+              !SecurityHasher.needsRehash(s.settings.passwordHash!),
         ),
       ],
     );

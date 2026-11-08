@@ -292,7 +292,8 @@ class SecurityCubit extends Cubit<SecurityState> {
       ),
     );
 
-    final isValid = SecurityHasher.verify(pin, state.settings.pinHash!);
+    final storedHash = state.settings.pinHash!;
+    final isValid = SecurityHasher.verify(pin, storedHash);
 
     if (isValid) {
       emit(
@@ -303,6 +304,13 @@ class SecurityCubit extends Cubit<SecurityState> {
         ),
       );
       logInfo('PIN auth success');
+      if (SecurityHasher.needsRehash(storedHash)) {
+        _rehashLegacy(
+          stillCurrent: (s) => s.pinHash == storedHash,
+          upgrade: (s) =>
+              s.copyWith(pinHash: SecurityHasher.hashSecret(pin)),
+        );
+      }
     } else {
       emit(
         state.copyWith(
@@ -327,10 +335,8 @@ class SecurityCubit extends Cubit<SecurityState> {
       ),
     );
 
-    final isValid = SecurityHasher.verify(
-      password,
-      state.settings.passwordHash!,
-    );
+    final storedHash = state.settings.passwordHash!;
+    final isValid = SecurityHasher.verify(password, storedHash);
 
     if (isValid) {
       emit(
@@ -341,6 +347,13 @@ class SecurityCubit extends Cubit<SecurityState> {
         ),
       );
       logInfo('Password auth success');
+      if (SecurityHasher.needsRehash(storedHash)) {
+        _rehashLegacy(
+          stillCurrent: (s) => s.passwordHash == storedHash,
+          upgrade: (s) =>
+              s.copyWith(passwordHash: SecurityHasher.hashSecret(password)),
+        );
+      }
     } else {
       emit(
         state.copyWith(
@@ -352,6 +365,17 @@ class SecurityCubit extends Cubit<SecurityState> {
       );
       logInfo('Password auth failed');
     }
+  }
+
+  /// Ganti hash SHA-256 lama dengan hash bersalt setelah unlock sukses.
+  /// Gagal simpan = hash lama tetap berlaku (tidak ada lockout).
+  void _rehashLegacy({
+    required bool Function(SecuritySettings s) stillCurrent,
+    required SecuritySettings Function(SecuritySettings s) upgrade,
+  }) {
+    _mutate((s) => stillCurrent(s) ? upgrade(s) : s).then((saved) {
+      logInfo(saved ? 'Legacy hash upgraded' : 'Legacy hash upgrade skipped');
+    });
   }
 
   /// Reset auth result (untuk clear error message)
@@ -428,7 +452,7 @@ class SecurityCubit extends Cubit<SecurityState> {
 
   /// Set PIN baru; [enableLock] mengaktifkan app lock dalam penulisan yang sama
   Future<bool> setPin(String pin, {bool enableLock = false}) async {
-    final hash = SecurityHasher.hash(pin);
+    final hash = SecurityHasher.hashSecret(pin);
     final saved = await _mutate(
       (s) => s.copyWith(
         pinEnabled: true,
@@ -461,7 +485,7 @@ class SecurityCubit extends Cubit<SecurityState> {
 
   /// Set password baru; [enableLock] mengaktifkan app lock sekaligus
   Future<bool> setPassword(String password, {bool enableLock = false}) async {
-    final hash = SecurityHasher.hash(password);
+    final hash = SecurityHasher.hashSecret(password);
     final saved = await _mutate(
       (s) => s.copyWith(
         passwordEnabled: true,
