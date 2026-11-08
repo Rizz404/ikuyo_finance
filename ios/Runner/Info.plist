@@ -43,6 +43,12 @@
 		</array>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Ikuyo Finance uses Face ID to unlock the app when app lock is enabled.</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Ikuyo Finance uses the camera to take photos for icons and attachments you choose.</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Ikuyo Finance accesses your photo library to pick images for icons and attachments you choose.</string>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
 		<true/>
 		<key>UIStatusBarHidden</key>
