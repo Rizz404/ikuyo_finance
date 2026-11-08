@@ -1,4 +1,6 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
@@ -9,6 +11,7 @@ import 'package:ikuyo_finance/features/asset/models/create_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/models/get_assets_params.dart';
 import 'package:ikuyo_finance/features/asset/models/update_asset_params.dart';
 import 'package:ikuyo_finance/features/asset/repositories/asset_repository.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
 // * Subfolder for asset icons in app storage
@@ -243,6 +246,21 @@ class AssetRepositoryImpl implements AssetRepository {
           throw Exception('Aset tidak ditemukan');
         }
 
+        // ! Blokir hapus jika masih dipakai transaksi (tanpa cascade)
+        final usageQuery = _storage
+            .box<Transaction>()
+            .query(Transaction_.asset.equals(asset.id))
+            .build();
+        final transactionCount = usageQuery.count();
+        usageQuery.close();
+        if (transactionCount > 0) {
+          throw _AssetInUseException(
+            LocaleKeys.assetUpsertInUseDeleteBlocked.tr(
+              namedArgs: {'count': '$transactionCount'},
+            ),
+          );
+        }
+
         // * Delete icon file from app storage
         await _fileStorage.deleteFile(asset.icon);
 
@@ -253,6 +271,9 @@ class AssetRepositoryImpl implements AssetRepository {
       },
       (error, stackTrace) {
         logError('Gagal menghapus aset', error, stackTrace);
+        if (error is _AssetInUseException) {
+          return Failure(message: error.message);
+        }
         return Failure(
           message: error.toString().contains('tidak ditemukan')
               ? 'Aset tidak ditemukan'
@@ -261,4 +282,13 @@ class AssetRepositoryImpl implements AssetRepository {
       },
     );
   }
+}
+
+// * Error khusus: aset masih dipakai transaksi
+class _AssetInUseException implements Exception {
+  final String message;
+  const _AssetInUseException(this.message);
+
+  @override
+  String toString() => message;
 }

@@ -1,14 +1,18 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fpdart/fpdart.dart' hide Order;
+import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/service/app_file_storage.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
+import 'package:ikuyo_finance/features/budget/models/budget.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
 import 'package:ikuyo_finance/features/category/models/create_category_params.dart';
 import 'package:ikuyo_finance/features/category/models/get_categories_params.dart';
 import 'package:ikuyo_finance/features/category/models/update_category_params.dart';
 import 'package:ikuyo_finance/features/category/repositories/category_repository.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
 // * Subfolder for category icons in app storage
@@ -238,6 +242,14 @@ class CategoryRepositoryImpl implements CategoryRepository {
           throw Exception('Kategori tidak ditemukan');
         }
 
+        // ! Tipe kategori yang sudah dipakai transaksi tidak boleh diubah,
+        // ! karena arah saldo transaksi lama bergantung padanya
+        if (params.type != null &&
+            params.type!.index != category.type &&
+            _countTransactionsUsing(category.id) > 0) {
+          throw Exception(LocaleKeys.categoryUpsertInUseTypeChangeBlocked.tr());
+        }
+
         // * Update fields jika ada
         if (params.name != null) category.name = params.name!;
         if (params.type != null) category.type = params.type!.index;
@@ -338,6 +350,20 @@ class CategoryRepositoryImpl implements CategoryRepository {
           );
         }
 
+        // ! Blokir hapus jika masih dipakai transaksi / anggaran (tanpa cascade)
+        final transactionCount = _countTransactionsUsing(category.id);
+        final budgetCount = _countBudgetsUsing(category.id);
+        if (transactionCount > 0 || budgetCount > 0) {
+          throw Exception(
+            LocaleKeys.categoryUpsertInUseDeleteBlocked.tr(
+              namedArgs: {
+                'transactions': '$transactionCount',
+                'budgets': '$budgetCount',
+              },
+            ),
+          );
+        }
+
         // * Delete icon file from app storage
         await _fileStorage.deleteFile(category.icon);
 
@@ -423,5 +449,25 @@ class CategoryRepositoryImpl implements CategoryRepository {
         return Failure(message: 'Gagal mengecek anak kategori.');
       },
     );
+  }
+
+  int _countTransactionsUsing(int categoryId) {
+    final query = _storage
+        .box<Transaction>()
+        .query(Transaction_.category.equals(categoryId))
+        .build();
+    final count = query.count();
+    query.close();
+    return count;
+  }
+
+  int _countBudgetsUsing(int categoryId) {
+    final query = _storage
+        .box<Budget>()
+        .query(Budget_.category.equals(categoryId))
+        .build();
+    final count = query.count();
+    query.close();
+    return count;
   }
 }

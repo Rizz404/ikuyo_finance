@@ -224,8 +224,7 @@ abstract class LocaleKeys {
   static const assetStatisticAssetCount = 'asset.statistic.assetCount';
   static const assetStatisticByType = 'asset.statistic.byType';
   static const assetStatisticNoData = 'asset.statistic.noData';
-  static const assetStatisticNoDataSubtitle =
-      'asset.statistic.noDataSubtitle';
+  static const assetStatisticNoDataSubtitle = 'asset.statistic.noDataSubtitle';
 
   // * Asset — Search
   static const assetSearchHint = 'asset.search.hint';
@@ -242,6 +241,8 @@ abstract class LocaleKeys {
   static const assetUpsertErrorOccurred = 'asset.upsert.errorOccurred';
   static const assetUpsertDeleteTitle = 'asset.upsert.deleteTitle';
   static const assetUpsertDeleteConfirm = 'asset.upsert.deleteConfirm';
+  static const assetUpsertInUseDeleteBlocked =
+      'asset.upsert.inUseDeleteBlocked';
   static const assetUpsertCancel = 'asset.upsert.cancel';
   static const assetUpsertDelete = 'asset.upsert.delete';
   static const assetUpsertTypeLabel = 'asset.upsert.typeLabel';
@@ -442,6 +443,10 @@ abstract class LocaleKeys {
   static const categoryUpsertErrorOccurred = 'category.upsert.errorOccurred';
   static const categoryUpsertDeleteTitle = 'category.upsert.deleteTitle';
   static const categoryUpsertDeleteConfirm = 'category.upsert.deleteConfirm';
+  static const categoryUpsertInUseDeleteBlocked =
+      'category.upsert.inUseDeleteBlocked';
+  static const categoryUpsertInUseTypeChangeBlocked =
+      'category.upsert.inUseTypeChangeBlocked';
   static const categoryUpsertCancel = 'category.upsert.cancel';
   static const categoryUpsertDelete = 'category.upsert.delete';
   static const categoryUpsertTypeLabel = 'category.upsert.typeLabel';
@@ -541,7 +546,8 @@ abstract class LocaleKeys {
   static const exportScreenDeselectAll = 'export.screen.deselectAll';
   static const exportScreenExportButton = 'export.screen.exportButton';
   static const exportScreenExportSuccess = 'export.screen.exportSuccess';
-  static const exportScreenExportSuccessDesc = 'export.screen.exportSuccessDesc';
+  static const exportScreenExportSuccessDesc =
+      'export.screen.exportSuccessDesc';
   static const exportScreenExportError = 'export.screen.exportError';
   static const exportScreenNoData = 'export.screen.noData';
   static const exportScreenSaveToDirectory = 'export.screen.saveToDirectory';
@@ -578,7 +584,8 @@ abstract class LocaleKeys {
   static const exportExcelColColor = 'export.excel.col.color';
 
   // * Export — Excel summary rows
-  static const exportExcelSummaryTotalIncome = 'export.excel.summary.totalIncome';
+  static const exportExcelSummaryTotalIncome =
+      'export.excel.summary.totalIncome';
   static const exportExcelSummaryTotalExpense =
       'export.excel.summary.totalExpense';
   static const exportExcelSummaryNet = 'export.excel.summary.net';
@@ -593,7 +600,8 @@ abstract class LocaleKeys {
   static const exportExcelAssetTypeCrypto = 'export.excel.assetType.crypto';
 
   // * Export — Excel category type labels
-  static const exportExcelCategoryTypeIncome = 'export.excel.categoryType.income';
+  static const exportExcelCategoryTypeIncome =
+      'export.excel.categoryType.income';
   static const exportExcelCategoryTypeExpense =
       'export.excel.categoryType.expense';
 
