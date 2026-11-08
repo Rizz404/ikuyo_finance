@@ -243,4 +243,124 @@ void main() {
       expect(TransactionTypeBackfill(store.storage).run(), 0, reason: 'idempotent');
     });
   });
+
+  group('R07 one direction rule: the stored/explicit type wins, category is '
+      'only a fallback, legacy uncategorized = income', () {
+    test('a template whose stored type disagrees with its category books '
+        'the stored direction (scheduler, balance, statistics agree)',
+        () async {
+      final a = await asset(1000);
+      final inc = await category(CategoryType.income);
+      final template = Transaction(
+        amount: 10,
+        type: CategoryType.expense.index,
+        transactionDate: DateTime(2026, 1, 1),
+      )
+        ..asset.target = store.storage.box<Asset>().getAll().single
+        ..category.target = inc;
+      store.storage.box<Transaction>().put(template);
+      expect(template.direction, CategoryType.expense);
+
+      final now = DateTime.now();
+      final g = AutoTransactionGroup(
+        name: 'G',
+        frequency: AutoScheduleFrequency.daily.index,
+        scheduleHour: now.hour,
+        scheduleMinute: now.minute,
+        startDate: now.subtract(const Duration(days: 1)),
+        nextExecutedAt: now.subtract(const Duration(hours: 1)),
+      );
+      store.storage.box<AutoTransactionGroup>().put(g);
+      store.storage.box<AutoTransactionItem>().put(AutoTransactionItem()
+        ..group.target = g
+        ..transaction.target = template);
+      await AutoTransactionScheduler(
+        repo: AutoTransactionRepositoryImpl(store.storage),
+        transactionRepo: txRepo,
+        notifService: _FakeNotif(),
+      ).runPendingExecutions();
+
+      final booked = store.storage
+          .box<Transaction>()
+          .getAll()
+          .firstWhere((t) => t.id != template.id);
+      expect(booked.direction, CategoryType.expense);
+      expect(bal(a.ulid), 990);
+    });
+
+    test('an explicit type passed with a conflicting category is what is '
+        'stored, balanced and reported', () async {
+      final a = await asset(1000);
+      final inc = await category(CategoryType.income);
+      final t = await tx(
+        a.ulid,
+        100,
+        categoryUlid: inc.ulid,
+        type: CategoryType.expense,
+      );
+      final stored = store.storage.box<Transaction>().get(t.id)!;
+      expect(stored.direction, CategoryType.expense);
+      expect(bal(a.ulid), 900);
+      final summary = (await txRepo
+              .getStatisticSummary(GetStatisticParams(
+                startDate: DateTime.now().subtract(const Duration(days: 1)),
+                endDate: DateTime.now().add(const Duration(days: 1)),
+              ))
+              .run())
+          .getOrElse((_) => throw Exception())
+          .data!;
+      expect(summary.totalExpense, 100);
+      expect(summary.totalIncome, 0);
+    });
+
+    test('an edit with an explicit type and a conflicting category follows '
+        'the type', () async {
+      final a = await asset(1000);
+      final exp = await category(CategoryType.expense);
+      final inc = (await categoryRepo
+              .createCategory(
+                CreateCategoryParams(name: 'Salary', type: CategoryType.income),
+              )
+              .run())
+          .getOrElse((f) => throw Exception(f.message))
+          .data!;
+      final t = await tx(a.ulid, 100, categoryUlid: exp.ulid);
+      expect(bal(a.ulid), 900);
+      await txRepo
+          .updateTransaction(UpdateTransactionParams(
+            ulid: t.ulid,
+            categoryUlid: inc.ulid,
+            type: CategoryType.expense,
+          ))
+          .run();
+      final stored = store.storage.box<Transaction>().get(t.id)!;
+      expect(stored.direction, CategoryType.expense);
+      expect(bal(a.ulid), 900);
+    });
+
+    test('a legacy uncategorized row is income after the backfill in '
+        'balance, statistics and the model getter', () async {
+      final a = Asset(name: 'A', type: 0, balance: 500);
+      store.storage.box<Asset>().put(a);
+      final legacy = Transaction(amount: 50, transactionDate: DateTime.now())
+        ..asset.target = a;
+      store.storage.box<Transaction>().put(legacy);
+      TransactionTypeBackfill(store.storage).run();
+      final stored = store.storage.box<Transaction>().get(legacy.id)!;
+      expect(stored.direction, CategoryType.income);
+      final summary = (await txRepo
+              .getStatisticSummary(GetStatisticParams(
+                startDate: DateTime.now().subtract(const Duration(days: 1)),
+                endDate: DateTime.now().add(const Duration(days: 1)),
+              ))
+              .run())
+          .getOrElse((_) => throw Exception())
+          .data!;
+      expect(summary.totalIncome, 50);
+      expect(store.storage.box<Asset>().get(a.id)!.balance, 500);
+      // * Menghapus baris lama mengembalikan saldo dengan arah yang sama
+      await txRepo.deleteTransaction(ulid: stored.ulid).run();
+      expect(store.storage.box<Asset>().get(a.id)!.balance, 450);
+    });
+  });
 }

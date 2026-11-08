@@ -49,8 +49,10 @@ class Transaction {
        createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
-  /// Arah transaksi efektif untuk saldo & statistik
-  /// * Prioritas: type eksplisit → tipe kategori → income (perilaku lama)
+  /// Arah transaksi efektif untuk saldo, statistik, ekspor, dan scheduler
+  /// * Prioritas tunggal: type tersimpan → tipe kategori → income
+  /// * Baris lama tanpa kategori dibukukan sebagai income sebelum A04;
+  ///   backfill mengisi type = income agar saldo historis tidak berubah
   @Transient()
   CategoryType get direction {
     final stored = type;

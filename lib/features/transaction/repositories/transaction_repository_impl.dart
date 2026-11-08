@@ -19,9 +19,11 @@ double _getBalanceAdjustment(double amount, CategoryType direction) {
   return direction == CategoryType.expense ? -amount : amount;
 }
 
-// * Tentukan arah transaksi: kategori (jika ada) menang, lalu type eksplisit
+// * Satu aturan arah untuk semua jalur (sama dengan Transaction.direction,
+// * backfill, dan import backup): type eksplisit → tipe kategori → income.
+// * Income untuk baris tanpa kategori & tanpa type adalah semantik saldo lama.
 CategoryType _resolveDirection(Category? category, CategoryType? type) {
-  return category?.categoryType ?? type ?? CategoryType.income;
+  return type ?? category?.categoryType ?? CategoryType.income;
 }
 
 class TransactionRepositoryImpl implements TransactionRepository {
