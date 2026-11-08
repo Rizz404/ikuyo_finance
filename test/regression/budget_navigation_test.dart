@@ -25,6 +25,10 @@ import '../support/test_app.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  // * Taps must land on a hit-testable widget (no silent off-target taps)
+  setUp(() => WidgetController.hitTestWarningShouldBeFatal = true);
+  tearDown(() => WidgetController.hitTestWarningShouldBeFatal = false);
+
   Future<TestApp> boot(WidgetTester tester) async {
     final app = await tester.runAsync(() async {
       SharedPreferences.setMockInitialValues({
@@ -113,7 +117,7 @@ void main() {
     await tester.tap(find.byType(FloatingActionButton));
     await tester.pumpAndSettle();
     expect(find.byType(BudgetUpsertScreen), findsOneWidget);
-    await tester.tap(find.text(LocaleKeys.budgetUpsertCategoryHint.tr()));
+    await tester.tap(find.byType(DropdownButton<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text(food.name).last);
     await tester.pumpAndSettle();
