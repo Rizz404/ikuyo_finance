@@ -201,6 +201,8 @@ class TransactionBackup {
   final String ulid;
   final String assetUlid;
   final String? categoryUlid;
+  // * Arah transaksi (index CategoryType); null pada backup versi lama
+  final int? type;
   final double amount;
   final DateTime? transactionDate;
   final String? description;
@@ -212,6 +214,7 @@ class TransactionBackup {
     required this.ulid,
     required this.assetUlid,
     this.categoryUlid,
+    this.type,
     required this.amount,
     this.transactionDate,
     this.description,
@@ -224,6 +227,7 @@ class TransactionBackup {
     'ulid': ulid,
     'assetUlid': assetUlid,
     'categoryUlid': categoryUlid,
+    'type': type,
     'amount': amount,
     'transactionDate': transactionDate?.toIso8601String(),
     'description': description,
@@ -237,6 +241,7 @@ class TransactionBackup {
         ulid: json['ulid'] as String,
         assetUlid: json['assetUlid'] as String,
         categoryUlid: json['categoryUlid'] as String?,
+        type: json['type'] as int?,
         amount: (json['amount'] as num).toDouble(),
         transactionDate: json['transactionDate'] != null
             ? DateTime.parse(json['transactionDate'] as String)
@@ -252,6 +257,7 @@ class TransactionBackup {
         ulid: transaction.ulid,
         assetUlid: transaction.asset.target!.ulid,
         categoryUlid: transaction.category.target?.ulid,
+        type: transaction.direction.index,
         amount: transaction.amount,
         transactionDate: transaction.transactionDate,
         description: transaction.description,

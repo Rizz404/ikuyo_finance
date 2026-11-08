@@ -168,6 +168,17 @@ void main() {
     });
   });
 
+  test('backup round-trip preserves direction of uncategorized transactions', () async {
+    final a = await asset(1000);
+    await tx(a.ulid, 100, type: CategoryType.expense);
+    final backup = BackupRepositoryImpl(store.storage);
+    final data = (await backup.exportData().run()).getOrElse((_) => throw Exception()).data!;
+    final restored = await backup.importData(data).run();
+    expect(restored.isRight(), isTrue);
+    final t = store.storage.box<Transaction>().getAll().single;
+    expect(t.type, CategoryType.expense.index);
+  });
+
   group('legacy data backfill (non-destructive migration)', () {
     test('fills type from category, or income when uncategorized, without touching balances', () {
       final a = Asset(name: 'A', type: 0, balance: 777);

@@ -4,9 +4,11 @@ import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_schedule_frequency.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_group.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_item.dart';
 import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_log.dart';
+import 'package:ikuyo_finance/features/auto_transaction/models/auto_transaction_log_status.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
@@ -89,196 +91,16 @@ class BackupRepositoryImpl implements BackupRepository {
       () async {
         logService('Impor data', 'Memulai impor cadangan');
 
-        // * Clear order (deepest dependents first):
-        // * autoLogs → autoItems → autoGroups → transactions → budgets
-        // * → categories → assets
-        _autoLogBox.removeAll();
-        _autoItemBox.removeAll();
-        _autoGroupBox.removeAll();
-        _transactionBox.removeAll();
-        _budgetBox.removeAll();
-        _categoryBox.removeAll();
-        _assetBox.removeAll();
+        // ! Validasi snapshot sebelum menyentuh data yang ada
+        _validateBackup(backupData);
 
-        logInfo('Data yang ada berhasil dihapus');
+        // * Semua penghapusan dan penulisan dalam satu transaksi tulis:
+        // * jika ada error, ObjectBox me-rollback sehingga data lama utuh
+        _storage.store.runInTransaction(
+          TxMode.write,
+          () => _replaceAllData(backupData),
+        );
 
-        // ── 1. Categories ──────────────────────────────────────────────────
-        final categoryMap = <String, Category>{};
-
-        // * First pass: create categories without parent relations
-        for (final backup in backupData.categories) {
-          final category = Category(
-            ulid: backup.ulid,
-            name: backup.name,
-            type: backup.type,
-            icon: backup.icon,
-            color: backup.color,
-            createdAt: backup.createdAt,
-            updatedAt: backup.updatedAt,
-          );
-          _categoryBox.put(category);
-          categoryMap[backup.ulid] = category;
-        }
-
-        // * Second pass: set parent relations
-        for (final backup in backupData.categories) {
-          if (backup.parentUlid != null) {
-            final category = categoryMap[backup.ulid];
-            final parent = categoryMap[backup.parentUlid];
-            if (category != null && parent != null) {
-              category.parent.target = parent;
-              _categoryBox.put(category);
-            }
-          }
-        }
-
-        logInfo('Kategori diimpor: ${backupData.categories.length}');
-
-        // ── 2. Assets ──────────────────────────────────────────────────────
-        final assetMap = <String, Asset>{};
-        for (final backup in backupData.assets) {
-          final asset = Asset(
-            ulid: backup.ulid,
-            name: backup.name,
-            type: backup.type,
-            balance: backup.balance,
-            icon: backup.icon,
-            createdAt: backup.createdAt,
-            updatedAt: backup.updatedAt,
-          );
-          _assetBox.put(asset);
-          assetMap[backup.ulid] = asset;
-        }
-
-        logInfo('Aset diimpor: ${backupData.assets.length}');
-
-        // ── 3. Transactions ────────────────────────────────────────────────
-        final transactionMap = <String, Transaction>{};
-        for (final backup in backupData.transactions) {
-          final asset = assetMap[backup.assetUlid];
-          if (asset == null) continue;
-
-          final transaction = Transaction(
-            ulid: backup.ulid,
-            amount: backup.amount,
-            transactionDate: backup.transactionDate,
-            description: backup.description,
-            imagePath: backup.imagePath,
-            createdAt: backup.createdAt,
-            updatedAt: backup.updatedAt,
-          );
-
-          transaction.asset.target = asset;
-
-          if (backup.categoryUlid != null) {
-            final category = categoryMap[backup.categoryUlid];
-            if (category != null) {
-              transaction.category.target = category;
-            }
-          }
-
-          _transactionBox.put(transaction);
-          transactionMap[backup.ulid] = transaction;
-        }
-
-        logInfo('Transaksi diimpor: ${backupData.transactions.length}');
-
-        // ── 4. Budgets ─────────────────────────────────────────────────────
-        for (final backup in backupData.budgets) {
-          final category = categoryMap[backup.categoryUlid];
-          if (category == null) continue;
-
-          final budget = Budget(
-            ulid: backup.ulid,
-            amountLimit: backup.amountLimit,
-            period: backup.period,
-            startDate: backup.startDate,
-            endDate: backup.endDate,
-            createdAt: backup.createdAt,
-            updatedAt: backup.updatedAt,
-          );
-
-          budget.category.target = category;
-          _budgetBox.put(budget);
-        }
-
-        logInfo('Anggaran diimpor: ${backupData.budgets.length}');
-
-        // ── 5. Auto Transaction Groups ─────────────────────────────────────
-        final autoGroupMap = <String, AutoTransactionGroup>{};
-        for (final backup in backupData.autoGroups) {
-          final group = AutoTransactionGroup(
-            ulid: backup.ulid,
-            name: backup.name,
-            description: backup.description,
-            isActive: backup.isActive,
-            isPaused: backup.isPaused,
-            pauseStartAt: backup.pauseStartAt,
-            pauseEndAt: backup.pauseEndAt,
-            frequency: backup.frequency,
-            scheduleHour: backup.scheduleHour,
-            scheduleMinute: backup.scheduleMinute,
-            dayOfWeek: backup.dayOfWeek,
-            dayOfMonth: backup.dayOfMonth,
-            monthOfYear: backup.monthOfYear,
-            intervalDays: backup.intervalDays,
-            activeDaysMask: backup.activeDaysMask,
-            startDate: backup.startDate,
-            endDate: backup.endDate,
-            nextExecutedAt: backup.nextExecutedAt,
-            lastExecutedAt: backup.lastExecutedAt,
-            createdAt: backup.createdAt,
-            updatedAt: backup.updatedAt,
-          );
-          _autoGroupBox.put(group);
-          autoGroupMap[backup.ulid] = group;
-        }
-
-        logInfo('Auto group diimpor: ${backupData.autoGroups.length}');
-
-        // ── 6. Auto Transaction Items ──────────────────────────────────────
-        for (final backup in backupData.autoItems) {
-          final group = autoGroupMap[backup.groupUlid];
-          final transaction = transactionMap[backup.transactionUlid];
-          if (group == null || transaction == null) continue;
-
-          final item = AutoTransactionItem(
-            ulid: backup.ulid,
-            isActive: backup.isActive,
-            sortOrder: backup.sortOrder,
-            createdAt: backup.createdAt,
-            updatedAt: backup.updatedAt,
-          );
-
-          item.group.target = group;
-          item.transaction.target = transaction;
-          _autoItemBox.put(item);
-        }
-
-        logInfo('Auto item diimpor: ${backupData.autoItems.length}');
-
-        // ── 7. Auto Transaction Logs ───────────────────────────────────────
-        for (final backup in backupData.autoLogs) {
-          final group = autoGroupMap[backup.groupUlid];
-          if (group == null) continue;
-
-          final log = AutoTransactionLog(
-            ulid: backup.ulid,
-            scheduledAt: backup.scheduledAt,
-            executedAt: backup.executedAt,
-            status: backup.status,
-            successCount: backup.successCount,
-            failureCount: backup.failureCount,
-            errorMessage: backup.errorMessage,
-            createdAt: backup.createdAt,
-            updatedAt: backup.updatedAt,
-          );
-
-          log.group.target = group;
-          _autoLogBox.put(log);
-        }
-
-        logInfo('Auto log diimpor: ${backupData.autoLogs.length}');
         logInfo('Impor selesai: ${backupData.totalItems} item');
 
         return const Success(message: 'Data berhasil diimpor');
@@ -288,6 +110,262 @@ class BackupRepositoryImpl implements BackupRepository {
         return Failure(message: 'Gagal mengimpor data: ${error.toString()}');
       },
     );
+  }
+
+  /// Validasi struktur backup: ulid unik per entitas dan nilai enum valid
+  void _validateBackup(BackupData data) {
+    void checkUnique(String entity, Iterable<String> ulids) {
+      final seen = <String>{};
+      for (final ulid in ulids) {
+        if (!seen.add(ulid)) {
+          throw FormatException('ulid $entity duplikat: $ulid');
+        }
+      }
+    }
+
+    void checkRange(String field, int value, int length) {
+      if (value < 0 || value >= length) {
+        throw FormatException('Nilai $field tidak valid: $value');
+      }
+    }
+
+    checkUnique('kategori', data.categories.map((e) => e.ulid));
+    checkUnique('aset', data.assets.map((e) => e.ulid));
+    checkUnique('transaksi', data.transactions.map((e) => e.ulid));
+    checkUnique('anggaran', data.budgets.map((e) => e.ulid));
+    checkUnique('auto group', data.autoGroups.map((e) => e.ulid));
+    checkUnique('auto item', data.autoItems.map((e) => e.ulid));
+    checkUnique('auto log', data.autoLogs.map((e) => e.ulid));
+
+    for (final t in data.transactions) {
+      final type = t.type;
+      if (type != null) {
+        checkRange('tipe transaksi', type, CategoryType.values.length);
+      }
+    }
+    for (final c in data.categories) {
+      checkRange('tipe kategori', c.type, CategoryType.values.length);
+    }
+    for (final a in data.assets) {
+      checkRange('tipe aset', a.type, AssetType.values.length);
+    }
+    for (final b in data.budgets) {
+      checkRange('periode anggaran', b.period, BudgetPeriod.values.length);
+    }
+    for (final g in data.autoGroups) {
+      checkRange(
+        'frekuensi auto group',
+        g.frequency,
+        AutoScheduleFrequency.values.length,
+      );
+    }
+    for (final l in data.autoLogs) {
+      checkRange(
+        'status auto log',
+        l.status,
+        AutoTransactionLogStatus.values.length,
+      );
+    }
+  }
+
+  /// Hapus semua data lalu tulis snapshot (dipanggil di dalam transaksi)
+  void _replaceAllData(BackupData backupData) {
+    // * Clear order (deepest dependents first):
+    // * autoLogs → autoItems → autoGroups → transactions → budgets
+    // * → categories → assets
+    _autoLogBox.removeAll();
+    _autoItemBox.removeAll();
+    _autoGroupBox.removeAll();
+    _transactionBox.removeAll();
+    _budgetBox.removeAll();
+    _categoryBox.removeAll();
+    _assetBox.removeAll();
+
+    logInfo('Data yang ada berhasil dihapus');
+
+    // ── 1. Categories ──────────────────────────────────────────────────
+    final categoryMap = <String, Category>{};
+
+    // * First pass: create categories without parent relations
+    for (final backup in backupData.categories) {
+      final category = Category(
+        ulid: backup.ulid,
+        name: backup.name,
+        type: backup.type,
+        icon: backup.icon,
+        color: backup.color,
+        createdAt: backup.createdAt,
+        updatedAt: backup.updatedAt,
+      );
+      _categoryBox.put(category);
+      categoryMap[backup.ulid] = category;
+    }
+
+    // * Second pass: set parent relations
+    for (final backup in backupData.categories) {
+      if (backup.parentUlid != null) {
+        final category = categoryMap[backup.ulid];
+        final parent = categoryMap[backup.parentUlid];
+        if (category != null && parent != null) {
+          category.parent.target = parent;
+          _categoryBox.put(category);
+        }
+      }
+    }
+
+    logInfo('Kategori diimpor: ${backupData.categories.length}');
+
+    // ── 2. Assets ──────────────────────────────────────────────────────
+    final assetMap = <String, Asset>{};
+    for (final backup in backupData.assets) {
+      final asset = Asset(
+        ulid: backup.ulid,
+        name: backup.name,
+        type: backup.type,
+        balance: backup.balance,
+        icon: backup.icon,
+        createdAt: backup.createdAt,
+        updatedAt: backup.updatedAt,
+      );
+      _assetBox.put(asset);
+      assetMap[backup.ulid] = asset;
+    }
+
+    logInfo('Aset diimpor: ${backupData.assets.length}');
+
+    // ── 3. Transactions ────────────────────────────────────────────────
+    final transactionMap = <String, Transaction>{};
+    for (final backup in backupData.transactions) {
+      final asset = assetMap[backup.assetUlid];
+      if (asset == null) continue;
+
+      final transaction = Transaction(
+        ulid: backup.ulid,
+        amount: backup.amount,
+        transactionDate: backup.transactionDate,
+        description: backup.description,
+        imagePath: backup.imagePath,
+        createdAt: backup.createdAt,
+        updatedAt: backup.updatedAt,
+      );
+
+      transaction.asset.target = asset;
+
+      if (backup.categoryUlid != null) {
+        final category = categoryMap[backup.categoryUlid];
+        if (category != null) {
+          transaction.category.target = category;
+        }
+      }
+
+      // * Backup lama tanpa type: pakai arah kategori / income (perilaku lama)
+      transaction.type =
+          backup.type ??
+          transaction.category.target?.type ??
+          CategoryType.income.index;
+
+      _transactionBox.put(transaction);
+      transactionMap[backup.ulid] = transaction;
+    }
+
+    logInfo('Transaksi diimpor: ${backupData.transactions.length}');
+
+    // ── 4. Budgets ─────────────────────────────────────────────────────
+    for (final backup in backupData.budgets) {
+      final category = categoryMap[backup.categoryUlid];
+      if (category == null) continue;
+
+      final budget = Budget(
+        ulid: backup.ulid,
+        amountLimit: backup.amountLimit,
+        period: backup.period,
+        startDate: backup.startDate,
+        endDate: backup.endDate,
+        createdAt: backup.createdAt,
+        updatedAt: backup.updatedAt,
+      );
+
+      budget.category.target = category;
+      _budgetBox.put(budget);
+    }
+
+    logInfo('Anggaran diimpor: ${backupData.budgets.length}');
+
+    // ── 5. Auto Transaction Groups ─────────────────────────────────────
+    final autoGroupMap = <String, AutoTransactionGroup>{};
+    for (final backup in backupData.autoGroups) {
+      final group = AutoTransactionGroup(
+        ulid: backup.ulid,
+        name: backup.name,
+        description: backup.description,
+        isActive: backup.isActive,
+        isPaused: backup.isPaused,
+        pauseStartAt: backup.pauseStartAt,
+        pauseEndAt: backup.pauseEndAt,
+        frequency: backup.frequency,
+        scheduleHour: backup.scheduleHour,
+        scheduleMinute: backup.scheduleMinute,
+        dayOfWeek: backup.dayOfWeek,
+        dayOfMonth: backup.dayOfMonth,
+        monthOfYear: backup.monthOfYear,
+        intervalDays: backup.intervalDays,
+        activeDaysMask: backup.activeDaysMask,
+        startDate: backup.startDate,
+        endDate: backup.endDate,
+        nextExecutedAt: backup.nextExecutedAt,
+        lastExecutedAt: backup.lastExecutedAt,
+        createdAt: backup.createdAt,
+        updatedAt: backup.updatedAt,
+      );
+      _autoGroupBox.put(group);
+      autoGroupMap[backup.ulid] = group;
+    }
+
+    logInfo('Auto group diimpor: ${backupData.autoGroups.length}');
+
+    // ── 6. Auto Transaction Items ──────────────────────────────────────
+    for (final backup in backupData.autoItems) {
+      final group = autoGroupMap[backup.groupUlid];
+      final transaction = transactionMap[backup.transactionUlid];
+      if (group == null || transaction == null) continue;
+
+      final item = AutoTransactionItem(
+        ulid: backup.ulid,
+        isActive: backup.isActive,
+        sortOrder: backup.sortOrder,
+        createdAt: backup.createdAt,
+        updatedAt: backup.updatedAt,
+      );
+
+      item.group.target = group;
+      item.transaction.target = transaction;
+      _autoItemBox.put(item);
+    }
+
+    logInfo('Auto item diimpor: ${backupData.autoItems.length}');
+
+    // ── 7. Auto Transaction Logs ───────────────────────────────────────
+    for (final backup in backupData.autoLogs) {
+      final group = autoGroupMap[backup.groupUlid];
+      if (group == null) continue;
+
+      final log = AutoTransactionLog(
+        ulid: backup.ulid,
+        scheduledAt: backup.scheduledAt,
+        executedAt: backup.executedAt,
+        status: backup.status,
+        successCount: backup.successCount,
+        failureCount: backup.failureCount,
+        errorMessage: backup.errorMessage,
+        createdAt: backup.createdAt,
+        updatedAt: backup.updatedAt,
+      );
+
+      log.group.target = group;
+      _autoLogBox.put(log);
+    }
+
+    logInfo('Auto log diimpor: ${backupData.autoLogs.length}');
   }
 
   @override
