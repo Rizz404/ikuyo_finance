@@ -14,6 +14,7 @@ import 'package:objectbox/internal.dart'
 import 'package:objectbox/objectbox.dart' as obx;
 import 'package:objectbox_flutter_libs/objectbox_flutter_libs.dart';
 
+import 'core/currency/models/currency_marker.dart';
 import 'features/asset/models/asset.dart';
 import 'features/auto_transaction/models/auto_transaction_group.dart';
 import 'features/auto_transaction/models/auto_transaction_item.dart';
@@ -602,6 +603,34 @@ final _entities = <obx_int.ModelEntity>[
     relations: <obx_int.ModelRelation>[],
     backlinks: <obx_int.ModelBacklink>[],
   ),
+  obx_int.ModelEntity(
+    id: const obx_int.IdUid(9, 3633629515372709278),
+    name: 'CurrencyMarker',
+    lastPropertyId: const obx_int.IdUid(3, 8882243345022085731),
+    flags: 0,
+    properties: <obx_int.ModelProperty>[
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(1, 7600514499171452572),
+        name: 'id',
+        type: 6,
+        flags: 1,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(2, 7643806418445805475),
+        name: 'currency',
+        type: 9,
+        flags: 0,
+      ),
+      obx_int.ModelProperty(
+        id: const obx_int.IdUid(3, 8882243345022085731),
+        name: 'updatedAt',
+        type: 10,
+        flags: 0,
+      ),
+    ],
+    relations: <obx_int.ModelRelation>[],
+    backlinks: <obx_int.ModelBacklink>[],
+  ),
 ];
 
 /// Shortcut for [obx.Store.new] that passes [getObjectBoxModel] and for Flutter
@@ -642,7 +671,7 @@ Future<obx.Store> openStore({
 obx_int.ModelDefinition getObjectBoxModel() {
   final model = obx_int.ModelInfo(
     entities: _entities,
-    lastEntityId: const obx_int.IdUid(8, 1359876197900263379),
+    lastEntityId: const obx_int.IdUid(9, 3633629515372709278),
     lastIndexId: const obx_int.IdUid(15, 3441781257507516496),
     lastRelationId: const obx_int.IdUid(0, 0),
     lastSequenceId: const obx_int.IdUid(0, 0),
@@ -1413,6 +1442,47 @@ obx_int.ModelDefinition getObjectBoxModel() {
         return object;
       },
     ),
+    CurrencyMarker: obx_int.EntityDefinition<CurrencyMarker>(
+      model: _entities[7],
+      toOneRelations: (CurrencyMarker object) => [],
+      toManyRelations: (CurrencyMarker object) => {},
+      getId: (CurrencyMarker object) => object.id,
+      setId: (CurrencyMarker object, int id) {
+        object.id = id;
+      },
+      objectToFB: (CurrencyMarker object, fb.Builder fbb) {
+        final currencyOffset = fbb.writeString(object.currency);
+        fbb.startTable(4);
+        fbb.addInt64(0, object.id);
+        fbb.addOffset(1, currencyOffset);
+        fbb.addInt64(2, object.updatedAt.millisecondsSinceEpoch);
+        fbb.finish(fbb.endTable());
+        return object.id;
+      },
+      objectFromFB: (obx.Store store, ByteData fbData) {
+        final buffer = fb.BufferContext(fbData);
+        final rootOffset = buffer.derefObject(0);
+        final idParam = const fb.Int64Reader().vTableGet(
+          buffer,
+          rootOffset,
+          4,
+          0,
+        );
+        final currencyParam = const fb.StringReader(
+          asciiOptimization: true,
+        ).vTableGet(buffer, rootOffset, 6, '');
+        final updatedAtParam = DateTime.fromMillisecondsSinceEpoch(
+          const fb.Int64Reader().vTableGet(buffer, rootOffset, 8, 0),
+        );
+        final object = CurrencyMarker(
+          id: idParam,
+          currency: currencyParam,
+          updatedAt: updatedAtParam,
+        );
+
+        return object;
+      },
+    ),
   };
 
   return obx_int.ModelDefinition(model, bindings);
@@ -1839,5 +1909,23 @@ class AutoTransactionLog_ {
   /// See [AutoTransactionLog.updatedAt].
   static final updatedAt = obx.QueryDateProperty<AutoTransactionLog>(
     _entities[6].properties[10],
+  );
+}
+
+/// [CurrencyMarker] entity fields to define ObjectBox queries.
+class CurrencyMarker_ {
+  /// See [CurrencyMarker.id].
+  static final id = obx.QueryIntegerProperty<CurrencyMarker>(
+    _entities[7].properties[0],
+  );
+
+  /// See [CurrencyMarker.currency].
+  static final currency = obx.QueryStringProperty<CurrencyMarker>(
+    _entities[7].properties[1],
+  );
+
+  /// See [CurrencyMarker.updatedAt].
+  static final updatedAt = obx.QueryDateProperty<CurrencyMarker>(
+    _entities[7].properties[2],
   );
 }

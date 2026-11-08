@@ -17,20 +17,46 @@ class CurrencyCubit extends Cubit<CurrencyState> {
   final ExchangeRateService _exchangeRateService;
 
   CurrencyCubit(this._prefs, this._migrationService, this._exchangeRateService)
-    : super(CurrencyState(currentCurrency: _loadCurrency(_prefs))) {
+    : super(
+        CurrencyState(
+          currentCurrency: _loadCurrency(_prefs, _migrationService),
+        ),
+      ) {
     logInfo('CurrencyCubit initialized with ${state.currentCurrency}');
+    _syncPreference(state.currentCurrency);
     // * Fetch live exchange rates on init
     refreshExchangeRates();
   }
 
-  static CurrencyCode _loadCurrency(SharedPreferences prefs) {
+  static CurrencyCode _loadCurrency(
+    SharedPreferences prefs,
+    CurrencyMigrationService migrationService,
+  ) {
     final currencyName = prefs.getString(StorageKeys.currency);
-    if (currencyName == null) return CurrencyCode.idr;
-
-    return CurrencyCode.values.firstWhere(
+    final preferred = CurrencyCode.values.firstWhere(
       (c) => c.name == currencyName,
       orElse: () => CurrencyCode.idr,
     );
+    // * Penanda DB adalah sumber kebenaran; prefs hanya cermin
+    try {
+      return migrationService.resolveStoredCurrency(preferred);
+    } catch (e, s) {
+      talker.error('[CurrencyCubit] Failed to read currency marker', e, s);
+      return preferred;
+    }
+  }
+
+  /// Selaraskan prefs dengan penanda DB; kegagalan tidak fatal karena
+  /// penanda tetap menjadi sumber kebenaran pada startup berikutnya.
+  Future<bool> _syncPreference(CurrencyCode code) async {
+    try {
+      if (_prefs.getString(StorageKeys.currency) == code.name) return true;
+      await _prefs.setString(StorageKeys.currency, code.name);
+      return true;
+    } catch (e, s) {
+      logError('Failed to persist currency preference', e, s);
+      return false;
+    }
   }
 
   /// Change currency and migrate all database values
@@ -57,19 +83,20 @@ class CurrencyCubit extends Cubit<CurrencyState> {
       );
 
       if (!result.success) {
-        emit(state.copyWith(isMigrating: false));
+        if (!isClosed) emit(state.copyWith(isMigrating: false));
         return result;
       }
 
-      // * Save new currency preference
-      await _prefs.setString(StorageKeys.currency, code.name);
+      // * Konversi + penanda sudah commit; prefs hanya cermin
+      await _syncPreference(code);
+      if (isClosed) return result;
       emit(state.copyWith(currentCurrency: code, isMigrating: false));
       logInfo('Currency migrated to ${code.name}');
 
       return result;
     } catch (e, s) {
       logError('Failed to migrate currency', e, s);
-      emit(state.copyWith(isMigrating: false));
+      if (!isClosed) emit(state.copyWith(isMigrating: false));
       return CurrencyMigrationResult.failure(e.toString());
     }
   }
@@ -77,7 +104,10 @@ class CurrencyCubit extends Cubit<CurrencyState> {
   /// Quick currency switch without migration (for display-only)
   Future<void> setDisplayCurrency(CurrencyCode code) async {
     try {
-      await _prefs.setString(StorageKeys.currency, code.name);
+      // * Nominal tidak dikonversi: DB kini dianggap dalam mata uang [code]
+      _migrationService.markStoredCurrency(code);
+      await _syncPreference(code);
+      if (isClosed) return;
       emit(state.copyWith(currentCurrency: code));
       logInfo('Display currency changed to ${code.name}');
     } catch (e, s) {

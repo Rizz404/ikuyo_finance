@@ -490,9 +490,33 @@
         }
       ],
       "relations": []
+    },
+    {
+      "id": "9:3633629515372709278",
+      "lastPropertyId": "3:8882243345022085731",
+      "name": "CurrencyMarker",
+      "properties": [
+        {
+          "id": "1:7600514499171452572",
+          "name": "id",
+          "type": 6,
+          "flags": 1
+        },
+        {
+          "id": "2:7643806418445805475",
+          "name": "currency",
+          "type": 9
+        },
+        {
+          "id": "3:8882243345022085731",
+          "name": "updatedAt",
+          "type": 10
+        }
+      ],
+      "relations": []
     }
   ],
-  "lastEntityId": "8:1359876197900263379",
+  "lastEntityId": "9:3633629515372709278",
   "lastIndexId": "15:3441781257507516496",
   "lastRelationId": "0:0",
   "lastSequenceId": "0:0",

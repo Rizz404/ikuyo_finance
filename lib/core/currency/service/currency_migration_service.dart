@@ -1,4 +1,5 @@
 import 'package:ikuyo_finance/core/currency/currency.dart';
+import 'package:ikuyo_finance/core/currency/models/currency_marker.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/asset/models/asset.dart';
@@ -65,6 +66,16 @@ class CurrencyMigrationService {
       final (assetsUpdated, transactionsUpdated, budgetsUpdated) = _storage
           .store
           .runInTransaction(TxMode.write, () {
+            // * Tolak migrasi bila nominal di DB sudah bukan mata uang asal
+            // * (mis. konversi sebelumnya sudah commit tapi prefs gagal ditulis)
+            final stored = readMarker();
+            if (stored != null && stored != fromCurrency) {
+              throw StateError(
+                'Database amounts are stored in ${stored.name}, '
+                'not ${fromCurrency.name}; refusing to convert again',
+              );
+            }
+
             // * Step 1: Migrate Assets
             onProgress?.call('Migrating assets...', 0.0);
             final assets = _migrateAssets(from, to, onProgress);
@@ -76,6 +87,9 @@ class CurrencyMigrationService {
             // * Step 3: Migrate Budgets
             onProgress?.call('Migrating budgets...', 0.66);
             final budgets = _migrateBudgets(from, to, onProgress);
+
+            // * Penanda ditulis di transaksi yang sama dengan konversi
+            _writeMarker(toCurrency);
             return (assets, transactions, budgets);
           });
 
@@ -103,6 +117,48 @@ class CurrencyMigrationService {
       talker.error('[CurrencyMigrationService] Migration failed', e, s);
       return CurrencyMigrationResult.failure(e.toString());
     }
+  }
+
+  /// Mata uang tempat nominal di database disimpan, atau null untuk
+  /// instalasi lama yang belum memiliki penanda.
+  CurrencyCode? readMarker() {
+    final marker = _storage.box<CurrencyMarker>().getAll().firstOrNull;
+    if (marker == null) return null;
+    for (final code in CurrencyCode.values) {
+      if (code.name == marker.currency) return code;
+    }
+    return null;
+  }
+
+  /// Menentukan mata uang aktif saat startup. Penanda DB menang; instalasi
+  /// lama tanpa penanda mengadopsi [preferred] (nilai prefs) tanpa
+  /// mengubah nominal apa pun.
+  CurrencyCode resolveStoredCurrency(CurrencyCode preferred) {
+    return _storage.store.runInTransaction(TxMode.write, () {
+      final stored = readMarker();
+      if (stored != null) return stored;
+      _writeMarker(preferred);
+      return preferred;
+    });
+  }
+
+  /// Menandai ulang mata uang tanpa mengonversi nominal (display-only).
+  void markStoredCurrency(CurrencyCode code) {
+    _storage.store.runInTransaction(TxMode.write, () => _writeMarker(code));
+  }
+
+  void _writeMarker(CurrencyCode code) {
+    final box = _storage.box<CurrencyMarker>();
+    final existing = box.getAll();
+    final marker = existing.isEmpty
+        ? CurrencyMarker(currency: code.name)
+        : (existing.first
+            ..currency = code.name
+            ..updatedAt = DateTime.now());
+    if (existing.length > 1) {
+      box.removeMany(existing.skip(1).map((m) => m.id).toList());
+    }
+    box.put(marker);
   }
 
   /// Migrate all assets to new currency
