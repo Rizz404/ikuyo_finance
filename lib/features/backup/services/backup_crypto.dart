@@ -82,7 +82,13 @@ class BackupEnvelopeHeader {
   static Uint8List _u32(int v) =>
       Uint8List(4)..buffer.asByteData().setUint32(0, v, Endian.big);
 
-  /// Mem-parse dan memvalidasi header tanpa menyentuh ciphertext
+  /// Panjang header v1 yang valid (satu-satunya profil yang diterima)
+  static const v1Length =
+      _fixedLength + BackupCrypto._saltLength + 1 + BackupCrypto._nonceLength;
+
+  /// Mem-parse dan memvalidasi header tanpa menyentuh ciphertext.
+  /// * Hanya membaca maksimal [v1Length] byte pertama, tidak menyalin input
+  /// * Parameter KDF divalidasi sebelum salt/nonce dibaca dan sebelum KDF
   static BackupEnvelopeHeader parse(List<int> bytes) {
     if (bytes.length < _fixedLength) {
       throw const BackupCryptoException(BackupCryptoError.truncated);
@@ -92,51 +98,68 @@ class BackupEnvelopeHeader {
         throw const BackupCryptoException(BackupCryptoError.notABackup);
       }
     }
-    final data = ByteData.sublistView(Uint8List.fromList(bytes));
+    final available = min(bytes.length, v1Length);
+    final head = Uint8List(available);
+    for (var i = 0; i < available; i++) {
+      head[i] = bytes[i];
+    }
+    final data = ByteData.sublistView(head);
     final version = data.getUint8(4);
     if (version != BackupCrypto.formatVersion) {
       throw const BackupCryptoException(BackupCryptoError.unsupportedVersion);
     }
+    final kdfId = data.getUint8(5);
+    final memoryKiB = data.getUint32(6);
+    final iterations = data.getUint32(10);
+    final parallelism = data.getUint8(14);
+    _validateProfile(kdfId, memoryKiB, iterations, parallelism);
+
     var o = 15;
     final saltLength = data.getUint8(o++);
+    if (saltLength != BackupCrypto._saltLength) {
+      throw const BackupCryptoException(BackupCryptoError.invalidParameters);
+    }
     if (bytes.length < o + saltLength + 1) {
       throw const BackupCryptoException(BackupCryptoError.truncated);
     }
-    final salt = Uint8List.fromList(bytes.sublist(o, o + saltLength));
+    final salt = Uint8List.fromList(head.sublist(o, o + saltLength));
     o += saltLength;
     final nonceLength = data.getUint8(o++);
+    if (nonceLength != BackupCrypto._nonceLength) {
+      throw const BackupCryptoException(BackupCryptoError.invalidParameters);
+    }
     if (bytes.length < o + nonceLength) {
       throw const BackupCryptoException(BackupCryptoError.truncated);
     }
-    final nonce = Uint8List.fromList(bytes.sublist(o, o + nonceLength));
+    final nonce = Uint8List.fromList(head.sublist(o, o + nonceLength));
     o += nonceLength;
 
-    final header = BackupEnvelopeHeader(
+    return BackupEnvelopeHeader(
       formatVersion: version,
-      kdfId: data.getUint8(5),
-      memoryKiB: data.getUint32(6),
-      iterations: data.getUint32(10),
-      parallelism: data.getUint8(14),
+      kdfId: kdfId,
+      memoryKiB: memoryKiB,
+      iterations: iterations,
+      parallelism: parallelism,
       salt: salt,
       nonce: nonce,
       length: o,
     );
-    header._validate();
-    return header;
   }
 
-  // * Batas atas mencegah file berbahaya memaksa KDF raksasa (DoS)
-  void _validate() {
+  // * Header v1 hanya menerima profil penulis (Argon2id 19456 KiB, 2 iterasi,
+  // *   paralelisme 1). Parameter dibaca sebelum autentikasi, jadi nilai lain
+  // *   ditolak agar file berbahaya tidak bisa memaksa KDF mahal (DoS/OOM)
+  static void _validateProfile(
+    int kdfId,
+    int memoryKiB,
+    int iterations,
+    int parallelism,
+  ) {
     final ok =
         kdfId == BackupCrypto._kdfArgon2id &&
-        memoryKiB >= BackupCrypto._memoryKiB &&
-        memoryKiB <= 256 * 1024 &&
-        iterations >= BackupCrypto._iterations &&
-        iterations <= 16 &&
-        parallelism >= 1 &&
-        parallelism <= 4 &&
-        salt.length == BackupCrypto._saltLength &&
-        nonce.length == BackupCrypto._nonceLength;
+        memoryKiB == BackupCrypto._memoryKiB &&
+        iterations == BackupCrypto._iterations &&
+        parallelism == BackupCrypto._parallelism;
     if (!ok) {
       throw const BackupCryptoException(BackupCryptoError.invalidParameters);
     }

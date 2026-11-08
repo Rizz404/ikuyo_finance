@@ -141,9 +141,11 @@ void main() {
           BackupCryptoError.wrongPassphraseOrTampered,
         ),
         'nonce': (h.length - 1, BackupCryptoError.wrongPassphraseOrTampered),
-        'iterations (AAD-bound)': (
+        // F1: v1 accepts only the writer KDF profile, so a changed cost is
+        // refused before the KDF instead of after an expensive derivation
+        'iterations (pre-KDF profile check)': (
           13,
-          BackupCryptoError.wrongPassphraseOrTampered,
+          BackupCryptoError.invalidParameters,
         ),
         'format version': (4, BackupCryptoError.unsupportedVersion),
         'kdf id': (5, BackupCryptoError.invalidParameters),
