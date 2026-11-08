@@ -1,15 +1,19 @@
 import 'package:fpdart/fpdart.dart' hide Order;
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
+import 'package:ikuyo_finance/core/currency/models/currency_marker.dart';
 import 'package:ikuyo_finance/core/storage/query_extensions.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
 import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
 import 'package:ikuyo_finance/core/wrapper/success.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
+import 'package:ikuyo_finance/features/budget/models/budget_progress.dart';
 import 'package:ikuyo_finance/features/budget/models/create_budget_params.dart';
 import 'package:ikuyo_finance/features/budget/models/get_budgets_params.dart';
 import 'package:ikuyo_finance/features/budget/models/update_budget_params.dart';
 import 'package:ikuyo_finance/features/budget/repositories/budget_repository.dart';
 import 'package:ikuyo_finance/features/category/models/category.dart';
+import 'package:ikuyo_finance/features/transaction/models/transaction.dart';
 import 'package:ikuyo_finance/objectbox.g.dart';
 
 class BudgetRepositoryImpl implements BudgetRepository {
@@ -31,6 +35,13 @@ class BudgetRepositoryImpl implements BudgetRepository {
     }
   }
 
+  // * Limit wajib positif & finite agar progres tidak membagi nol (AAOB-5)
+  void _ensureValidLimit(double limit) {
+    if (!limit.isFinite || limit <= 0) {
+      throw Exception('Batas anggaran harus lebih dari 0');
+    }
+  }
+
   @override
   TaskEither<Failure, Success<Budget>> createBudget(CreateBudgetParams params) {
     return TaskEither.tryCatch(
@@ -47,6 +58,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
         }
 
         _ensureValidRange(params.period, params.startDate, params.endDate);
+        _ensureValidLimit(params.amountLimit);
 
         final budget = Budget(
           amountLimit: params.amountLimit,
@@ -65,7 +77,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
       (error, stackTrace) {
         logError('Gagal membuat anggaran', error, stackTrace);
         return Failure(
-          message: error.toString().contains('tidak ditemukan')
+          message:
+              error.toString().contains('tidak ditemukan') ||
+                  error.toString().contains('Batas anggaran')
               ? error.toString()
               : 'Gagal membuat anggaran. Silakan coba lagi.',
         );
@@ -281,6 +295,7 @@ class BudgetRepositoryImpl implements BudgetRepository {
 
         // * Update fields jika ada
         if (params.amountLimit != null) {
+          _ensureValidLimit(params.amountLimit!);
           budget.amountLimit = params.amountLimit!;
         }
         if (params.period != null) budget.period = params.period!.index;
@@ -322,7 +337,9 @@ class BudgetRepositoryImpl implements BudgetRepository {
       (error, stackTrace) {
         logError('Gagal memperbarui anggaran', error, stackTrace);
         return Failure(
-          message: error.toString().contains('tidak ditemukan')
+          message:
+              error.toString().contains('tidak ditemukan') ||
+                  error.toString().contains('Batas anggaran')
               ? error.toString()
               : 'Gagal memperbarui anggaran. Silakan coba lagi.',
         );
@@ -358,5 +375,96 @@ class BudgetRepositoryImpl implements BudgetRepository {
         );
       },
     );
+  }
+
+  @override
+  TaskEither<Failure, Success<BudgetProgress>> getBudgetProgress({
+    required String ulid,
+    DateTime? now,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        final budget = _box
+            .query(Budget_.ulid.equals(ulid))
+            .findFirstAndClose();
+        if (budget == null) {
+          throw Exception('Anggaran tidak ditemukan');
+        }
+        return Success(data: _computeProgress(budget, now ?? DateTime.now()));
+      },
+      (error, stackTrace) {
+        logError('Gagal menghitung realisasi anggaran', error, stackTrace);
+        return Failure(
+          message: error.toString().contains('tidak ditemukan')
+              ? error.toString()
+              : 'Gagal menghitung realisasi anggaran.',
+        );
+      },
+    );
+  }
+
+  /// * spent = transaksi arah expense di [start, end) atas kategori anggaran
+  ///   beserta seluruh turunannya; tanpa kategori = semua expense.
+  /// * Nominal sudah tersimpan dalam mata uang penanda DB (CurrencyMarker),
+  ///   jadi tidak ada konversi; dijumlah dalam satuan minor mata uang itu.
+  BudgetProgress _computeProgress(Budget budget, DateTime now) {
+    final range = BudgetPeriodRange.of(budget, now: now);
+    final digits = _storedCurrency().decimalDigits;
+
+    final root = budget.category.target;
+    final Set<int>? categoryIds = root == null ? null : _descendantIds(root.id);
+
+    final transactions = _storage
+        .box<Transaction>()
+        .query(
+          Transaction_.transactionDate
+              .greaterOrEqualDate(range.start)
+              .and(Transaction_.transactionDate.lessThanDate(range.end)),
+        )
+        .findAndClose();
+
+    var spentMinor = 0;
+    for (final t in transactions) {
+      if (!t.isExpense) continue;
+      if (categoryIds != null && !categoryIds.contains(t.category.targetId)) {
+        continue;
+      }
+      spentMinor += BudgetProgress.toMinor(t.amount, digits);
+    }
+
+    return BudgetProgress(
+      spentMinor: spentMinor,
+      limitMinor: BudgetProgress.toMinor(budget.amountLimit, digits),
+      decimalDigits: digits,
+      period: range,
+    );
+  }
+
+  /// Kategori akar + semua turunan (lewat parent), aman terhadap siklus
+  Set<int> _descendantIds(int rootId) {
+    final all = _categoryBox.getAll();
+    final result = <int>{rootId};
+    for (final c in all) {
+      final visited = <int>{};
+      var cur = c;
+      while (visited.add(cur.id)) {
+        if (cur.id == rootId) {
+          result.add(c.id);
+          break;
+        }
+        final parent = cur.parent.target;
+        if (parent == null) break;
+        cur = parent;
+      }
+    }
+    return result;
+  }
+
+  Currency _storedCurrency() {
+    final marker = _storage.box<CurrencyMarker>().getAll().firstOrNull;
+    for (final code in CurrencyCode.values) {
+      if (code.name == marker?.currency) return Currency.getByCode(code);
+    }
+    return Currency.getByCode(CurrencyCode.idr);
   }
 }

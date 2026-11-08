@@ -376,6 +376,9 @@ abstract class LocaleKeys {
   static const budgetScreenErrorOccurred = 'budget.screen.errorOccurred';
   static const budgetScreenEmptyTitle = 'budget.screen.emptyTitle';
   static const budgetScreenEmptySubtitle = 'budget.screen.emptySubtitle';
+  static const budgetCardSpentOf = 'budget.card.spentOf';
+  static const budgetCardRemaining = 'budget.card.remaining';
+  static const budgetCardOverspent = 'budget.card.overspent';
 
   // * Budget — Search
   static const budgetSearchHint = 'budget.search.hint';

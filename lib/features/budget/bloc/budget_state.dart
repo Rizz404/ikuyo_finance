@@ -37,6 +37,9 @@ final class BudgetState extends Equatable {
   final String? writeErrorMessage;
   final Budget? lastCreatedBudget;
 
+  // * Realisasi per ulid anggaran (AAOB-5)
+  final Map<String, BudgetProgress> progress;
+
   const BudgetState({
     this.status = BudgetStatus.initial,
     this.budgets = const [],
@@ -59,6 +62,7 @@ final class BudgetState extends Equatable {
     this.writeSuccessMessage,
     this.writeErrorMessage,
     this.lastCreatedBudget,
+    this.progress = const {},
   });
 
   // * Factory constructors for cleaner state creation
@@ -119,6 +123,7 @@ final class BudgetState extends Equatable {
     String? Function()? writeSuccessMessage,
     String? Function()? writeErrorMessage,
     Budget? Function()? lastCreatedBudget,
+    Map<String, BudgetProgress>? progress,
   }) {
     return BudgetState(
       status: status ?? this.status,
@@ -166,6 +171,7 @@ final class BudgetState extends Equatable {
       lastCreatedBudget: lastCreatedBudget != null
           ? lastCreatedBudget()
           : this.lastCreatedBudget,
+      progress: progress ?? this.progress,
     );
   }
 
@@ -192,5 +198,6 @@ final class BudgetState extends Equatable {
     writeSuccessMessage,
     writeErrorMessage,
     lastCreatedBudget,
+    progress,
   ];
 }

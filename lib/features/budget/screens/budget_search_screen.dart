@@ -175,7 +175,10 @@ class _BudgetSearchScreenState extends State<BudgetSearchScreen> {
       separatorBuilder: (_, __) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         final budget = state.budgets[index];
-        return BudgetCard(budget: budget);
+        return BudgetCard(
+          budget: budget,
+          progress: state.progress[budget.ulid],
+        );
       },
     );
   }

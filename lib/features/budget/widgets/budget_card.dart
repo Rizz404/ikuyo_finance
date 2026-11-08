@@ -5,13 +5,20 @@ import 'package:ikuyo_finance/core/extensions/navigator_extension.dart';
 import 'package:ikuyo_finance/core/extensions/theme_extension.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
+import 'package:ikuyo_finance/features/budget/models/budget_progress.dart';
 import 'package:ikuyo_finance/shared/widgets/app_text.dart';
 
 class BudgetCard extends StatelessWidget {
   final Budget budget;
+  final BudgetProgress? progress;
   final VoidCallback? onTap;
 
-  const BudgetCard({super.key, required this.budget, this.onTap});
+  const BudgetCard({
+    super.key,
+    required this.budget,
+    this.progress,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +69,7 @@ class BudgetCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: AppText(
-                    _getPeriodLabel(),
+                    _getPeriodLabel().tr(),
                     style: AppTextStyle.labelSmall,
                     color: color,
                     fontWeight: FontWeight.w500,
@@ -78,6 +85,10 @@ class BudgetCard extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: context.colorScheme.primary,
             ),
+            if (progress != null) ...[
+              const SizedBox(height: 8),
+              _buildProgress(context, progress!),
+            ],
             const SizedBox(height: 8),
             // * Date Range (for custom period)
             if (budget.budgetPeriod == BudgetPeriod.custom &&
@@ -92,7 +103,7 @@ class BudgetCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 4),
                   AppText(
-                    '${_formatDate(budget.startDate!)} - ${_formatDate(budget.endDate!)}',
+                    '${_formatDate(context, budget.startDate!)} - ${_formatDate(context, budget.endDate!)}',
                     style: AppTextStyle.bodySmall,
                     color: context.colorScheme.outline,
                   ),
@@ -105,12 +116,71 @@ class BudgetCard extends StatelessWidget {
     );
   }
 
+  // * Realisasi: bar di-clamp, persen & sisa tidak (AAOB-5)
+  Widget _buildProgress(BuildContext context, BudgetProgress p) {
+    final ratio = p.ratio;
+    final barColor = p.isOverspent
+        ? context.colorScheme.error
+        : context.colorScheme.primary;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        ClipRRect(
+          borderRadius: BorderRadius.circular(4),
+          child: LinearProgressIndicator(
+            value: p.barValue,
+            minHeight: 6,
+            color: barColor,
+            backgroundColor: context.colorScheme.surfaceContainerHighest,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Row(
+          children: [
+            Expanded(
+              child: AppText(
+                LocaleKeys.budgetCardSpentOf.tr(
+                  namedArgs: {
+                    'spent': context.formatMoney(p.spent),
+                    'limit': context.formatMoney(p.limit),
+                  },
+                ),
+                style: AppTextStyle.bodySmall,
+                color: context.colorScheme.outline,
+              ),
+            ),
+            if (ratio != null)
+              AppText(
+                '${(ratio * 100).round()}%',
+                style: AppTextStyle.labelSmall,
+                fontWeight: FontWeight.w600,
+                color: barColor,
+              ),
+          ],
+        ),
+        const SizedBox(height: 2),
+        AppText(
+          p.isOverspent
+              ? LocaleKeys.budgetCardOverspent.tr(
+                  namedArgs: {'amount': context.formatMoney(-p.remaining)},
+                )
+              : LocaleKeys.budgetCardRemaining.tr(
+                  namedArgs: {'amount': context.formatMoney(p.remaining)},
+                ),
+          style: AppTextStyle.bodySmall,
+          fontWeight: FontWeight.w500,
+          color: p.isOverspent ? context.colorScheme.error : null,
+        ),
+      ],
+    );
+  }
+
   String _getPeriodLabel() {
     return switch (budget.budgetPeriod) {
-      BudgetPeriod.monthly => 'Bulanan',
-      BudgetPeriod.weekly => 'Mingguan',
-      BudgetPeriod.yearly => 'Tahunan',
-      BudgetPeriod.custom => 'Kustom',
+      BudgetPeriod.monthly => LocaleKeys.budgetScreenTabMonthly,
+      BudgetPeriod.weekly => LocaleKeys.budgetScreenTabWeekly,
+      BudgetPeriod.yearly => LocaleKeys.budgetScreenTabYearly,
+      BudgetPeriod.custom => LocaleKeys.budgetScreenTabCustom,
     };
   }
 
@@ -123,7 +193,7 @@ class BudgetCard extends StatelessWidget {
     };
   }
 
-  String _formatDate(DateTime date) {
-    return DateFormat('dd MMM yyyy', 'id_ID').format(date);
+  String _formatDate(BuildContext context, DateTime date) {
+    return DateFormat('dd MMM yyyy', context.locale.toString()).format(date);
   }
 }

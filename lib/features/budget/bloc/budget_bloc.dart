@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ikuyo_finance/features/budget/models/budget.dart';
+import 'package:ikuyo_finance/features/budget/models/budget_progress.dart';
 import 'package:ikuyo_finance/features/budget/models/create_budget_params.dart';
 import 'package:ikuyo_finance/features/budget/models/get_budgets_params.dart';
 import 'package:ikuyo_finance/features/budget/models/update_budget_params.dart';
@@ -80,6 +81,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         )
         .run();
 
+    final progress = await _progressOf(result.toNullable()?.data ?? const []);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -91,6 +94,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         state.copyWith(
           status: BudgetStatus.success,
           budgets: success.data,
+          progress: progress,
           hasReachedMax: !success.cursor.hasNextPage,
           nextCursor: () => success.cursor.nextCursor,
           errorMessage: () => null,
@@ -127,6 +131,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         )
         .run();
 
+    final progress = await _progressOf(result.toNullable()?.data ?? const []);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -137,6 +143,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
       (success) => emit(
         state.copyWith(
           status: BudgetStatus.success,
+          progress: {...state.progress, ...progress},
           budgets: [...state.budgets, ...?success.data],
           hasReachedMax: !success.cursor.hasNextPage,
           nextCursor: () => success.cursor.nextCursor,
@@ -177,6 +184,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         )
         .run();
 
+    final progress = await _progressOf(result.toNullable()?.data ?? const []);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -188,6 +197,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         state.copyWith(
           status: BudgetStatus.success,
           budgets: success.data,
+          progress: progress,
           hasReachedMax: !success.cursor.hasNextPage,
           nextCursor: () => success.cursor.nextCursor,
           errorMessage: () => null,
@@ -230,6 +240,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         )
         .run();
 
+    final progress = await _progressOf(result.toNullable()?.data ?? const []);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -241,6 +253,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         state.copyWith(
           status: BudgetStatus.success,
           budgets: success.data,
+          progress: progress,
           hasReachedMax: !success.cursor.hasNextPage,
           nextCursor: () => success.cursor.nextCursor,
           errorMessage: () => null,
@@ -288,6 +301,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         )
         .run();
 
+    final progress = await _progressOf(result.toNullable()?.data ?? const []);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -299,6 +314,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         state.copyWith(
           status: BudgetStatus.success,
           budgets: success.data,
+          progress: progress,
           hasReachedMax: !success.cursor.hasNextPage,
           nextCursor: () => success.cursor.nextCursor,
           errorMessage: () => null,
@@ -340,6 +356,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         )
         .run();
 
+    final progress = await _progressOf(result.toNullable()?.data ?? const []);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -351,6 +369,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         state.copyWith(
           status: BudgetStatus.success,
           budgets: success.data,
+          progress: progress,
           hasReachedMax: !success.cursor.hasNextPage,
           nextCursor: () => success.cursor.nextCursor,
           errorMessage: () => null,
@@ -387,6 +406,8 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         .getBudgets(const GetBudgetsParams())
         .run();
 
+    final progress = await _progressOf(result.toNullable()?.data ?? const []);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -398,6 +419,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         state.copyWith(
           status: BudgetStatus.success,
           budgets: success.data,
+          progress: progress,
           hasReachedMax: !success.cursor.hasNextPage,
           nextCursor: () => success.cursor.nextCursor,
           errorMessage: () => null,
@@ -420,6 +442,9 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
 
     final result = await _budgetRepository.createBudget(event.params).run();
 
+    final saved = result.toNullable()?.data;
+    final progress = await _progressOf(saved == null ? const [] : [saved]);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -435,6 +460,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
           writeSuccessMessage: () => success.message,
           lastCreatedBudget: () => success.data,
           // * Tambah ke list langsung untuk UX responsif
+          progress: {...state.progress, ...progress},
           budgets: [success.data!, ...state.budgets],
         ),
       ),
@@ -455,6 +481,9 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
 
     final result = await _budgetRepository.updateBudget(event.params).run();
 
+    final saved = result.toNullable()?.data;
+    final progress = await _progressOf(saved == null ? const [] : [saved]);
+
     result.fold(
       (failure) => emit(
         state.copyWith(
@@ -469,6 +498,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
           writeAction: BudgetWriteAction.update,
           writeSuccessMessage: () => success.message,
           // * Update item di list
+          progress: {...state.progress, ...progress},
           budgets: state.budgets.map((budget) {
             return budget.ulid == event.params.ulid ? success.data! : budget;
           }).toList(),
@@ -505,6 +535,7 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
           writeAction: BudgetWriteAction.delete,
           writeSuccessMessage: () => success.message,
           // * Hapus dari list
+          progress: Map.of(state.progress)..remove(event.ulid),
           budgets: state.budgets
               .where((budget) => budget.ulid != event.ulid)
               .toList(),
@@ -527,5 +558,19 @@ class BudgetBloc extends Bloc<BudgetEvent, BudgetState> {
         lastCreatedBudget: () => null,
       ),
     );
+  }
+
+  // * Realisasi per anggaran (AAOB-5); kegagalan satu anggaran tidak
+  //   menggagalkan daftar, kartunya hanya tampil tanpa progres
+  Future<Map<String, BudgetProgress>> _progressOf(List<Budget> budgets) async {
+    final map = <String, BudgetProgress>{};
+    for (final budget in budgets) {
+      final result = await _budgetRepository
+          .getBudgetProgress(ulid: budget.ulid)
+          .run();
+      final progress = result.toNullable()?.data;
+      if (progress != null) map[budget.ulid] = progress;
+    }
+    return map;
   }
 }

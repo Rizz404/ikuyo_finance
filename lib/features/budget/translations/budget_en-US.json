@@ -86,6 +86,11 @@
       "saveChanges": "Save Changes",
       "addBudget": "Add Budget",
       "deleteBudget": "Delete Budget"
+    },
+    "card": {
+      "spentOf": "{spent} of {limit}",
+      "remaining": "{amount} left",
+      "overspent": "Over budget by {amount}"
     }
   }
 }

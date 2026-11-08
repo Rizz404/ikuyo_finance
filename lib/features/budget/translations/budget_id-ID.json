@@ -86,6 +86,11 @@
       "saveChanges": "Simpan Perubahan",
       "addBudget": "Tambah Anggaran",
       "deleteBudget": "Hapus Anggaran"
+    },
+    "card": {
+      "spentOf": "{spent} dari {limit}",
+      "remaining": "Sisa {amount}",
+      "overspent": "Melebihi anggaran {amount}"
     }
   }
 }
