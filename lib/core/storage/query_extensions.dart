@@ -3,6 +3,8 @@ import 'package:objectbox/objectbox.dart';
 
 /// * Hitungan query & baris per entitas untuk uji efisiensi (P03/F7)
 /// * Hanya penjumlahan integer di memori; tidak menyimpan data entitas
+/// * Instrumentasi uji yang sengaja ada di lib (NEW-6): biaya per query dua
+///   penambahan map, tidak dibaca kode produksi, dan tidak berisi data pengguna
 class QueryStats {
   QueryStats._();
 
