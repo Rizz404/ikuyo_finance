@@ -96,6 +96,16 @@ class OtherScreen extends StatelessWidget {
                     ),
                     onTap: () => context.pushToCategory(),
                   ),
+                  // * Pintu masuk BudgetScreen (F8); label & ikon fitur budget
+                  OtherCard(
+                    icon: Icons.attach_money_outlined,
+                    text: LocaleKeys.budgetScreenTitle.tr(),
+                    iconColor: colors.secondary,
+                    iconBackgroundColor: colors.secondaryContainer.withValues(
+                      alpha: 0.5,
+                    ),
+                    onTap: () => context.pushToBudget(),
+                  ),
                   OtherCard(
                     icon: Icons.lock_outline,
                     text: LocaleKeys.otherScreenPassword.tr(),
