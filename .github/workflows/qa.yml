@@ -1,0 +1,218 @@
+name: QA (herguri branches only)
+
+# * QA-only provenance workflow: analyze/test the pushed commit and build ONE
+# * signed universal APK whose certificate must match the known release
+# * signer. It never tags, releases, pushes or deploys; artifacts are QA-only.
+on:
+  push:
+    branches:
+      - 'qa/herguri-*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  # * SDK used to resolve and test pubspec.lock; bump together with the lock
+  FLUTTER_VERSION: '3.44.5'
+  # * objectbox-c release used by objectbox_flutter_libs 5.0.2 (linux CMake
+  # * OBJECTBOX_VERSION); the sha256 is the digest GitHub publishes for the
+  # * objectbox-linux-x64.tar.gz release asset.
+  OBX_C_VERSION: '5.0.0-rc'
+  OBX_C_SHA256: '280195f19594227068fcf389d32d5b315c9a6daabc3115cd3aac9c3cc8ad39a8'
+  # * public SHA-256 of the current Ikuyo release signing certificate
+  QA_EXPECTED_CERT_SHA256: '3cb92848113a05569dc0647b1d1563d094b47ad167f0ee2ffdf382591c546feb'
+
+jobs:
+  verify:
+    name: QA verify (analyze and test)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Create synthetic loopback .env
+        run: |
+          set -euo pipefail
+          printf 'SUPABASE_URL=%s\n' 'http://127.0.0.1:9' > .env
+          printf 'SUPABASE_ANON_KEY=%s\n' 'synthetic-qa-key-not-a-secret' >> .env
+
+      - name: Flutter pub get (locked)
+        run: flutter pub get --enforce-lockfile
+
+      - name: Install ObjectBox native library (host tests)
+        run: |
+          set -euo pipefail
+          test "$OBX_C_VERSION" = "5.0.0-rc"
+          archive="objectbox-linux-x64.tar.gz"
+          curl -fsSL -o "$RUNNER_TEMP/$archive" \
+            "https://github.com/objectbox/objectbox-c/releases/download/v5.0.0-rc/objectbox-linux-x64.tar.gz"
+          echo "$OBX_C_SHA256  $RUNNER_TEMP/$archive" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/objectbox"
+          tar -xzf "$RUNNER_TEMP/$archive" -C "$RUNNER_TEMP/objectbox"
+          cp "$RUNNER_TEMP/objectbox/lib/libobjectbox.so" lib/
+
+      - name: Analyze
+        run: flutter analyze --no-pub
+
+      - name: Test
+        run: flutter test --no-pub
+
+  signed-apk:
+    name: QA signed universal APK (certificate check, not a release)
+    runs-on: ubuntu-latest
+    needs: verify
+    permissions:
+      contents: read
+
+    env:
+      IKUYO_REQUIRE_RELEASE_SIGNING: 'true'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: zulu
+          java-version: '21'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Verify required signing secrets
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          MISSING=""
+          for name in KEYSTORE_BASE64 KEYSTORE_PASSWORD KEY_PASSWORD KEY_ALIAS; do
+            if [ -z "${!name:-}" ]; then MISSING="$MISSING $name"; fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required signing secrets:$MISSING"
+            exit 1
+          fi
+
+      - name: Create synthetic loopback .env
+        run: |
+          set -euo pipefail
+          printf 'SUPABASE_URL=%s\n' 'http://127.0.0.1:9' > .env
+          printf 'SUPABASE_ANON_KEY=%s\n' 'synthetic-qa-key-not-a-secret' >> .env
+
+      - name: Setup CI-temporary release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          umask 077
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/ikuyo-release.jks
+          {
+            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'storeFile=ikuyo-release.jks\n'
+          } > android/key.properties
+          test -s android/ikuyo-release.jks
+
+      - name: Flutter pub get (locked)
+        run: flutter pub get --enforce-lockfile
+
+      - name: Build universal release APK (QA, pubspec version)
+        run: flutter build apk --release --no-pub
+
+      - name: Verify APK signing certificate (fail closed)
+        run: |
+          set -euo pipefail
+          apk="build/app/outputs/flutter-apk/app-release.apk"
+          test -s "$apk"
+          build_tools="$(ls -d "${ANDROID_HOME:?}"/build-tools/* | sort -V | tail -n 1)"
+          mkdir -p qa-out
+          "$build_tools/apksigner" verify --verbose --print-certs "$apk" > qa-out/apk-cert.txt
+          signers="$(grep -c 'certificate SHA-256 digest:' qa-out/apk-cert.txt || true)"
+          actual="$(grep 'Signer #1 certificate SHA-256 digest:' qa-out/apk-cert.txt | awk '{print $NF}' | tr 'A-F' 'a-f')"
+          if [ "$signers" != "1" ] || [ "$actual" != "$QA_EXPECTED_CERT_SHA256" ]; then
+            echo "::error::APK signer mismatch (signers=$signers actual=$actual expected=$QA_EXPECTED_CERT_SHA256)"
+            exit 1
+          fi
+          echo "APK signer certificate SHA-256 matches $QA_EXPECTED_CERT_SHA256"
+
+      - name: Write QA provenance manifest
+        run: |
+          set -euo pipefail
+          version="$(grep '^version:' pubspec.yaml | sed 's/^version: *//')"
+          name="ikuyo-finance-qa-${version%%+*}-${GITHUB_SHA:0:12}-universal.apk"
+          cp build/app/outputs/flutter-apk/app-release.apk "qa-out/$name"
+          {
+            printf 'qa_only=true\n'
+            printf 'not_a_release=true\n'
+            printf 'repository=%s\n' "$GITHUB_REPOSITORY"
+            printf 'ref=%s\n' "$GITHUB_REF"
+            printf 'commit_sha=%s\n' "$GITHUB_SHA"
+            printf 'run_id=%s\n' "$GITHUB_RUN_ID"
+            printf 'run_attempt=%s\n' "$GITHUB_RUN_ATTEMPT"
+            printf 'workflow=%s\n' "$GITHUB_WORKFLOW"
+            printf 'pubspec_version=%s\n' "$version"
+            printf 'flutter_version=%s\n' "$FLUTTER_VERSION"
+            printf 'apk=%s\n' "$name"
+            printf 'apk_sha256=%s\n' "$(sha256sum "qa-out/$name" | awk '{print $1}')"
+            printf 'expected_cert_sha256=%s\n' "$QA_EXPECTED_CERT_SHA256"
+          } > qa-out/qa-manifest.txt
+          cat qa-out/qa-manifest.txt
+
+      - name: Remove CI signing material
+        if: always()
+        run: rm -f android/ikuyo-release.jks android/key.properties .env
+
+      - name: Upload QA-only artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-only-ikuyo-apk-${{ github.sha }}-run${{ github.run_id }}
+          path: |
+            qa-out/ikuyo-finance-qa-*-universal.apk
+            qa-out/apk-cert.txt
+            qa-out/qa-manifest.txt
+          if-no-files-found: error
+          retention-days: 3
