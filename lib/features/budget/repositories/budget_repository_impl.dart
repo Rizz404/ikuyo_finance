@@ -155,6 +155,15 @@ class BudgetRepositoryImpl implements BudgetRepository {
           conditions.add(Budget_.endDate.lessOrEqualDate(params.endDateTo!));
         }
 
+        // * Filter kategori lewat id relasi di dalam query (P03)
+        if (params.categoryUlid != null) {
+          final categoryId = _categoryBox
+              .query(Category_.ulid.equals(params.categoryUlid!))
+              .findIdsAndClose()
+              .firstOrNull;
+          conditions.add(Budget_.category.equals(categoryId ?? -1));
+        }
+
         // * Build query with conditions
         QueryBuilder<Budget> queryBuilder;
         if (conditions.isNotEmpty) {
@@ -165,6 +174,14 @@ class BudgetRepositoryImpl implements BudgetRepository {
           queryBuilder = _box.query(combinedCondition);
         } else {
           queryBuilder = _box.query();
+        }
+
+        // * Cari nama kategori lewat link relasi (case-insensitive)
+        if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
+          queryBuilder.link(
+            Budget_.category,
+            Category_.name.contains(params.searchQuery!, caseSensitive: false),
+          );
         }
 
         // * Apply sorting based on sortBy parameter
@@ -187,45 +204,14 @@ class BudgetRepositoryImpl implements BudgetRepository {
             break;
         }
 
-        final builtQuery = queryBuilder.build();
-        final allResults = builtQuery.find();
-        builtQuery.close();
-
-        // * Filter by category (ObjectBox doesn't support ToOne query directly)
-        var filteredResults = allResults;
-        if (params.categoryUlid != null) {
-          filteredResults = filteredResults
-              .where((b) => b.category.target?.ulid == params.categoryUlid)
-              .toList();
-        }
-
-        // * Filter by search query (search by category name)
-        if (params.searchQuery != null && params.searchQuery!.isNotEmpty) {
-          final searchLower = params.searchQuery!.toLowerCase();
-          filteredResults = filteredResults
-              .where(
-                (b) =>
-                    b.category.target?.name.toLowerCase().contains(
-                      searchLower,
-                    ) ??
-                    false,
-              )
-              .toList();
-        }
-
-        // * Cursor-based pagination (offset-based internally)
+        // * Halaman langsung dari query + 1 baris look-ahead (P03)
         final offset = params.cursor != null
             ? int.tryParse(params.cursor!) ?? 0
             : 0;
-
-        final startIndex = offset < filteredResults.length
-            ? offset
-            : filteredResults.length;
-        final endIndex =
-            (startIndex + params.limit + 1) < filteredResults.length
-            ? startIndex + params.limit + 1
-            : filteredResults.length;
-        final results = filteredResults.sublist(startIndex, endIndex);
+        final results = queryBuilder.findPageAndClose(
+          offset: offset,
+          limit: params.limit + 1,
+        );
 
         final hasMore = results.length > params.limit;
         final budgets = hasMore ? results.sublist(0, params.limit) : results;

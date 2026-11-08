@@ -121,22 +121,15 @@ class AssetRepositoryImpl implements AssetRepository {
             break;
         }
 
-        final builtQuery = queryBuilder.build();
-        final allResults = builtQuery.find();
-        builtQuery.close();
-
-        // * Cursor-based pagination (offset-based internally)
+        // * Halaman langsung dari query (offset/limit native) + 1 baris
+        // * look-ahead untuk hasNextPage (P03)
         final offset = params.cursor != null
             ? int.tryParse(params.cursor!) ?? 0
             : 0;
-
-        final startIndex = offset < allResults.length
-            ? offset
-            : allResults.length;
-        final endIndex = (startIndex + params.limit + 1) < allResults.length
-            ? startIndex + params.limit + 1
-            : allResults.length;
-        final results = allResults.sublist(startIndex, endIndex);
+        final results = queryBuilder.findPageAndClose(
+          offset: offset,
+          limit: params.limit + 1,
+        );
 
         final hasMore = results.length > params.limit;
         final assets = hasMore ? results.sublist(0, params.limit) : results;

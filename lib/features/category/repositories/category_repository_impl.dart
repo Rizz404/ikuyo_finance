@@ -111,6 +111,21 @@ class CategoryRepositoryImpl implements CategoryRepository {
           );
         }
 
+        // * Filter parent & root di dalam query lewat id relasi (P03)
+        if (params.parentUlid != null) {
+          final parentId = _box
+              .query(Category_.ulid.equals(params.parentUlid!))
+              .findIdsAndClose()
+              .firstOrNull;
+          // * Parent tidak ada: id -1 tidak cocok dengan relasi mana pun
+          conditions.add(Category_.parent.equals(parentId ?? -1));
+        }
+        if (params.isRootOnly == true) {
+          conditions.add(
+            Category_.parent.equals(0).or(Category_.parent.isNull()),
+          );
+        }
+
         // * Build query with conditions
         QueryBuilder<Category> queryBuilder;
         if (conditions.isNotEmpty) {
@@ -137,38 +152,14 @@ class CategoryRepositoryImpl implements CategoryRepository {
             break;
         }
 
-        final builtQuery = queryBuilder.build();
-        final allResults = builtQuery.find();
-        builtQuery.close();
-
-        // * Filter by parent (ObjectBox doesn't support ToOne query directly)
-        var filteredResults = allResults;
-        if (params.parentUlid != null) {
-          filteredResults = filteredResults
-              .where((c) => c.parent.target?.ulid == params.parentUlid)
-              .toList();
-        }
-
-        // * Filter root only (no parent)
-        if (params.isRootOnly == true) {
-          filteredResults = filteredResults
-              .where((c) => c.parent.target == null)
-              .toList();
-        }
-
-        // * Cursor-based pagination (offset-based internally)
+        // * Halaman langsung dari query + 1 baris look-ahead (P03)
         final offset = params.cursor != null
             ? int.tryParse(params.cursor!) ?? 0
             : 0;
-
-        final startIndex = offset < filteredResults.length
-            ? offset
-            : filteredResults.length;
-        final endIndex =
-            (startIndex + params.limit + 1) < filteredResults.length
-            ? startIndex + params.limit + 1
-            : filteredResults.length;
-        final results = filteredResults.sublist(startIndex, endIndex);
+        final results = queryBuilder.findPageAndClose(
+          offset: offset,
+          limit: params.limit + 1,
+        );
 
         final hasMore = results.length > params.limit;
         final categories = hasMore ? results.sublist(0, params.limit) : results;
