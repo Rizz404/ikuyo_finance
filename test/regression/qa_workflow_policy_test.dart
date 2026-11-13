@@ -11,6 +11,13 @@
 // the dev_dependency plugins integration_test / flutter_native_splash that the
 // release Gradle graph omits): the signed build must run with pub so the
 // registrant is regenerated in release mode, against a provably unchanged lock.
+// QA-CERT (signed job 128635169961: the step exited 1 without an annotation;
+// ubuntu-latest ships build-tools 37.0.0, whose apksigner (apksig d177d78)
+// names the only signer "V2 Signer:" / "V3.0 Signer:" instead of "Signer #1",
+// so the unguarded `grep 'Signer #1 ...'` failed under pipefail): apksigner
+// must exit 0, the output must hold exactly one leaf signer certificate digest
+// (no other digest lines but Source Stamp, "Number of signers: 1"), 64 hex,
+// equal to the expected cert; every failure is an ::error annotation.
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -36,6 +43,62 @@ const _signingSecrets = {
   'KEY_ALIAS',
 };
 const _signedBuild = 'flutter build apk --release';
+const _otherCertSha256 =
+    'c48112390477dbbdae99e54068eddccdc547ca7b8e18a7f2cea4a84fd98b6ccf';
+// * real `apksigner verify --verbose --print-certs` output of the public Ikuyo
+// * v1.1.0 release APK (build-tools 36.0.0, apksigner 0.9)
+const _realBt36Output = '''Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): true
+Verified using v3 scheme (APK Signature Scheme v3): false
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Ikuyo Finance, OU=, O=, L=, ST=, C=ID
+Signer #1 certificate SHA-256 digest: 3cb92848113a05569dc0647b1d1563d094b47ad167f0ee2ffdf382591c546feb
+Signer #1 certificate SHA-1 digest: 6201070262f3d7563cc6c62f6ed8304768f61e39
+Signer #1 certificate MD5 digest: 9f8ed955db7f3ae703dcd29f4ce21e6a
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: ed06224e32781e7c275013f658d92fb9439418fbfaec5cc00641b60c2f40ebb1
+Signer #1 public key SHA-1 digest: e4bb66a25105155cef6f7418c2b3bec11c82262d
+Signer #1 public key MD5 digest: 79faa84965c42f52ace65f6a5dcf70f9
+''';
+// * the certificate step published at dc1b118 (failed on build-tools 37.0.0)
+const _publishedCertStep = r'''      - name: Verify APK signing certificate (fail closed)
+        run: |
+          set -euo pipefail
+          apk="build/app/outputs/flutter-apk/app-release.apk"
+          test -s "$apk"
+          build_tools="$(ls -d "${ANDROID_HOME:?}"/build-tools/* | sort -V | tail -n 1)"
+          mkdir -p qa-out
+          "$build_tools/apksigner" verify --verbose --print-certs "$apk" > qa-out/apk-cert.txt
+          signers="$(grep -c 'certificate SHA-256 digest:' qa-out/apk-cert.txt || true)"
+          actual="$(grep 'Signer #1 certificate SHA-256 digest:' qa-out/apk-cert.txt | awk '{print $NF}' | tr 'A-F' 'a-f')"
+          if [ "$signers" != "1" ] || [ "$actual" != "$QA_EXPECTED_CERT_SHA256" ]; then
+            echo "::error::APK signer mismatch (signers=$signers actual=$actual expected=$QA_EXPECTED_CERT_SHA256)"
+            exit 1
+          fi
+          echo "APK signer certificate SHA-256 matches $QA_EXPECTED_CERT_SHA256"
+''';
+const _leafAccept = [
+  'Signer #1 certificate SHA-256 digest: ',
+  'V2 Signer: certificate SHA-256 digest: ',
+  'V3.0 Signer: certificate SHA-256 digest: ',
+  'V1 Signer: certificate SHA-256 digest: ',
+  'Signer (minSdkVersion=24, maxSdkVersion=32) certificate SHA-256 digest: ',
+];
+const _leafReject = [
+  'Signer #1 public key SHA-256 digest: ',
+  'V2 Signer: public key SHA-256 digest: ',
+  'Signer #1 certificate SHA-1 digest: ',
+  'Source Stamp Signer: certificate SHA-256 digest: ',
+  'Source Stamp Signer certificate SHA-256 digest: ',
+  'V3.2 Hybrid PQC Signer: certificate SHA-256 digest: ',
+  '  Signer #1 certificate SHA-256 digest: ',
+  'Signer #1 certificate DN: CN=x certificate SHA-256 digest: ',
+];
 const _uploadPaths = [
   'qa-out/ikuyo-finance-qa-*-universal.apk',
   'qa-out/apk-cert.txt',
@@ -247,6 +310,117 @@ List<String> _commands(String run) {
 }
 
 bool _isFlutter(String c) => RegExp(r'(^|\s)flutter\s').hasMatch(c);
+
+/// The leaf signer pattern of the certificate step (`leaf='...'`), or null.
+String? _leafPattern(String run) {
+  final m = RegExp(r"^leaf='([^'\n]+)'$", multiLine: true).allMatches(run);
+  return m.length == 1 ? m.single.group(1) : null;
+}
+
+/// Fail-closed rules for the APK certificate step (QA-CERT); empty means safe.
+List<String> _certStepViolations(String r) {
+  final v = <String>[];
+  bool fatal(String guard) => RegExp(
+    '${RegExp.escape(guard)}\n(?:\\s*\\w+="[^\n]*\n)?\\s*echo "::error::[^\n]*\n\\s*exit 1\n',
+  ).hasMatch('$r\n');
+  if (!r.contains('set -euo pipefail')) {
+    v.add('signed-apk: certificate step must use set -euo pipefail');
+  }
+  if (!r.contains(
+        r'--print-certs "$apk" > qa-out/apk-cert.txt 2> qa-out/apk-cert.err '
+        r'|| status=$?',
+      ) ||
+      !fatal(r'if [ "$status" -ne 0 ]; then')) {
+    v.add('signed-apk: apksigner verify exit status must be captured and fatal');
+  }
+  if (!r.contains(r'''out="$(tr -d '\r' < qa-out/apk-cert.txt)"''')) {
+    v.add('signed-apk: certificate output must be CR-stripped before parsing');
+  }
+  final leaf = _leafPattern(r);
+  RegExp? re;
+  try {
+    re = leaf == null ? null : RegExp(leaf);
+  } on FormatException {
+    re = null;
+  }
+  final bad = re == null
+      ? ['no leaf pattern']
+      : [
+          ..._leafAccept.where((l) => !re!.hasMatch(l)).map((l) => 'misses "$l"'),
+          ..._leafReject.where((l) => re!.hasMatch(l)).map((l) => 'accepts "$l"'),
+        ];
+  if (bad.isNotEmpty) {
+    v.add('signed-apk: leaf signer pattern is wrong: ${bad.join('; ')}');
+  }
+  final counted =
+      r.contains(
+        r'mapfile -t digests < <(grep -E "$leaf" <<< "$out" | sed -E "s/$leaf//" || true)',
+      ) &&
+      r.contains(
+        r'''all="$(grep -c ' certificate SHA-256 digest: ' <<< "$out" || true)"''',
+      ) &&
+      r.contains(
+        r'''stamp="$(grep -cE '^Source Stamp Signer:? certificate SHA-256 digest: ' <<< "$out" || true)"''',
+      ) &&
+      r.contains(
+        r'''count="$(grep -cx 'Number of signers: 1' <<< "$out" || true)"''',
+      ) &&
+      fatal(
+        r'if [ "${#digests[@]}" -ne 1 ] || [ "$all" -ne $((${#digests[@]} + stamp)) ] '
+        r'|| [ "$count" != "1" ]; then',
+      );
+  if (!counted) {
+    v.add(
+      'signed-apk: certificate check must require exactly one leaf signer, '
+      'no other digest lines and "Number of signers: 1"',
+    );
+  }
+  if (!fatal(r'if ! [[ "${digests[0]}" =~ ^[0-9a-fA-F]{64}$ ]]; then')) {
+    v.add('signed-apk: signer digest must be checked as 64 hex');
+  }
+  if (!r.contains(r'''actual="$(tr 'A-F' 'a-f' <<< "${digests[0]}")"''') ||
+      !fatal(r'if [ "$actual" != "$QA_EXPECTED_CERT_SHA256" ]; then') ||
+      !RegExp(r'::error::APK signer mismatch[^\n]*\n\s*exit 1').hasMatch(r)) {
+    v.add('signed-apk: certificate check must fail (exit 1) on mismatch');
+  }
+  if (RegExp(r'\bhead\b|\buniq\b|\bsort\s+-u\b|grep[^\n]*QA_EXPECTED_CERT_SHA256')
+      .hasMatch(r)) {
+    v.add(
+      'signed-apk: certificate check must compare only the single leaf digest '
+      '(no head/uniq/sort -u/grep of the expected hash)',
+    );
+  }
+  return v;
+}
+
+/// Dart mirror of the certificate step decision (bash in qa.yml) using the
+/// leaf pattern read from the workflow; null means the step would pass.
+String? _certDecision(String run, String stdout, int exit) {
+  if (exit != 0) return 'apksigner verify failed';
+  final leaf = RegExp(_leafPattern(run)!);
+  final lines = stdout.replaceAll('\r', '').split('\n');
+  final digests = [
+    for (final l in lines)
+      if (leaf.hasMatch(l)) l.replaceFirst(leaf, ''),
+  ];
+  final all = lines.where((l) => l.contains(' certificate SHA-256 digest: '));
+  final stamp = lines.where(
+    (l) => RegExp(r'^Source Stamp Signer:? certificate SHA-256 digest: ').hasMatch(l),
+  );
+  final count = lines.where((l) => l == 'Number of signers: 1');
+  if (digests.length != 1 ||
+      all.length != digests.length + stamp.length ||
+      count.length != 1) {
+    return 'expected exactly one leaf signer certificate';
+  }
+  if (!RegExp(r'^[0-9a-fA-F]{64}$').hasMatch(digests.single)) {
+    return 'malformed signer certificate SHA-256 digest';
+  }
+  if (digests.single.toLowerCase() != _releaseCertSha256) {
+    return 'APK signer mismatch';
+  }
+  return null;
+}
 
 /// Every QA-only safety rule this repository requires; empty means safe.
 List<String> _qaWorkflowViolations(String source) {
@@ -500,15 +674,7 @@ List<String> _qaWorkflowViolations(String source) {
       if (cert < 0 || cert < build) {
         v.add('signed-apk: no apksigner verify --print-certs check after build');
       } else {
-        final r = steps[cert]['run'] as String;
-        final failing =
-            r.contains('set -euo pipefail') &&
-            r.contains(r'"$actual" != "$QA_EXPECTED_CERT_SHA256"') &&
-            RegExp(r'::error::APK signer mismatch[^\n]*\n\s*exit 1').hasMatch(r) &&
-            r.contains('> qa-out/apk-cert.txt');
-        if (!failing) {
-          v.add('signed-apk: certificate check must fail (exit 1) on mismatch');
-        }
+        v.addAll(_certStepViolations(steps[cert]['run'] as String));
       }
       final manifest = runStep(
         (r) =>
@@ -599,6 +765,185 @@ void main() {
     );
     expect(out.join('\n'), contains('on.push must filter only branches'));
     expect(out.join('\n'), contains('write permission'));
+  });
+
+  group('QA-CERT the certificate step decides fail-closed', () {
+    String run() {
+      final jobs = _asMap(_asMap(_parseYaml(valid()))['jobs']);
+      final steps = _asList(_asMap(jobs['signed-apk'])['steps']).map(_asMap);
+      return steps
+          .map((s) => s['run'])
+          .whereType<String>()
+          .singleWhere((r) => r.contains('--print-certs'));
+    }
+
+    const digest = 'certificate SHA-256 digest: $_releaseCertSha256';
+    const lf = _realBt36Output;
+    final bt37 = lf
+        .replaceFirst(
+          'v3.1): false\n',
+          'v3.1): false\n'
+              'Verified using v3.2 scheme (APK Signature Scheme v3.2): false\n',
+        )
+        .replaceAll('Signer #1 ', 'V2 Signer: ');
+    String drop(String s, String prefix) =>
+        s.split('\n').where((l) => !l.startsWith(prefix)).join('\n');
+    String noLeaf(String s) => drop(s, 'Signer #1 certificate SHA-256');
+    final two = lf.replaceFirst('Number of signers: 1', 'Number of signers: 2');
+
+    // * name: (stdout, apksigner exit, null = passes / expected failure reason)
+    final cases = <String, (String, int, String?)>{
+      'real build-tools 36 output, expected cert': (lf, 0, null),
+      'real output with CRLF line endings': (lf.replaceAll('\n', '\r\n'), 0, null),
+      'BOM before the first line': ('\uFEFF$lf', 0, null),
+      'uppercase hex digest': (
+        lf.replaceFirst(_releaseCertSha256, _releaseCertSha256.toUpperCase()),
+        0,
+        null,
+      ),
+      'build-tools 37 "V2 Signer:" output': (bt37, 0, null),
+      'build-tools 37 "V3.0 Signer:" output': (
+        bt37.replaceAll('V2 Signer: ', 'V3.0 Signer: '),
+        0,
+        null,
+      ),
+      'Source Stamp digest besides the leaf': (
+        '${bt37}Source Stamp Signer: certificate SHA-256 digest: ${'cd' * 32}\n',
+        0,
+        null,
+      ),
+      'wrong certificate': (
+        lf.replaceFirst(_releaseCertSha256, _otherCertSha256),
+        0,
+        'APK signer mismatch',
+      ),
+      'wrong certificate, build-tools 37 output': (
+        bt37.replaceFirst(_releaseCertSha256, _otherCertSha256),
+        0,
+        'APK signer mismatch',
+      ),
+      'zero signer lines': (noLeaf(lf), 0, 'exactly one leaf'),
+      'empty output': ('', 0, 'exactly one leaf'),
+      'two signers, same certificate twice': (
+        two.replaceFirst('Signer #1 $digest\n', 'Signer #1 $digest\nSigner #2 $digest\n'),
+        0,
+        'exactly one leaf',
+      ),
+      'two build-tools 37 signers, expected first': (
+        bt37
+            .replaceFirst('Number of signers: 1', 'Number of signers: 2')
+            .replaceFirst(
+              'V2 Signer: $digest\n',
+              'V2 Signer #1: $digest\n'
+                  'V2 Signer #2: certificate SHA-256 digest: ${'ab' * 32}\n',
+            ),
+        0,
+        'exactly one leaf',
+      ),
+      'v3.1 rotation, same certificate twice': (
+        bt37.replaceFirst(
+          'V2 Signer: $digest\n',
+          'V3.1 Signer: (minSdkVersion=33, maxSdkVersion=2147483647) $digest\n'
+              'V3.0 Signer: (minSdkVersion=24, maxSdkVersion=32) $digest\n',
+        ),
+        0,
+        'exactly one leaf',
+      ),
+      'unknown hybrid signer digest line': (
+        '${bt37}V3.2 Hybrid PQC Signer: (minSdkVersion=37, '
+            'maxSdkVersion=2147483647) $digest\n',
+        0,
+        'exactly one leaf',
+      ),
+      '"Number of signers: 1" missing': (
+        lf.replaceFirst('Number of signers: 1\n', ''),
+        0,
+        'exactly one leaf',
+      ),
+      'public key digest only (equal to the expected cert)': (
+        noLeaf(lf).replaceFirst(
+          RegExp(r'Signer #1 public key SHA-256 digest: \w+'),
+          'Signer #1 public key SHA-256 digest: $_releaseCertSha256',
+        ),
+        0,
+        'exactly one leaf',
+      ),
+      'expected hash only in the DN text': (
+        noLeaf(lf).replaceFirst(
+          RegExp(r'Signer #1 certificate DN: [^\n]*'),
+          'Signer #1 certificate DN: CN=$_releaseCertSha256',
+        ),
+        0,
+        'exactly one leaf',
+      ),
+      'Source Stamp is the expected cert, no leaf': (
+        '${noLeaf(lf)}\nSource Stamp Signer: $digest\n',
+        0,
+        'exactly one leaf',
+      ),
+      'BOM on the digest line': (
+        '\uFEFFSigner #1 $digest\nNumber of signers: 1\n',
+        0,
+        'exactly one leaf',
+      ),
+      'leading whitespace': (
+        lf.replaceFirst('Signer #1 $digest', '  Signer #1 $digest'),
+        0,
+        'exactly one leaf',
+      ),
+      'digest of 63 hex': (
+        lf.replaceFirst(_releaseCertSha256, _releaseCertSha256.substring(1)),
+        0,
+        'malformed',
+      ),
+      'digest of 65 hex': (
+        lf.replaceFirst(_releaseCertSha256, '${_releaseCertSha256}0'),
+        0,
+        'malformed',
+      ),
+      'non-hex digest': (
+        lf.replaceFirst(_releaseCertSha256, '${_releaseCertSha256.substring(1)}g'),
+        0,
+        'malformed',
+      ),
+      'colon separated digest': (
+        lf.replaceFirst(
+          _releaseCertSha256,
+          RegExp('..')
+              .allMatches(_releaseCertSha256)
+              .map((m) => m.group(0))
+              .join(':'),
+        ),
+        0,
+        'malformed',
+      ),
+      'trailing whitespace': (
+        lf.replaceFirst(_releaseCertSha256, '$_releaseCertSha256 '),
+        0,
+        'malformed',
+      ),
+      'apksigner exits nonzero (stdout still expected)': (
+        lf,
+        1,
+        'apksigner verify failed',
+      ),
+    };
+
+    test('QA-CERT the step enforces every fail-closed rule', () {
+      expect(_certStepViolations(run()), isEmpty);
+    });
+
+    for (final c in cases.entries) {
+      test('QA-CERT ${c.key}', () {
+        final (out, code, reason) = c.value;
+        final got = _certDecision(run(), out, code);
+        if (reason == null) {
+          expect(got, isNull);
+        } else {
+          expect(got, contains(reason));
+        }
+      });
+    }
   });
 
   group('QA-CI unsafe candidates are rejected', () {
@@ -698,6 +1043,103 @@ void main() {
           'true',
         ),
         'apksigner',
+      ),
+      'published Signer #1-only certificate step': (
+        (s) {
+          final a = s.indexOf('      - name: Verify APK signing');
+          final b = s.indexOf('      - name: Write QA provenance manifest');
+          expect(a, greaterThan(0));
+          expect(b, greaterThan(a));
+          return '${s.substring(0, a)}$_publishedCertStep\n${s.substring(b)}';
+        },
+        'apksigner verify exit status',
+      ),
+      'apksigner exit status ignored': (
+        (s) => sub(s, r'|| status=$?', '|| true'),
+        'apksigner verify exit status',
+      ),
+      'apksigner failure not fatal': (
+        (s) => sub(
+          s,
+          'verify failed (exit \$status)"\n            exit 1',
+          'verify failed (exit \$status)"',
+        ),
+        'apksigner verify exit status',
+      ),
+      'CRLF output not stripped': (
+        (s) => sub(
+          s,
+          r"tr -d '\r' < qa-out/apk-cert.txt",
+          'cat qa-out/apk-cert.txt',
+        ),
+        'CR-stripped',
+      ),
+      'leaf count unchecked': (
+        (s) => sub(s, r'[ "${#digests[@]}" -ne 1 ] || ', ''),
+        'exactly one leaf signer',
+      ),
+      'extra digest lines tolerated': (
+        (s) => sub(s, r' || [ "$all" -ne $((${#digests[@]} + stamp)) ]', ''),
+        'exactly one leaf signer',
+      ),
+      'Number of signers unchecked': (
+        (s) => sub(s, r' || [ "$count" != "1" ]', ''),
+        'exactly one leaf signer',
+      ),
+      'first signer picked': (
+        (s) => sub(
+          s,
+          r'sed -E "s/$leaf//" || true)',
+          r'sed -E "s/$leaf//" | head -n 1 || true)',
+        ),
+        'single leaf digest',
+      ),
+      'duplicate signer certificates deduplicated': (
+        (s) => sub(
+          s,
+          r'sed -E "s/$leaf//" || true)',
+          r'sed -E "s/$leaf//" | sort -u || true)',
+        ),
+        'single leaf digest',
+      ),
+      'expected hash matched anywhere in the output': (
+        (s) => sub(
+          s,
+          r'if [ "$actual" != "$QA_EXPECTED_CERT_SHA256" ]; then',
+          r'if ! grep -q "$QA_EXPECTED_CERT_SHA256" qa-out/apk-cert.txt; then',
+        ),
+        'single leaf digest',
+      ),
+      'digest format unchecked': (
+        (s) => sub(
+          s,
+          r'          if ! [[ "${digests[0]}" =~ ^[0-9a-fA-F]{64}$ ]]; then'
+              '\n'
+              r'            echo "::error::malformed signer certificate SHA-256 digest: ${digests[0]}"'
+              '\n            exit 1\n          fi\n',
+          '',
+        ),
+        '64 hex',
+      ),
+      'leaf pattern unanchored': (
+        (s) => sub(s, r"leaf='^(V", r"leaf='(V"),
+        'leaf signer pattern',
+      ),
+      'public key digest counted as leaf': (
+        (s) => sub(
+          s,
+          r"maxSdkVersion=[0-9]+\))? certificate SHA-256 digest: '",
+          r"maxSdkVersion=[0-9]+\))? (certificate|public key) SHA-256 digest: '",
+        ),
+        'leaf signer pattern',
+      ),
+      'only the build-tools 36 label accepted': (
+        (s) => sub(
+          s,
+          r"leaf='^(V[0-9]+(\.[0-9]+)? )?Signer( #[0-9]+)?:?",
+          r"leaf='^Signer( #[0-9]+)?:?",
+        ),
+        'leaf signer pattern',
       ),
       'missing secrets not fail-closed': (
         (s) => sub(
