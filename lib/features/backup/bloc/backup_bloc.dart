@@ -5,6 +5,7 @@ import 'package:ikuyo_finance/core/extensions/logger_extension.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository.dart';
+import 'package:ikuyo_finance/features/backup/services/auto_backup_key_store.dart';
 import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
 
 part 'backup_event.dart';
@@ -21,6 +22,8 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
     on<BackupSummaryRequested>(_onSummaryRequested);
     on<BackupScheduleLoaded>(_onScheduleLoaded);
     on<BackupScheduleToggled>(_onScheduleToggled);
+    on<BackupAutoEnableRequested>(_onAutoEnableRequested);
+    on<BackupAutoKeySetupRequested>(_onAutoKeySetupRequested);
     on<BackupScheduleTimeChanged>(_onScheduleTimeChanged);
     on<BackupScheduleFrequencyChanged>(_onScheduleFrequencyChanged);
   }
@@ -99,22 +102,104 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
     );
   }
 
-  void _onScheduleLoaded(
+  Future<void> _onScheduleLoaded(
     BackupScheduleLoaded event,
     Emitter<BackupState> emit,
-  ) {
+  ) async {
     final settings = _autoBackupService.loadSettings();
     emit(state.copyWith(schedule: settings));
     logInfo('BackupBloc: schedule loaded — ${settings.toJsonString()}');
+    await _refreshKeyState(emit);
   }
 
+  Future<void> _refreshKeyState(Emitter<BackupState> emit) async {
+    try {
+      final keyState = await _autoBackupService.keyState();
+      emit(state.copyWith(autoKeyState: keyState));
+    } catch (e, s) {
+      logError('BackupBloc: gagal membaca status kunci auto backup', e, s);
+      emit(state.copyWith(autoKeyState: AutoBackupKeyState.unreadable));
+    }
+  }
+
+  /// Hanya mematikan; menyalakan wajib lewat [BackupAutoEnableRequested]
+  /// agar tidak pernah ada jadwal aktif baru tanpa kunci enkripsi.
   Future<void> _onScheduleToggled(
     BackupScheduleToggled event,
     Emitter<BackupState> emit,
   ) async {
-    final updated = state.schedule.copyWith(isEnabled: event.isEnabled);
-    await _applySchedule(updated, emit, reschedule: true);
-    logInfo('BackupBloc: schedule toggled — enabled=${event.isEnabled}');
+    if (event.isEnabled) {
+      logWarning('BackupBloc: enable tanpa passphrase ditolak');
+      return;
+    }
+    final updated = state.schedule.copyWith(isEnabled: false);
+    final applied = await _applySchedule(updated, emit, reschedule: true);
+    if (applied) {
+      // * Jadwal sudah mati: kunci tersimpan dibuang bersama jadwalnya
+      try {
+        await _autoBackupService.clearKey();
+      } catch (e, s) {
+        logError('BackupBloc: gagal menghapus kunci auto backup', e, s);
+        _emitFailure(emit, LocaleKeys.backupAutoKeyClearFailed.tr());
+      }
+      await _refreshKeyState(emit);
+    }
+    logInfo('BackupBloc: schedule toggled — enabled=false');
+  }
+
+  Future<void> _onAutoEnableRequested(
+    BackupAutoEnableRequested event,
+    Emitter<BackupState> emit,
+  ) async {
+    emit(state.copyWith(autoKeyBusy: true));
+    try {
+      await _autoBackupService.setupKey(event.passphrase);
+    } catch (e) {
+      logError('BackupBloc: setup kunci auto backup gagal (${e.runtimeType})');
+      emit(state.copyWith(autoKeyBusy: false));
+      await _refreshKeyState(emit);
+      _emitFailure(emit, LocaleKeys.backupAutoKeySetupFailed.tr());
+      return;
+    }
+    final updated = state.schedule.copyWith(isEnabled: true);
+    final applied = await _applySchedule(updated, emit, reschedule: true);
+    if (!applied) {
+      // * Jadwal gagal didaftarkan: jangan tinggalkan kunci tanpa jadwal
+      try {
+        await _autoBackupService.clearKey();
+      } catch (e, s) {
+        logError('BackupBloc: rollback kunci auto backup gagal', e, s);
+      }
+    }
+    emit(state.copyWith(autoKeyBusy: false));
+    await _refreshKeyState(emit);
+    logInfo('BackupBloc: auto backup terenkripsi enabled=$applied');
+  }
+
+  Future<void> _onAutoKeySetupRequested(
+    BackupAutoKeySetupRequested event,
+    Emitter<BackupState> emit,
+  ) async {
+    emit(state.copyWith(autoKeyBusy: true));
+    try {
+      await _autoBackupService.setupKey(event.passphrase);
+      emit(state.copyWith(autoKeyBusy: false));
+      await _refreshKeyState(emit);
+      logInfo('BackupBloc: kunci auto backup diperbarui');
+    } catch (e) {
+      logError('BackupBloc: setup kunci auto backup gagal (${e.runtimeType})');
+      emit(state.copyWith(autoKeyBusy: false));
+      await _refreshKeyState(emit);
+      _emitFailure(emit, LocaleKeys.backupAutoKeySetupFailed.tr());
+    }
+  }
+
+  void _emitFailure(Emitter<BackupState> emit, String message) {
+    // * Pastikan listener melihat transisi status ke failure
+    if (state.status == BackupStatus.failure) {
+      emit(state.copyWith(status: BackupStatus.initial));
+    }
+    emit(state.copyWith(status: BackupStatus.failure, message: message));
   }
 
   Future<void> _onScheduleTimeChanged(
@@ -140,7 +225,7 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
 
   /// Jadwalkan dulu, baru simpan & emit — agar settings tersimpan, state bloc,
   /// dan task WorkManager selalu konsisten (A06b).
-  Future<void> _applySchedule(
+  Future<bool> _applySchedule(
     BackupScheduleSettings updated,
     Emitter<BackupState> emit, {
     required bool reschedule,
@@ -149,19 +234,12 @@ class BackupBloc extends Bloc<BackupEvent, BackupState> {
       if (reschedule) await _autoBackupService.schedule(updated);
       await _autoBackupService.saveSettings(updated);
       emit(state.copyWith(schedule: updated));
+      return true;
     } catch (e, s) {
       logError('BackupBloc: gagal menerapkan jadwal auto backup', e, s);
-      // * Pastikan listener melihat transisi status ke failure
-      if (state.status == BackupStatus.failure) {
-        emit(state.copyWith(status: BackupStatus.initial));
-      }
-      emit(
-        state.copyWith(
-          status: BackupStatus.failure,
-          schedule: _autoBackupService.loadSettings(),
-          message: LocaleKeys.backupScreenAutoScheduleFailed.tr(),
-        ),
-      );
+      emit(state.copyWith(schedule: _autoBackupService.loadSettings()));
+      _emitFailure(emit, LocaleKeys.backupScreenAutoScheduleFailed.tr());
+      return false;
     }
   }
 }

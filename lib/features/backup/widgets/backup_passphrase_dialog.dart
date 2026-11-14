@@ -38,6 +38,16 @@ Future<String?> showBackupImportPassphraseDialog(BuildContext context) {
   );
 }
 
+/// Setup passphrase auto backup (min 8, dikonfirmasi). Mengembalikan
+/// passphrase hanya ke pemanggil; tidak ada opsi tanpa enkripsi.
+Future<String?> showAutoBackupPassphraseDialog(BuildContext context) {
+  return showDialog<String>(
+    context: context,
+    barrierDismissible: false,
+    builder: (_) => const _AutoBackupPassphraseDialog(),
+  );
+}
+
 String backupCryptoErrorMessage(BackupCryptoError error) {
   return switch (error) {
     BackupCryptoError.passphraseTooShort =>
@@ -231,6 +241,113 @@ class _ExportPassphraseDialogState extends State<_ExportPassphraseDialog> {
           key: const Key('backup_export_encrypted'),
           onPressed: _submit,
           child: Text(LocaleKeys.backupEncryptionEncryptAndExport.tr()),
+        ),
+      ],
+    );
+  }
+}
+
+class _AutoBackupPassphraseDialog extends StatefulWidget {
+  const _AutoBackupPassphraseDialog();
+
+  @override
+  State<_AutoBackupPassphraseDialog> createState() =>
+      _AutoBackupPassphraseDialogState();
+}
+
+class _AutoBackupPassphraseDialogState
+    extends State<_AutoBackupPassphraseDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _pass = TextEditingController();
+  final _confirm = TextEditingController();
+  bool _obscure = true;
+
+  @override
+  void dispose() {
+    _pass.dispose();
+    _confirm.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pop(context, _pass.text);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final min = BackupCrypto.minPassphraseLength;
+    return AlertDialog(
+      title: AppText(
+        LocaleKeys.backupAutoSetupTitle.tr(),
+        style: AppTextStyle.titleLarge,
+        fontWeight: FontWeight.bold,
+      ),
+      content: SingleChildScrollView(
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AppText(
+                LocaleKeys.backupAutoSetupDescription.tr(),
+                style: AppTextStyle.bodyMedium,
+              ),
+              const SizedBox(height: 12),
+              TextFormField(
+                key: const Key('auto_backup_passphrase_field'),
+                controller: _pass,
+                obscureText: _obscure,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.backupEncryptionPassphraseLabel.tr(),
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      _obscure ? Icons.visibility : Icons.visibility_off,
+                    ),
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                  ),
+                ),
+                validator: (v) => (v ?? '').runes.length < min
+                    ? LocaleKeys.backupEncryptionPassphraseTooShort.tr(
+                        namedArgs: {'min': '$min'},
+                      )
+                    : null,
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                key: const Key('auto_backup_passphrase_confirm_field'),
+                controller: _confirm,
+                obscureText: _obscure,
+                enableSuggestions: false,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  labelText: LocaleKeys.backupEncryptionPassphraseConfirmLabel
+                      .tr(),
+                ),
+                validator: (v) => v != _pass.text
+                    ? LocaleKeys.backupEncryptionPassphraseMismatch.tr()
+                    : null,
+                onFieldSubmitted: (_) => _submit(),
+              ),
+              const SizedBox(height: 12),
+              _WarningBox(LocaleKeys.backupAutoSetupWarning.tr()),
+            ],
+          ),
+        ),
+      ),
+      actions: [
+        TextButton(
+          key: const Key('auto_backup_passphrase_cancel'),
+          onPressed: () => Navigator.pop(context),
+          child: Text(LocaleKeys.backupEncryptionCancel.tr()),
+        ),
+        FilledButton(
+          key: const Key('auto_backup_passphrase_save'),
+          onPressed: _submit,
+          child: Text(LocaleKeys.backupAutoSetupConfirm.tr()),
         ),
       ],
     );

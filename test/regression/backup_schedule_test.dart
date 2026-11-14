@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:ikuyo_finance/core/wrapper/failure.dart';
@@ -15,6 +16,7 @@ import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository.dart';
+import 'package:ikuyo_finance/features/backup/services/auto_backup_key_store.dart';
 import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 // ignore: depend_on_referenced_packages
@@ -46,6 +48,14 @@ class _FakeBackupRepo implements BackupRepository {
   @override
   TaskEither<Failure, Success<void>> importData(BackupData backupData) =>
       TaskEither.right(const Success(message: 'imported'));
+}
+
+// * Argon2id berjalan di isolate nyata: tunggu dengan waktu nyata
+Future<void> _waitFor(bool Function() done) async {
+  for (var i = 0; i < 600 && !done(); i++) {
+    await Future<void>.delayed(const Duration(milliseconds: 50));
+  }
+  await pumpEventQueue();
 }
 
 const _notifChannel = MethodChannel(
@@ -141,14 +151,15 @@ void main() {
   });
 
   group('BKSEC-9 auto backup rotation', () {
-    test('keeps only the newest N backup files and ignores other files',
-        () async {
+    // * F10: rotasi hanya untuk .ikuyo terenkripsi; .json lama tidak disentuh
+    test('keeps only the newest N encrypted backup files and ignores other '
+        'files', () async {
       final dir = Directory.systemTemp.createTempSync('ikuyo_rotation_');
       addTearDown(() => dir.deleteSync(recursive: true));
       for (var i = 1; i <= 13; i++) {
         final d = i.toString().padLeft(2, '0');
-        File('${dir.path}/ikuyo_backup_202601${d}_020000.json')
-            .writeAsStringSync('{}');
+        File('${dir.path}/ikuyo_backup_202601${d}_020000.ikuyo')
+            .writeAsStringSync('IKYB');
       }
       File('${dir.path}/notes.txt').writeAsStringSync('keep me');
 
@@ -161,16 +172,17 @@ void main() {
         ..sort();
       expect(names, contains('notes.txt'));
       expect(names.where((n) => n.startsWith('ikuyo_backup_')), hasLength(10));
-      expect(names, isNot(contains('ikuyo_backup_20260101_020000.json')));
-      expect(names, isNot(contains('ikuyo_backup_20260103_020000.json')));
-      expect(names, contains('ikuyo_backup_20260113_020000.json'));
-      expect(names, contains('ikuyo_backup_20260104_020000.json'));
+      expect(names, isNot(contains('ikuyo_backup_20260101_020000.ikuyo')));
+      expect(names, isNot(contains('ikuyo_backup_20260103_020000.ikuyo')));
+      expect(names, contains('ikuyo_backup_20260113_020000.ikuyo'));
+      expect(names, contains('ikuyo_backup_20260104_020000.ikuyo'));
     });
   });
 
   group('BackupBloc schedule state', () {
     test('A06b disable: persisted settings and bloc state agree', () async {
       installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({});
       final prefs = await prefsWith(
         const BackupScheduleSettings(isEnabled: true),
       );
@@ -190,9 +202,10 @@ void main() {
       await bloc.close();
     });
 
-    test('enable failure: settings stay disabled and a failure is emitted',
-        () async {
+    test('enable failure: settings stay disabled, a failure is emitted and '
+        'the just-derived key is rolled back', () async {
       installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({});
       final prefs = await prefsWith(
         const BackupScheduleSettings(isEnabled: false),
       );
@@ -205,19 +218,150 @@ void main() {
         bloc.stream.listen((s) => statuses.add(s.status));
         bloc.add(BackupScheduleLoaded());
         await pumpEventQueue();
-        bloc.add(BackupScheduleToggled(true));
-        await pumpEventQueue(times: 50);
+        bloc.add(BackupAutoEnableRequested('synthetic passphrase'));
+        await _waitFor(() => !bloc.state.autoKeyBusy &&
+            statuses.contains(BackupStatus.failure));
       }, (e, s) => errors.add(e));
       expect(errors, isEmpty);
       expect(persisted(prefs).isEnabled, isFalse);
       expect(bloc.state.schedule.isEnabled, isFalse);
       expect(statuses, contains(BackupStatus.failure));
+      expect(
+        await const FlutterSecureStorage().read(
+          key: AutoBackupKeyStore.storageKey,
+        ),
+        isNull,
+      );
+      await bloc.close();
+    }, timeout: const Timeout(Duration(minutes: 1)));
+
+    test('F10 enabling without a passphrase is refused: no schedule, no '
+        'settings change', () async {
+      installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({});
+      final prefs = await prefsWith(null);
+      final bloc = BackupBloc(_FakeBackupRepo(), AutoBackupService(prefs));
+      bloc.add(BackupScheduleLoaded());
+      await _waitFor(() => bloc.state.autoKeyState != null);
+      bloc.add(BackupScheduleToggled(true));
+      await pumpEventQueue(times: 20);
+      expect(bloc.state.schedule.isEnabled, isFalse);
+      expect(prefs.getString('auto_backup_settings'), isNull);
+      expect(calls, isNot(contains('wm.registerPeriodicTask')));
+      await bloc.close();
+    });
+
+    test('F10 enabling with a passphrase stores the key, then schedules; '
+        'disabling cancels and clears the key', () async {
+      installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({});
+      final prefs = await prefsWith(null);
+      final bloc = BackupBloc(_FakeBackupRepo(), AutoBackupService(prefs));
+      bloc.add(BackupScheduleLoaded());
+      await _waitFor(() => bloc.state.autoKeyState != null);
+      expect(bloc.state.autoKeyState, AutoBackupKeyState.missing);
+      expect(bloc.state.autoBackupPaused, isFalse);
+
+      bloc.add(BackupAutoEnableRequested('synthetic passphrase'));
+      await _waitFor(
+        () => bloc.state.schedule.isEnabled &&
+            !bloc.state.autoKeyBusy &&
+            bloc.state.autoKeyState == AutoBackupKeyState.ready,
+      );
+      expect(persisted(prefs).isEnabled, isTrue);
+      expect(calls, contains('wm.registerPeriodicTask'));
+      final raw = await const FlutterSecureStorage().read(
+        key: AutoBackupKeyStore.storageKey,
+      );
+      expect(raw, isNotNull);
+      expect(raw!.contains('synthetic passphrase'), isFalse);
+      expect(bloc.state.autoBackupPaused, isFalse);
+
+      bloc.add(BackupScheduleToggled(false));
+      await _waitFor(
+        () => bloc.state.autoKeyState == AutoBackupKeyState.missing,
+      );
+      expect(persisted(prefs).isEnabled, isFalse);
+      expect(calls, contains('wm.cancelByUniqueName'));
+      expect(
+        await const FlutterSecureStorage().read(
+          key: AutoBackupKeyStore.storageKey,
+        ),
+        isNull,
+      );
+      await bloc.close();
+    }, timeout: const Timeout(Duration(minutes: 1)));
+
+    test('F10 upgrade: schedule already enabled without a key keeps the '
+        'schedule but reports paused until setup; setup resumes', () async {
+      installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({});
+      final prefs = await prefsWith(
+        const BackupScheduleSettings(isEnabled: true),
+      );
+      final bloc = BackupBloc(_FakeBackupRepo(), AutoBackupService(prefs));
+      bloc.add(BackupScheduleLoaded());
+      await _waitFor(() => bloc.state.autoKeyState != null);
+      expect(bloc.state.schedule.isEnabled, isTrue);
+      expect(bloc.state.autoKeyState, AutoBackupKeyState.missing);
+      expect(bloc.state.autoBackupPaused, isTrue);
+      expect(persisted(prefs).isEnabled, isTrue);
+
+      bloc.add(BackupAutoKeySetupRequested('synthetic passphrase'));
+      await _waitFor(
+        () => bloc.state.autoKeyState == AutoBackupKeyState.ready &&
+            !bloc.state.autoKeyBusy,
+      );
+      expect(bloc.state.autoBackupPaused, isFalse);
+      expect(bloc.state.schedule.isEnabled, isTrue);
+      await bloc.close();
+    }, timeout: const Timeout(Duration(minutes: 1)));
+
+    test('F10 an unreadable stored key is reported as paused (unreadable)',
+        () async {
+      installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({
+        AutoBackupKeyStore.storageKey: 'garbage',
+      });
+      final prefs = await prefsWith(
+        const BackupScheduleSettings(isEnabled: true),
+      );
+      final bloc = BackupBloc(_FakeBackupRepo(), AutoBackupService(prefs));
+      bloc.add(BackupScheduleLoaded());
+      await _waitFor(() => bloc.state.autoKeyState != null);
+      expect(bloc.state.autoKeyState, AutoBackupKeyState.unreadable);
+      expect(bloc.state.autoBackupPaused, isTrue);
+      await bloc.close();
+    });
+
+    test('F10 a passphrase too short for setup fails without touching the '
+        'schedule or storing anything', () async {
+      installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({});
+      final prefs = await prefsWith(null);
+      final statuses = <BackupStatus>[];
+      final bloc = BackupBloc(_FakeBackupRepo(), AutoBackupService(prefs));
+      bloc.stream.listen((s) => statuses.add(s.status));
+      bloc.add(BackupScheduleLoaded());
+      await _waitFor(() => bloc.state.autoKeyState != null);
+      bloc.add(BackupAutoEnableRequested('short'));
+      await _waitFor(() => statuses.contains(BackupStatus.failure));
+      expect(bloc.state.schedule.isEnabled, isFalse);
+      expect(bloc.state.autoKeyBusy, isFalse);
+      expect(calls, isNot(contains('wm.registerPeriodicTask')));
+      expect(
+        await const FlutterSecureStorage().read(
+          key: AutoBackupKeyStore.storageKey,
+        ),
+        isNull,
+      );
       await bloc.close();
     });
 
     test('BKSEC-5 exported data is one-shot: later emits do not carry it',
         () async {
       installMocks(TargetPlatform.android);
+      FlutterSecureStorage.setMockInitialValues({});
       final prefs = await prefsWith(null);
       final bloc = BackupBloc(_FakeBackupRepo(), AutoBackupService(prefs));
       bloc.add(BackupExportRequested());

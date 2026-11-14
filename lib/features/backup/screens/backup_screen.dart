@@ -14,6 +14,7 @@ import 'package:ikuyo_finance/core/utils/toast_helper.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_data.dart';
 import 'package:ikuyo_finance/features/backup/models/backup_schedule_settings.dart';
+import 'package:ikuyo_finance/features/backup/services/auto_backup_key_store.dart';
 import 'package:ikuyo_finance/features/backup/services/backup_crypto.dart';
 import 'package:ikuyo_finance/features/backup/widgets/backup_passphrase_dialog.dart';
 import 'package:ikuyo_finance/shared/widgets/app_button.dart';
@@ -820,11 +821,74 @@ class _BackupScreenState extends State<BackupScreen> {
     }
   }
 
+  // * Menyalakan auto backup selalu lewat setup passphrase (F10)
+  Future<void> _handleAutoToggle(bool enable) async {
+    final bloc = context.read<BackupBloc>();
+    if (!enable) {
+      bloc.add(BackupScheduleToggled(false));
+      return;
+    }
+    final passphrase = await showAutoBackupPassphraseDialog(context);
+    if (passphrase == null || !mounted) return;
+    bloc.add(BackupAutoEnableRequested(passphrase));
+  }
+
+  Future<void> _handleAutoKeySetup() async {
+    final bloc = context.read<BackupBloc>();
+    final passphrase = await showAutoBackupPassphraseDialog(context);
+    if (passphrase == null || !mounted) return;
+    bloc.add(BackupAutoKeySetupRequested(passphrase));
+  }
+
+  Widget _buildAutoPausedBanner(BackupState state) {
+    final warning = context.semantic.warning;
+    return Container(
+      key: const Key('auto_backup_paused_banner'),
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: warning.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: warning),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.lock_clock_outlined, color: warning),
+              const SizedBox(width: 8),
+              Expanded(
+                child: AppText(
+                  LocaleKeys.backupAutoPausedTitle.tr(),
+                  style: AppTextStyle.titleSmall,
+                  fontWeight: FontWeight.bold,
+                  color: warning,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          AppText(
+            state.autoKeyState == AutoBackupKeyState.unreadable
+                ? LocaleKeys.backupAutoPausedUnreadable.tr()
+                : LocaleKeys.backupAutoPausedMissing.tr(),
+            style: AppTextStyle.bodySmall,
+            color: warning,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildScheduleCard() {
     final colors = context.colors;
 
     return BlocBuilder<BackupBloc, BackupState>(
-      buildWhen: (previous, current) => previous.schedule != current.schedule,
+      buildWhen: (previous, current) =>
+          previous.schedule != current.schedule ||
+          previous.autoKeyState != current.autoKeyState ||
+          previous.autoKeyBusy != current.autoKeyBusy,
       builder: (context, state) {
         final schedule = state.schedule;
 
@@ -872,15 +936,43 @@ class _BackupScreenState extends State<BackupScreen> {
                     ),
                   ),
                   Switch(
+                    key: const Key('auto_backup_switch'),
                     value: schedule.isEnabled,
-                    onChanged: (v) => context.read<BackupBloc>().add(
-                      BackupScheduleToggled(v),
-                    ),
+                    onChanged: state.autoKeyBusy ? null : _handleAutoToggle,
                   ),
                 ],
               ),
 
+              if (state.autoKeyBusy) ...[
+                const SizedBox(height: 12),
+                const LinearProgressIndicator(),
+              ],
+
+              if (state.autoBackupPaused) ...[
+                const SizedBox(height: 12),
+                _buildAutoPausedBanner(state),
+              ],
+
               if (schedule.isEnabled) ...[
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    key: const Key('auto_backup_key_setup'),
+                    onPressed: state.autoKeyBusy ? null : _handleAutoKeySetup,
+                    icon: const Icon(Icons.key_rounded, size: 18),
+                    label: Text(
+                      state.autoBackupPaused
+                          ? LocaleKeys.backupAutoSetupButton.tr()
+                          : LocaleKeys.backupAutoChangeButton.tr(),
+                    ),
+                  ),
+                ),
+                AppText(
+                  LocaleKeys.backupAutoLegacyNote.tr(),
+                  style: AppTextStyle.bodySmall,
+                  color: colors.textSecondary,
+                ),
                 const Divider(height: 28),
 
                 // * Time picker row

@@ -2,7 +2,7 @@
   "backup": {
     "screen": {
       "title": "Data Backup",
-      "infoDescription": "Backups are encrypted with your passphrase and can be imported back anytime.",
+      "infoDescription": "Exports are encrypted with a passphrase unless you explicitly opt out. Scheduled auto backups are always encrypted with your backup passphrase.",
       "currentData": "Current Data",
       "categories": "Categories",
       "assets": "Assets",
@@ -32,7 +32,7 @@
       "comingSoon": "Coming Soon",
       "featureInDevelopment": "This feature is under development",
       "autoTitle": "Auto Backup",
-      "autoDescription": "Automatically backup your data on a schedule.",
+      "autoDescription": "Automatically back up your data on a schedule as encrypted .ikuyo files.",
       "autoTime": "Backup Time",
       "autoFrequency": "Frequency",
       "autoEnabled": "Auto backup is active — next run at {time}",
@@ -68,6 +68,20 @@
       "exportTooLarge": "Your data is too large for a portable backup (maximum {max} MB). No file was written. Delete old data you no longer need, then try again.",
       "legacyWarning": "This is an old unencrypted backup. It can still be imported, but new exports are encrypted.",
       "pickerHint": "Choose backup file (.ikuyo or .json)"
+    },
+    "auto": {
+      "setupTitle": "Backup passphrase",
+      "setupDescription": "Scheduled backups are encrypted with this passphrase. You need it to restore them on this or any other device. Only a key derived from it is kept in this device's secure storage, never the passphrase itself.",
+      "setupWarning": "If you forget this passphrase, your auto backups cannot be recovered. Changing it later only affects new backups; older files still need the old passphrase.",
+      "setupConfirm": "Save passphrase",
+      "pausedTitle": "Auto backup paused",
+      "pausedMissing": "Set a backup passphrase to resume encrypted auto backups. Nothing is written until you do.",
+      "pausedUnreadable": "The saved backup key can no longer be read (for example after reinstalling or restoring the app). Set your backup passphrase again to resume. Nothing is written until you do.",
+      "setupButton": "Set passphrase",
+      "changeButton": "Change passphrase",
+      "legacyNote": "Older unencrypted auto backups (.json) are kept as they are and are never deleted automatically. Only the newest encrypted backups are rotated.",
+      "keySetupFailed": "The backup passphrase could not be saved securely. Auto backup was not changed and nothing is written unencrypted.",
+      "keyClearFailed": "Auto backup is off, but the saved backup key could not be removed."
     }
   }
 }

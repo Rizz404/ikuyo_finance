@@ -2,7 +2,7 @@
   "backup": {
     "screen": {
       "title": "Cadangan Data",
-      "infoDescription": "Backup dienkripsi dengan passphrase Anda dan bisa diimpor kembali kapan saja.",
+      "infoDescription": "Export dienkripsi dengan passphrase kecuali Anda memilih tanpa enkripsi. Backup otomatis terjadwal selalu dienkripsi dengan passphrase backup Anda.",
       "currentData": "Data Saat Ini",
       "categories": "Kategori",
       "assets": "Aset",
@@ -32,7 +32,7 @@
       "comingSoon": "Coming Soon",
       "featureInDevelopment": "Fitur ini sedang dalam pengembangan",
       "autoTitle": "Backup Otomatis",
-      "autoDescription": "Cadangkan data secara otomatis sesuai jadwal.",
+      "autoDescription": "Cadangkan data secara otomatis sesuai jadwal sebagai file .ikuyo terenkripsi.",
       "autoTime": "Waktu Backup",
       "autoFrequency": "Frekuensi",
       "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
@@ -68,6 +68,20 @@
       "exportTooLarge": "Data Anda terlalu besar untuk backup portabel (maksimum {max} MB). Tidak ada file yang ditulis. Hapus data lama yang tidak diperlukan, lalu coba lagi.",
       "legacyWarning": "Ini backup lama tanpa enkripsi. Masih bisa diimpor, tetapi export baru dienkripsi.",
       "pickerHint": "Pilih file backup (.ikuyo atau .json)"
+    },
+    "auto": {
+      "setupTitle": "Passphrase backup",
+      "setupDescription": "Backup terjadwal dienkripsi dengan passphrase ini. Passphrase dibutuhkan untuk memulihkannya di perangkat ini maupun perangkat lain. Hanya kunci turunannya yang disimpan di penyimpanan aman perangkat ini, bukan passphrase-nya.",
+      "setupWarning": "Jika passphrase ini lupa, backup otomatis tidak bisa dipulihkan. Mengganti passphrase hanya berlaku untuk backup baru; file lama tetap butuh passphrase lama.",
+      "setupConfirm": "Simpan passphrase",
+      "pausedTitle": "Backup otomatis dijeda",
+      "pausedMissing": "Atur passphrase backup untuk melanjutkan backup otomatis terenkripsi. Tidak ada file yang ditulis sebelum itu.",
+      "pausedUnreadable": "Kunci backup yang tersimpan tidak bisa dibaca lagi (misalnya setelah aplikasi diinstal ulang atau dipulihkan). Atur ulang passphrase backup untuk melanjutkan. Tidak ada file yang ditulis sebelum itu.",
+      "setupButton": "Atur passphrase",
+      "changeButton": "Ganti passphrase",
+      "legacyNote": "Backup otomatis lama tanpa enkripsi (.json) dibiarkan apa adanya dan tidak pernah dihapus otomatis. Hanya backup terenkripsi terbaru yang dirotasi.",
+      "keySetupFailed": "Passphrase backup tidak bisa disimpan dengan aman. Backup otomatis tidak diubah dan tidak ada yang ditulis tanpa enkripsi.",
+      "keyClearFailed": "Backup otomatis sudah mati, tetapi kunci backup yang tersimpan tidak bisa dihapus."
     }
   }
 }

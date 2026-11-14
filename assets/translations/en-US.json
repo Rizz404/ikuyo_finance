@@ -203,6 +203,20 @@
     }
   },
   "backup": {
+    "auto": {
+      "changeButton": "Change passphrase",
+      "keyClearFailed": "Auto backup is off, but the saved backup key could not be removed.",
+      "keySetupFailed": "The backup passphrase could not be saved securely. Auto backup was not changed and nothing is written unencrypted.",
+      "legacyNote": "Older unencrypted auto backups (.json) are kept as they are and are never deleted automatically. Only the newest encrypted backups are rotated.",
+      "pausedMissing": "Set a backup passphrase to resume encrypted auto backups. Nothing is written until you do.",
+      "pausedTitle": "Auto backup paused",
+      "pausedUnreadable": "The saved backup key can no longer be read (for example after reinstalling or restoring the app). Set your backup passphrase again to resume. Nothing is written until you do.",
+      "setupButton": "Set passphrase",
+      "setupConfirm": "Save passphrase",
+      "setupDescription": "Scheduled backups are encrypted with this passphrase. You need it to restore them on this or any other device. Only a key derived from it is kept in this device's secure storage, never the passphrase itself.",
+      "setupTitle": "Backup passphrase",
+      "setupWarning": "If you forget this passphrase, your auto backups cannot be recovered. Changing it later only affects new backups; older files still need the old passphrase."
+    },
     "encryption": {
       "cancel": "Cancel",
       "decrypt": "Decrypt",
@@ -231,7 +245,7 @@
     },
     "screen": {
       "assets": "Assets",
-      "autoDescription": "Automatically backup your data on a schedule.",
+      "autoDescription": "Automatically back up your data on a schedule as encrypted .ikuyo files.",
       "autoDisabled": "Auto backup is disabled",
       "autoEnabled": "Auto backup is active — next run at {time}",
       "autoFrequency": "Frequency",
@@ -262,7 +276,7 @@
       "importSuccess": "Data imported successfully",
       "importTitle": "Import Data",
       "importWarning": "All existing data will be deleted and replaced with backup data!",
-      "infoDescription": "Backups are encrypted with your passphrase and can be imported back anytime.",
+      "infoDescription": "Exports are encrypted with a passphrase unless you explicitly opt out. Scheduled auto backups are always encrypted with your backup passphrase.",
       "readBackupFailed": "Failed to read backup file: {error}",
       "saveDialogTitle": "Save Backup File",
       "saveFileFailed": "Failed to save file: {error}",

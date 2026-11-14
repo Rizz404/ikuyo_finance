@@ -10,6 +10,12 @@ class BackupState {
   final BackupScheduleSettings schedule;
   final bool isImport;
 
+  /// Status kunci auto backup; null = belum diketahui
+  final AutoBackupKeyState? autoKeyState;
+
+  /// Setup kunci (Argon2id) sedang berjalan
+  final bool autoKeyBusy;
+
   const BackupState({
     this.status = BackupStatus.initial,
     this.exportedData,
@@ -17,7 +23,15 @@ class BackupState {
     this.message,
     this.schedule = BackupScheduleSettings.defaultSettings,
     this.isImport = false,
+    this.autoKeyState,
+    this.autoKeyBusy = false,
   });
+
+  /// Jadwal aktif tetapi kunci tidak tersedia: auto backup dijeda
+  bool get autoBackupPaused =>
+      schedule.isEnabled &&
+      (autoKeyState == AutoBackupKeyState.missing ||
+          autoKeyState == AutoBackupKeyState.unreadable);
 
   BackupState copyWith({
     BackupStatus? status,
@@ -26,6 +40,8 @@ class BackupState {
     String? message,
     BackupScheduleSettings? schedule,
     bool? isImport,
+    AutoBackupKeyState? autoKeyState,
+    bool? autoKeyBusy,
   }) {
     return BackupState(
       status: status ?? this.status,
@@ -36,6 +52,8 @@ class BackupState {
       message: message ?? this.message,
       schedule: schedule ?? this.schedule,
       isImport: isImport ?? false,
+      autoKeyState: autoKeyState ?? this.autoKeyState,
+      autoKeyBusy: autoKeyBusy ?? this.autoKeyBusy,
     );
   }
 

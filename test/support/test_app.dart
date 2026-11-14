@@ -27,6 +27,7 @@ import 'package:ikuyo_finance/features/auto_transaction/repositories/auto_transa
 import 'package:ikuyo_finance/features/auto_transaction/services/auto_transaction_alarm_service.dart';
 import 'package:ikuyo_finance/features/backup/bloc/backup_bloc.dart';
 import 'package:ikuyo_finance/features/backup/repositories/backup_repository_impl.dart';
+import 'package:ikuyo_finance/features/backup/services/auto_backup_key_store.dart';
 import 'package:ikuyo_finance/features/backup/services/auto_backup_service.dart';
 import 'package:ikuyo_finance/features/budget/bloc/budget_bloc.dart';
 import 'package:ikuyo_finance/features/budget/repositories/budget_repository_impl.dart';
@@ -176,7 +177,12 @@ class TestApp {
 
   /// [resumeRun] mounts the real [AppSecurityWrapper] (as in `MyApp`) with
   /// that scheduler run injected, so lifecycle resume paths are testable.
-  Widget build({Future<void> Function()? resumeRun}) {
+  Widget build({
+    Future<void> Function()? resumeRun,
+    BackupScheduleSettings autoBackupSettings = const BackupScheduleSettings(),
+    AutoBackupKeyState autoBackupKeyState = AutoBackupKeyState.missing,
+    MockAutoBackupService? autoBackupServiceOverride,
+  }) {
     final authRepository = MockAuthRepository();
     when(() => authRepository.authStateChanges)
         .thenAnswer((_) => const Stream.empty());
@@ -184,9 +190,14 @@ class TestApp {
       (_) => TaskEither.left(const Failure(message: 'Not authenticated')),
     );
 
-    final autoBackupService = MockAutoBackupService();
-    when(() => autoBackupService.loadSettings())
-        .thenReturn(const BackupScheduleSettings());
+    final autoBackupService =
+        autoBackupServiceOverride ?? MockAutoBackupService();
+    if (autoBackupServiceOverride == null) {
+      when(() => autoBackupService.loadSettings())
+          .thenReturn(autoBackupSettings);
+      when(() => autoBackupService.keyState())
+          .thenAnswer((_) async => autoBackupKeyState);
+    }
 
     return EasyLocalization(
       supportedLocales: const [Locale('en', 'US'), Locale('id', 'ID')],

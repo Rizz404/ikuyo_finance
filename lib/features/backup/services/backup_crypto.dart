@@ -175,6 +175,32 @@ class DecodedBackup {
   const DecodedBackup(this.data, {required this.wasEncrypted});
 }
 
+/// Kunci auto backup hasil Argon2id v1 dari passphrase + salt-nya.
+/// * Disimpan di secure storage agar worker tidak perlu passphrase/Argon2
+/// * File yang disegel dengan kunci ini adalah envelope IKYB v1 biasa (salt
+///   di header), jadi bisa diimpor di perangkat mana pun dengan passphrase
+class BackupKeyMaterial {
+  final Uint8List salt;
+  final Uint8List key;
+
+  BackupKeyMaterial({required List<int> salt, required List<int> key})
+    : salt = Uint8List.fromList(salt),
+      key = Uint8List.fromList(key) {
+    if (this.salt.length != BackupCrypto._saltLength ||
+        this.key.length != BackupCrypto._keyLength) {
+      throw const BackupCryptoException(BackupCryptoError.invalidParameters);
+    }
+  }
+
+  void destroy() {
+    BackupCrypto._zero(salt);
+    BackupCrypto._zero(key);
+  }
+
+  @override
+  String toString() => 'BackupKeyMaterial(redacted)';
+}
+
 /// Enkripsi backup portabel berbasis passphrase pengguna (A14).
 /// * Argon2id (19 MiB, 2 iterasi, paralelisme 1) → kunci 256-bit
 /// * AES-256-GCM, nonce acak 12 byte, header sebagai AAD
@@ -227,6 +253,7 @@ class BackupCrypto {
   static const _saltLength = 16;
   static const _nonceLength = 12;
   static const _tagLength = 16;
+  static const _keyLength = 32;
 
   static BackupFileFormat detect(List<int> bytes) {
     if (bytes.length >= 4 &&
@@ -508,4 +535,102 @@ class BackupCrypto {
       Uint8List.fromList(List.generate(length, (_) => random.nextInt(256)));
 
   static void _zero(Uint8List bytes) => bytes.fillRange(0, bytes.length, 0);
+
+  // ─── Auto backup (kunci tersimpan, F10) ───────────────────────────────
+
+  /// Menurunkan kunci auto backup dari [passphrase] dengan salt acak baru
+  /// (profil Argon2id v1 yang sama dengan ekspor manual), di isolate lain.
+  static Future<BackupKeyMaterial> deriveKeyMaterial(String passphrase) async {
+    _checkPassphrase(passphrase);
+    final salt = _randomBytes(Random.secure(), _saltLength);
+    final header = BackupEnvelopeHeader(
+      formatVersion: formatVersion,
+      kdfId: _kdfArgon2id,
+      memoryKiB: _memoryKiB,
+      iterations: _iterations,
+      parallelism: _parallelism,
+      salt: salt,
+      nonce: Uint8List(_nonceLength),
+      length: 0,
+    );
+    final passBytes = Uint8List.fromList(utf8.encode(passphrase));
+    talker.info('[BackupCrypto] menurunkan kunci auto backup (Argon2id)');
+    try {
+      final key = await Isolate.run(() async {
+        final derived = await _deriveKey(passBytes, header);
+        try {
+          return Uint8List.fromList(await derived.extractBytes());
+        } finally {
+          derived.destroy();
+          _zero(passBytes);
+        }
+      });
+      try {
+        return BackupKeyMaterial(salt: salt, key: key);
+      } finally {
+        _zero(key);
+      }
+    } finally {
+      _zero(passBytes);
+    }
+  }
+
+  /// Menyegel [data] sebagai envelope IKYB v1 dengan kunci tersimpan:
+  /// salt dari [key], nonce acak baru per file, header sebagai AAD.
+  /// * Batas ukuran dicek pada ukuran tersegel sebelum enkripsi
+  static Future<Uint8List> encryptWithKey(
+    BackupData data,
+    BackupKeyMaterial key,
+  ) async {
+    final clear = utf8.encode(data.toJsonString());
+    if (clear.length + envelopeOverhead > maxBackupBytes) {
+      _zero(clear);
+      throw const BackupCryptoException(BackupCryptoError.exportTooLarge);
+    }
+    final header = BackupEnvelopeHeader(
+      formatVersion: formatVersion,
+      kdfId: _kdfArgon2id,
+      memoryKiB: _memoryKiB,
+      iterations: _iterations,
+      parallelism: _parallelism,
+      salt: Uint8List.fromList(key.salt),
+      nonce: _randomBytes(Random.secure(), _nonceLength),
+      length: 0,
+    );
+    final headerBytes = header.encode();
+    final keyBytes = Uint8List.fromList(key.key);
+    try {
+      return await Isolate.run(
+        () => _sealWithKey(keyBytes, headerBytes, header.nonce, clear),
+      );
+    } finally {
+      _zero(keyBytes);
+      _zero(clear);
+    }
+  }
+
+  static Uint8List _sealWithKey(
+    Uint8List keyBytes,
+    Uint8List headerBytes,
+    Uint8List nonce,
+    Uint8List clear,
+  ) {
+    final key = SecretKeyData(keyBytes, overwriteWhenDestroyed: true);
+    try {
+      final box = DartAesGcm.with256bits().encryptSync(
+        clear,
+        secretKeyData: key,
+        nonce: nonce,
+        aad: headerBytes,
+      );
+      return (BytesBuilder(copy: false)
+            ..add(headerBytes)
+            ..add(box.cipherText)
+            ..add(box.mac.bytes))
+          .toBytes();
+    } finally {
+      key.destroy();
+      _zero(clear);
+    }
+  }
 }

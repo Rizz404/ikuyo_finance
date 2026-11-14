@@ -203,6 +203,20 @@
     }
   },
   "backup": {
+    "auto": {
+      "changeButton": "Ganti passphrase",
+      "keyClearFailed": "Backup otomatis sudah mati, tetapi kunci backup yang tersimpan tidak bisa dihapus.",
+      "keySetupFailed": "Passphrase backup tidak bisa disimpan dengan aman. Backup otomatis tidak diubah dan tidak ada yang ditulis tanpa enkripsi.",
+      "legacyNote": "Backup otomatis lama tanpa enkripsi (.json) dibiarkan apa adanya dan tidak pernah dihapus otomatis. Hanya backup terenkripsi terbaru yang dirotasi.",
+      "pausedMissing": "Atur passphrase backup untuk melanjutkan backup otomatis terenkripsi. Tidak ada file yang ditulis sebelum itu.",
+      "pausedTitle": "Backup otomatis dijeda",
+      "pausedUnreadable": "Kunci backup yang tersimpan tidak bisa dibaca lagi (misalnya setelah aplikasi diinstal ulang atau dipulihkan). Atur ulang passphrase backup untuk melanjutkan. Tidak ada file yang ditulis sebelum itu.",
+      "setupButton": "Atur passphrase",
+      "setupConfirm": "Simpan passphrase",
+      "setupDescription": "Backup terjadwal dienkripsi dengan passphrase ini. Passphrase dibutuhkan untuk memulihkannya di perangkat ini maupun perangkat lain. Hanya kunci turunannya yang disimpan di penyimpanan aman perangkat ini, bukan passphrase-nya.",
+      "setupTitle": "Passphrase backup",
+      "setupWarning": "Jika passphrase ini lupa, backup otomatis tidak bisa dipulihkan. Mengganti passphrase hanya berlaku untuk backup baru; file lama tetap butuh passphrase lama."
+    },
     "encryption": {
       "cancel": "Batal",
       "decrypt": "Dekripsi",
@@ -231,7 +245,7 @@
     },
     "screen": {
       "assets": "Aset",
-      "autoDescription": "Cadangkan data secara otomatis sesuai jadwal.",
+      "autoDescription": "Cadangkan data secara otomatis sesuai jadwal sebagai file .ikuyo terenkripsi.",
       "autoDisabled": "Backup otomatis dinonaktifkan",
       "autoEnabled": "Backup otomatis aktif — jadwal berikutnya pukul {time}",
       "autoFrequency": "Frekuensi",
@@ -262,7 +276,7 @@
       "importSuccess": "Data berhasil diimpor",
       "importTitle": "Import Data",
       "importWarning": "Semua data yang ada saat ini akan dihapus dan diganti dengan data backup!",
-      "infoDescription": "Backup dienkripsi dengan passphrase Anda dan bisa diimpor kembali kapan saja.",
+      "infoDescription": "Export dienkripsi dengan passphrase kecuali Anda memilih tanpa enkripsi. Backup otomatis terjadwal selalu dienkripsi dengan passphrase backup Anda.",
       "readBackupFailed": "Gagal membaca file backup: {error}",
       "saveDialogTitle": "Simpan File Backup",
       "saveFileFailed": "Gagal menyimpan file: {error}",

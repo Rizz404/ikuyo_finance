@@ -360,6 +360,18 @@ abstract class LocaleKeys {
   static const backupEncryptionLegacyWarning =
       'backup.encryption.legacyWarning';
   static const backupEncryptionPickerHint = 'backup.encryption.pickerHint';
+  static const backupAutoSetupTitle = 'backup.auto.setupTitle';
+  static const backupAutoSetupDescription = 'backup.auto.setupDescription';
+  static const backupAutoSetupWarning = 'backup.auto.setupWarning';
+  static const backupAutoSetupConfirm = 'backup.auto.setupConfirm';
+  static const backupAutoPausedTitle = 'backup.auto.pausedTitle';
+  static const backupAutoPausedMissing = 'backup.auto.pausedMissing';
+  static const backupAutoPausedUnreadable = 'backup.auto.pausedUnreadable';
+  static const backupAutoSetupButton = 'backup.auto.setupButton';
+  static const backupAutoChangeButton = 'backup.auto.changeButton';
+  static const backupAutoLegacyNote = 'backup.auto.legacyNote';
+  static const backupAutoKeySetupFailed = 'backup.auto.keySetupFailed';
+  static const backupAutoKeyClearFailed = 'backup.auto.keyClearFailed';
 
   // ──────────────────────────────────────────────
   // * Budget — Validator
