@@ -368,10 +368,15 @@ void main() {
       LocaleKeys.backupScreenImportConfirmButton.tr(),
       settle: false,
     );
+    // * F5: commit terjadi di isolate worker; tunggu juga hasilnya sampai ke
+    // *   bloc (toast sukses), bukan hanya data terlihat di DB
     await settleReal(
       tester,
       () =>
-          app.storage.box<Category>().getAll().any((c) => c.name == 'Restored'),
+          app.storage.box<Category>().getAll().any(
+            (c) => c.name == 'Restored',
+          ) &&
+          shown(LocaleKeys.backupScreenSuccess.tr()),
     );
     expect(app.storage.box<Category>().getAll().map((c) => c.name), [
       'Restored',
@@ -441,9 +446,11 @@ void main() {
       );
       await settleReal(
         tester,
-        () => app.storage.box<Category>().getAll().any(
-          (c) => c.name == 'OldBackup',
-        ),
+        () =>
+            app.storage.box<Category>().getAll().any(
+              (c) => c.name == 'OldBackup',
+            ) &&
+            shown(LocaleKeys.backupScreenSuccess.tr()),
       );
       expect(app.storage.box<Category>().getAll().map((c) => c.name), [
         'OldBackup',

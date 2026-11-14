@@ -285,8 +285,7 @@ class BackupCrypto {
     String? passphrase,
   }) async {
     _checkInputSize(bytes);
-    final String json;
-    final bool wasEncrypted;
+    // * Decode UTF-8 + parse JSON berjalan di isolate worker (F5), bukan UI
     switch (detect(bytes)) {
       case BackupFileFormat.encrypted:
         if (passphrase == null || passphrase.isEmpty) {
@@ -294,25 +293,68 @@ class BackupCrypto {
             BackupCryptoError.passphraseRequired,
           );
         }
-        json = await decrypt(bytes, passphrase);
-        wasEncrypted = true;
+        return DecodedBackup(
+          await _decryptAndParse(bytes, passphrase),
+          wasEncrypted: true,
+        );
       case BackupFileFormat.legacyPlaintext:
         talker.warning('[BackupCrypto] impor backup lama tanpa enkripsi');
-        try {
-          json = utf8.decode(bytes);
-        } on FormatException {
-          throw const BackupCryptoException(BackupCryptoError.notABackup);
-        }
-        wasEncrypted = false;
+        return DecodedBackup(
+          await _parseInWorker(
+            bytes is Uint8List ? bytes : Uint8List.fromList(bytes),
+          ),
+          wasEncrypted: false,
+        );
       case BackupFileFormat.unknown:
         throw const BackupCryptoException(BackupCryptoError.notABackup);
     }
+  }
+
+  // * Closure dibuat di fungsi terpisah agar hanya membawa [bytes] ke isolate
+  static Future<BackupData> _parseInWorker(Uint8List bytes) =>
+      Isolate.run(() => _parseJsonBytes(bytes));
+
+  /// Dekripsi lalu parse di isolate yang sama: plaintext tidak kembali ke UI
+  static Future<BackupData> _decryptAndParse(
+    List<int> bytes,
+    String passphrase,
+  ) async {
+    final header = BackupEnvelopeHeader.parse(bytes);
+    if (bytes.length < header.length + _tagLength + 1) {
+      throw const BackupCryptoException(BackupCryptoError.truncated);
+    }
+    final envelope = Uint8List.fromList(bytes);
+    final passBytes = Uint8List.fromList(utf8.encode(passphrase));
+    talker.info('[BackupCrypto] dekripsi backup');
     try {
+      return await _openAndParseInWorker(passBytes, envelope, header);
+    } on BackupCryptoException catch (e) {
+      talker.warning('[BackupCrypto] dekripsi gagal: ${e.error.name}');
+      rethrow;
+    } finally {
+      _zero(passBytes);
+    }
+  }
+
+  static Future<BackupData> _openAndParseInWorker(
+    Uint8List passBytes,
+    Uint8List envelope,
+    BackupEnvelopeHeader header,
+  ) => Isolate.run(() async {
+    final clear = await _open(passBytes, envelope, header);
+    try {
+      return _parseJsonBytes(clear);
+    } finally {
+      _zero(clear);
+    }
+  });
+
+  /// Worker: UTF-8 (tanpa BOM) → [BackupData]; galat apa pun = notABackup
+  static BackupData _parseJsonBytes(Uint8List bytes) {
+    try {
+      final json = utf8.decode(bytes);
       final text = json.startsWith('\uFEFF') ? json.substring(1) : json;
-      return DecodedBackup(
-        BackupData.fromJsonString(text),
-        wasEncrypted: wasEncrypted,
-      );
+      return BackupData.fromJsonString(text);
     } catch (_) {
       throw const BackupCryptoException(BackupCryptoError.notABackup);
     }

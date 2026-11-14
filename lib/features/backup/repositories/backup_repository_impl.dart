@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:fpdart/fpdart.dart';
+import 'package:ikuyo_finance/core/currency/models/currency.dart';
 import 'package:ikuyo_finance/core/currency/service/currency_migration_service.dart';
 import 'package:ikuyo_finance/core/locale/locale_keys.dart';
 import 'package:ikuyo_finance/core/storage/objectbox_storage.dart';
@@ -107,11 +108,14 @@ class BackupRepositoryImpl implements BackupRepository {
         // * jika ada error, ObjectBox me-rollback sehingga data lama utuh
         // * Penanda mata uang ditulis di transaksi yang sama dengan data
         // *   (markStoredCurrency memakai ulang transaksi tulis yang aktif)
+        // * Transaksi berjalan di isolate worker (F5) dengan store yang
+        // *   di-attach ObjectBox; isolate UI tidak terblokir selama impor
         final currency = backupData.currency!.currencyCode!;
-        _storage.store.runInTransaction(TxMode.write, () {
-          _replaceAllData(backupData);
-          _currencyService.markStoredCurrency(currency);
-        });
+        await _storage.store.runInTransactionAsync(
+          TxMode.write,
+          _importInTransaction,
+          (backupData, currency),
+        );
 
         logInfo('Impor selesai: ${backupData.totalItems} item');
 
@@ -125,6 +129,18 @@ class BackupRepositoryImpl implements BackupRepository {
         return Failure(message: 'Gagal mengimpor data: ${error.toString()}');
       },
     );
+  }
+
+  /// Worker `runInTransactionAsync`: tanpa DI, tr() atau logger (talker hanya
+  /// ada di isolate UI); store worker ditutup oleh ObjectBox, bukan di sini
+  static void _importInTransaction(
+    Store store,
+    (BackupData, CurrencyCode) param,
+  ) {
+    final (backupData, currency) = param;
+    final storage = ObjectBoxStorage.wrap(store);
+    BackupRepositoryImpl(storage)._replaceAllData(backupData);
+    CurrencyMigrationService(storage).markStoredCurrency(currency);
   }
 
   /// Validasi struktur backup: ulid unik per entitas dan nilai enum valid
@@ -247,8 +263,6 @@ class BackupRepositoryImpl implements BackupRepository {
     _categoryBox.removeAll();
     _assetBox.removeAll();
 
-    logInfo('Data yang ada berhasil dihapus');
-
     // ── 1. Categories ──────────────────────────────────────────────────
     final categoryMap = <String, Category>{};
 
@@ -279,8 +293,6 @@ class BackupRepositoryImpl implements BackupRepository {
       }
     }
 
-    logInfo('Kategori diimpor: ${backupData.categories.length}');
-
     // ── 2. Assets ──────────────────────────────────────────────────────
     final assetMap = <String, Asset>{};
     for (final backup in backupData.assets) {
@@ -296,8 +308,6 @@ class BackupRepositoryImpl implements BackupRepository {
       _assetBox.put(asset);
       assetMap[backup.ulid] = asset;
     }
-
-    logInfo('Aset diimpor: ${backupData.assets.length}');
 
     // ── 3. Transactions ────────────────────────────────────────────────
     final transactionMap = <String, Transaction>{};
@@ -334,8 +344,6 @@ class BackupRepositoryImpl implements BackupRepository {
       transactionMap[backup.ulid] = transaction;
     }
 
-    logInfo('Transaksi diimpor: ${backupData.transactions.length}');
-
     // ── 4. Budgets ─────────────────────────────────────────────────────
     for (final backup in backupData.budgets) {
       final category = categoryMap[backup.categoryUlid];
@@ -354,8 +362,6 @@ class BackupRepositoryImpl implements BackupRepository {
       budget.category.target = category;
       _budgetBox.put(budget);
     }
-
-    logInfo('Anggaran diimpor: ${backupData.budgets.length}');
 
     // ── 5. Auto Transaction Groups ─────────────────────────────────────
     final autoGroupMap = <String, AutoTransactionGroup>{};
@@ -387,8 +393,6 @@ class BackupRepositoryImpl implements BackupRepository {
       autoGroupMap[backup.ulid] = group;
     }
 
-    logInfo('Auto group diimpor: ${backupData.autoGroups.length}');
-
     // ── 6. Auto Transaction Items ──────────────────────────────────────
     for (final backup in backupData.autoItems) {
       final group = autoGroupMap[backup.groupUlid];
@@ -407,8 +411,6 @@ class BackupRepositoryImpl implements BackupRepository {
       item.transaction.target = transaction;
       _autoItemBox.put(item);
     }
-
-    logInfo('Auto item diimpor: ${backupData.autoItems.length}');
 
     // ── 7. Auto Transaction Logs ───────────────────────────────────────
     for (final backup in backupData.autoLogs) {
@@ -430,8 +432,6 @@ class BackupRepositoryImpl implements BackupRepository {
       log.group.target = group;
       _autoLogBox.put(log);
     }
-
-    logInfo('Auto log diimpor: ${backupData.autoLogs.length}');
   }
 
   @override

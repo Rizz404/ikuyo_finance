@@ -24,6 +24,12 @@ class ObjectBoxStorage {
     _store = store;
   }
 
+  /// Membungkus [Store] milik pemanggil (mis. store worker dari
+  /// `runInTransactionAsync`); pemilik store yang menutupnya, bukan handle ini.
+  ObjectBoxStorage.wrap(Store store) {
+    _store = store;
+  }
+
   /// Initialize ObjectBox Store
   /// Harus dipanggil sebelum menggunakan ObjectBox. Aman dipanggil oleh
   /// beberapa handle di isolate yang sama (store dibagi, bukan dibuka ulang).
